@@ -1,0 +1,19 @@
+{
+  "format": "bestvideo+bestaudio/best",
+  "progress": true,
+  "postprocessors": [
+    {
+      "already_have_subtitle": false,
+      "key": "FFmpegEmbedSubtitle"
+    },
+    {
+      "key": "FFmpegVideoConvertor",
+      "preferedformat": "mp4"
+    }
+  ],
+  "ignoreerrors": true,
+  "merge_output_format": "mp4",
+  "writesubtitles": true,
+  "writeautomaticsub": true,
+  "subtitleslangs": ["en"]
+}

@@ -1,0 +1,5 @@
+{
+  "format": "(bv*[vcodec~='avc1']+ba[audio_ext=m4a]/b[ext=mp4])/bestvideo+bestaudio/best",
+  "progress": true,
+  "ignoreerrors": true
+}

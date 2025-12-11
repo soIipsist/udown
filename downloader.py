@@ -10,10 +10,10 @@ from enum import Enum
 import sys
 from typing import List, Optional
 from urllib.parse import urlparse
-from logger import setup_logger
-from sqlite import is_valid_path
-from sqlite_item import SQLiteItem, create_connection
-from sqlite_conn import create_db, download_values, downloader_values
+from utils.logger import setup_logger
+from utils.sqlite import is_valid_path
+from utils.sqlite_item import SQLiteItem, create_connection
+from utils.sqlite_conn import create_db, download_values, downloader_values
 import argparse
 import inspect
 

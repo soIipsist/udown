@@ -1,0 +1,10 @@
+{
+  "format": "bestaudio/best",
+  "postprocessors": [
+    {
+      "key": "FFmpegExtractAudio",
+      "preferredcodec": "mp3"
+    }
+  ],
+  "ignoreerrors": true
+}
