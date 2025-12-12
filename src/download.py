@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from venv import logger
 from src.downloader import (
     Downloader,
-    download_all,
+    download_action,
     get_downloader_names,
 )
 from utils.sqlite_item import SQLiteItem

@@ -1,6 +1,10 @@
 import os
+from shutil import copy
 
-CONFIG_PATH = os.path.expanduser("~/.udown/config")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_PATH = os.path.dirname(SCRIPT_DIR)
+CONFIG_PATH = os.path.join(PROJECT_PATH, ".config")
+DEFAULT_CONFIG_PATH = os.path.join(PROJECT_PATH, ".default")
 
 
 def _load_raw_config():
@@ -8,7 +12,7 @@ def _load_raw_config():
     config = {}
 
     if not os.path.exists(CONFIG_PATH):
-        return config
+        raise FileNotFoundError(f"File not found {CONFIG_PATH}!")
 
     with open(CONFIG_PATH, "r") as f:
         for line in f:
@@ -72,6 +76,41 @@ def set_option(key, value):
     _config_cache = config
 
 
+def reset_options():
+    try:
+        copy(DEFAULT_CONFIG_PATH, CONFIG_PATH)
+    except Exception as e:
+        print(e)
+
+
 def all_options():
     """Returns all config values."""
     return dict(load_config())
+
+
+def options_action(
+    action: str, key: str = None, value: str = None, config_path: str = None
+):
+    if action == "get":
+        return get_option(key)
+    elif action == "set":
+        return set_option(key, value)
+    elif action == "reset":
+        return reset_options(config_path)
+        print("Successfully generated default downloaders.")
+    else:
+        return all_options()
+
+
+def options_command(subparsers):
+    options_cmd = subparsers.add_parser("options", help="List options")
+
+    options_cmd.add_argument(
+        "action",
+        type=str,
+        choices=["list", "get", "set", "reset"],
+        default="list",
+        nargs="?",
+    )
+    options_cmd.add_argument("key", type=str, nargs="?", default=None)
+    options_cmd.add_argument("value", type=str, nargs="?", default=None)

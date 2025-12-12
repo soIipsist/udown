@@ -322,7 +322,7 @@ def get_downloader_names():
     return downloader_names
 
 
-def download_all(
+def download_action(
     url: str = None,
     downloader_type: str = None,
     output_directory: str = None,

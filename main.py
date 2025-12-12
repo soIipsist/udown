@@ -1,6 +1,7 @@
 import argparse
-from src.download import download_command, download_all
+from src.download import download_command, download_action
 from src.downloader import downloader_command, downloader_action, pp
+from src.options import options_action, options_command
 
 
 def main():
@@ -12,10 +13,15 @@ def main():
 
     download_command(subparsers)
     downloader_command(subparsers)
+    options_command(subparsers)
     args = vars(parser.parse_args())
 
     command = args.get("command")
-    cmd_dict = {"download": download_all, "downloaders": downloader_action}
+    cmd_dict = {
+        "download": download_action,
+        "downloaders": downloader_action,
+        "options": options_action,
+    }
     action = cmd_dict.get(command)
 
     if "command" in args:
@@ -23,7 +29,7 @@ def main():
 
     output = action(**args)
 
-    if output:
+    if output is not None:
         pp.pprint(output)
 
 
