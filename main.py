@@ -1,7 +1,6 @@
 import argparse
-from pprint import pp
 from src.download import download_command, download_all
-from src.downloader import downloader_command, downloader_action
+from src.downloader import downloader_command, downloader_action, pp
 
 
 def main():

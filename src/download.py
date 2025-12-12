@@ -3,7 +3,6 @@ import ast
 from datetime import datetime
 from enum import Enum
 import os
-from pprint import pp
 import re
 import sqlite3
 from typing import Optional
@@ -20,7 +19,7 @@ from utils.sqlite_conn import (
     download_values,
     downloader_values,
 )
-from src.downloader import database_path
+from src.downloader import database_path, pp
 
 
 class DownloadStatus(str, Enum):
