@@ -429,10 +429,3 @@ def downloader_command(subparsers):
     downloader_cmd.add_argument(
         "-k", "--filter_keys", type=str, default=os.environ.get("DOWNLOADER_KEYS")
     )
-
-    downloader_cmd.set_defaults(call=downloader_action)
-
-    # output = call(**args)
-
-    # if output:
-    #     pp.pprint(output)

@@ -1,6 +1,7 @@
 import argparse
-from src.download import download_command
-from src.downloader import downloader_command
+from pprint import pp
+from src.download import download_command, download_all
+from src.downloader import downloader_command, downloader_action
 
 
 def main():
@@ -11,11 +12,20 @@ def main():
     # udown downloaders
 
     download_command(subparsers)
-    # downloader_command(subparsers)
+    downloader_command(subparsers)
+    args = vars(parser.parse_args())
 
-    args = parser.parse_args()
+    command = args.get("command")
+    cmd_dict = {"download": download_all, "downloaders": downloader_action}
+    action = cmd_dict.get(command)
 
-    print(args)
+    if "command" in args:
+        args.pop("command")
+
+    output = action(**args)
+
+    if output:
+        pp.pprint(output)
 
 
 if __name__ == "__main__":

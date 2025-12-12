@@ -346,5 +346,3 @@ def download_command(subparsers):
     )
     download_cmd.add_argument("-f", "--output_filename", default=None, type=str)
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)
-
-    download_cmd.set_defaults(call=download_all)
