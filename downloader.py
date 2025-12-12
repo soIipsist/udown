@@ -316,49 +316,9 @@ def get_downloader_names():
     downloader_names = [
         downloader.downloader_type for downloader in Downloader().select_all()
     ]
+    downloader_names.append("")
+    downloader_names.append(None)
     return downloader_names
-
-
-# argparse commands
-
-
-def downloaders_cmd(
-    action: str,
-    downloader_type: str = None,
-    downloader_path: str = None,
-    module: str = None,
-    func: str = None,
-    downloader_args: str = None,
-    filter_keys: str = None,
-):
-    d = Downloader(downloader_type, downloader_path, module, func, downloader_args)
-    downloaders = [d]
-
-    if action == "add":
-        if d.module is None:
-            d.module = "ytdlp"
-        if d.func is None:
-            d.func = "download"
-        d.upsert()
-    elif action == "delete":
-        d.delete()
-    elif action == "reset":
-        Downloader.insert_all(default_downloaders)
-        print("Successfully generated default downloaders.")
-    else:  # list downloaders
-
-        logger.info(f"Fetching downloaders from file {database_path}.")
-
-        if downloader_type:
-            downloaders = d.filter_by(
-                ["downloader_type", "downloader_path", "module", "func"]
-            )
-        else:
-            downloaders = d.select_all()
-
-        for downloader in downloaders:
-            downloader: Downloader
-            pp.pprint(downloader.as_dict(filter_keys))
 
 
 def download_all(
@@ -400,22 +360,48 @@ def download_all(
     Downloader.start_downloads(downloads)
 
 
-if __name__ == "__main__":
-    # Check if the user skipped the subcommand, and inject 'download'
-    if len(sys.argv) == 1 or sys.argv[1] not in [
-        "download",
-        "downloaders",
-        "-h",
-        "--help",
-    ]:
-        sys.argv.insert(1, "download")
+def downloader_action(
+    action: str,
+    downloader_type: str = None,
+    downloader_path: str = None,
+    module: str = None,
+    func: str = None,
+    downloader_args: str = None,
+    filter_keys: str = None,
+):
+    d = Downloader(downloader_type, downloader_path, module, func, downloader_args)
+    downloaders = [d]
 
+    if action == "add":
+        if d.module is None:
+            d.module = "ytdlp"
+        if d.func is None:
+            d.func = "download"
+        d.upsert()
+    elif action == "delete":
+        d.delete()
+    elif action == "reset":
+        Downloader.insert_all(default_downloaders)
+        print("Successfully generated default downloaders.")
+    else:  # list downloaders
+
+        logger.info(f"Fetching downloaders from file {database_path}.")
+
+        if downloader_type:
+            downloaders = d.filter_by(
+                ["downloader_type", "downloader_path", "module", "func"]
+            )
+        else:
+            downloaders = d.select_all()
+
+        for downloader in downloaders:
+            downloader: Downloader
+            pp.pprint(downloader.as_dict(filter_keys))
+
+
+def downloader_command(subparsers):
     choices = get_downloader_names()
-    choices.append("")
-    choices.append(None)
-
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="command", required=True)
 
     # downloader cmd
     downloader_cmd = subparsers.add_parser("downloaders", help="List downloaders")
@@ -443,7 +429,7 @@ if __name__ == "__main__":
         "-k", "--filter_keys", type=str, default=os.environ.get("DOWNLOADER_KEYS")
     )
 
-    downloader_cmd.set_defaults(call=downloaders_cmd)
+    downloader_cmd.set_defaults(call=downloader_action)
     args = vars(parser.parse_args())
     call = args.get("call")
     args.pop("command")
@@ -453,30 +439,3 @@ if __name__ == "__main__":
 
     if output:
         pp.pprint(output)
-
-# tests
-
-# playlist urls
-# https://www.youtube.com/playlist?list=PL3A_1s_Z8MQbYIvki-pbcerX8zrF4U8zQ
-
-# regular video urls
-# https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY
-# https://youtu.be/OlEqHXRrcpc?si=4JAYOOH2B0A6MBvF
-
-# regular urls (wget)
-# https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg
-
-# downloads
-
-# python downloader.py downloads
-# python downloader.py "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg" -d "downloads.txt"
-# python downloader.py -d "downloads.txt" -o ~/temp
-
-# python downloader.py -t ytdlp_audio -d "downloads.txt" (type should precede everything unless explicitly defined inside the .txt)
-# python downloader.py -t ytdlp_audio -d "downloads.txt" -o ~/temp
-
-# downloaders
-
-# python downloader.py downloaders
-# python downloader.py downloaders -t ytdlp_audio
-# python downloader.py downloaders add -n ytdlp_2 -t ytdlp_video -d downloader_path.json

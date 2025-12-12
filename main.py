@@ -1,5 +1,6 @@
 import argparse
-from downloader import download_cmd
+from download import download_command
+from downloader import downloader_command
 
 
 def main():
@@ -8,5 +9,40 @@ def main():
 
     # udown download [some_url] -t downloader_type
     # udown downloaders
+    download_command(subparsers)
+    downloader_command(subparsers)
+
     args = parser.parse_args()
-    args.func(args)
+
+    if hasattr(args, "call"):
+        args.call(args)
+    else:
+        parser.print_help()
+
+
+# tests
+
+# playlist urls
+# https://www.youtube.com/playlist?list=PL3A_1s_Z8MQbYIvki-pbcerX8zrF4U8zQ
+
+# regular video urls
+# https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY
+# https://youtu.be/OlEqHXRrcpc?si=4JAYOOH2B0A6MBvF
+
+# regular urls (wget)
+# https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg
+
+# downloads
+
+# python downloader.py downloads
+# python downloader.py "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg" -d "downloads.txt"
+# python downloader.py -d "downloads.txt" -o ~/temp
+
+# python downloader.py -t ytdlp_audio -d "downloads.txt" (type should precede everything unless explicitly defined inside the .txt)
+# python downloader.py -t ytdlp_audio -d "downloads.txt" -o ~/temp
+
+# downloaders
+
+# python downloader.py downloaders
+# python downloader.py downloaders -t ytdlp_audio
+# python downloader.py downloaders add -n ytdlp_2 -t ytdlp_video -d downloader_path.json

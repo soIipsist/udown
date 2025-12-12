@@ -308,12 +308,10 @@ class DownloadStatus(str, Enum):
     INTERRUPTED = "interrupted"
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
+def download_command(subparsers):
     choices = get_downloader_names()
 
-    download_cmd = parser.add_parser("download", help="Download a URL")
+    download_cmd = subparsers.add_parser("download", help="Download a URL")
     download_cmd.add_argument("url", type=str, nargs="?")
     download_cmd.add_argument(
         "-t",
