@@ -9,14 +9,24 @@ import sqlite3
 from typing import Optional
 from urllib.parse import urlparse
 from venv import logger
-from downloader import DownloadStatus, Downloader, download_all, get_downloader_names
+from src.downloader import (
+    Downloader,
+    download_all,
+    get_downloader_names,
+)
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     create_db,
     download_values,
     downloader_values,
-    database_path,
 )
+from src.downloader import database_path
+
+
+class DownloadStatus(str, Enum):
+    STARTED = "started"
+    COMPLETED = "completed"
+    INTERRUPTED = "interrupted"
 
 
 class Download(SQLiteItem):
@@ -300,12 +310,6 @@ class Download(SQLiteItem):
             output_filename=output_filename,
             output_directory=output_directory,
         )
-
-
-class DownloadStatus(str, Enum):
-    STARTED = "started"
-    COMPLETED = "completed"
-    INTERRUPTED = "interrupted"
 
 
 def download_command(subparsers):

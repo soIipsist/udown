@@ -1,6 +1,6 @@
 from sqlite3 import Connection
 from typing import Any, Dict
-from sqlite import (
+from utils.sqlite import (
     select_items,
     update_items,
     insert_items,

@@ -1,6 +1,6 @@
 import argparse
-from download import download_command
-from downloader import downloader_command
+from src.download import download_command
+from src.downloader import downloader_command
 
 
 def main():
@@ -9,16 +9,17 @@ def main():
 
     # udown download [some_url] -t downloader_type
     # udown downloaders
+
     download_command(subparsers)
-    downloader_command(subparsers)
+    # downloader_command(subparsers)
 
     args = parser.parse_args()
 
-    if hasattr(args, "call"):
-        args.call(args)
-    else:
-        parser.print_help()
+    print(args)
 
+
+if __name__ == "__main__":
+    main()
 
 # tests
 

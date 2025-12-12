@@ -16,7 +16,6 @@ from utils.sqlite_item import SQLiteItem, create_connection
 from utils.sqlite_conn import create_db, download_values, downloader_values
 import argparse
 import inspect
-from download import Download, DownloadStatus
 
 script_directory = os.path.dirname(__file__)
 downloaders_directory = os.path.join(script_directory, "downloaders")
@@ -138,7 +137,7 @@ class Downloader(SQLiteItem):
         func = getattr(module, self.func)
         return func
 
-    def get_downloader_args(self, download: Download, func):
+    def get_downloader_args(self, download, func):
         """Passes all Download values to the appropriate download func."""
 
         func_signature = inspect.signature(func)
@@ -188,7 +187,9 @@ class Downloader(SQLiteItem):
         return args_dict
 
     @staticmethod
-    def start_downloads(downloads: list[Download]):
+    def start_downloads(downloads):
+        from src.download import Download, DownloadStatus
+
         download_results = []
 
         for idx, download in enumerate(downloads):
@@ -329,6 +330,7 @@ def download_all(
     extra_args: str = None,
     **kwargs,
 ):
+    from src.download import Download
 
     downloads = []
 
@@ -401,7 +403,6 @@ def downloader_action(
 
 def downloader_command(subparsers):
     choices = get_downloader_names()
-    parser = argparse.ArgumentParser()
 
     # downloader cmd
     downloader_cmd = subparsers.add_parser("downloaders", help="List downloaders")
@@ -430,12 +431,8 @@ def downloader_command(subparsers):
     )
 
     downloader_cmd.set_defaults(call=downloader_action)
-    args = vars(parser.parse_args())
-    call = args.get("call")
-    args.pop("command")
-    args.pop("call")
 
-    output = call(**args)
+    # output = call(**args)
 
-    if output:
-        pp.pprint(output)
+    # if output:
+    #     pp.pprint(output)
