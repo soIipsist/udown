@@ -390,6 +390,8 @@ def downloader_action(
         logger.info(f"Fetching downloaders from file {database_path}.")
 
         if downloader_type:
+            print("yo", downloader_type)
+
             downloaders = d.filter_by(
                 ["downloader_type", "downloader_path", "module", "func"]
             )
@@ -417,7 +419,7 @@ def downloader_command(subparsers):
         "-t",
         "--downloader_type",
         type=str,
-        default="video_mp4_best",
+        default="",
         choices=choices,
     )
     downloader_cmd.add_argument(
