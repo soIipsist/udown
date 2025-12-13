@@ -10,6 +10,7 @@ from enum import Enum
 import sys
 from typing import List, Optional
 from urllib.parse import urlparse
+from src.options import get_option, PROJECT_PATH, DOWNLOADER_DIRECTORY
 from utils.logger import setup_logger
 from utils.sqlite import is_valid_path
 from utils.sqlite_item import SQLiteItem, create_connection
@@ -17,14 +18,10 @@ from utils.sqlite_conn import create_db, download_values, downloader_values
 import argparse
 import inspect
 
-script_directory = os.path.dirname(__file__)
-downloaders_directory = os.path.join(script_directory, "downloaders")
 
 pp = PrettyPrinter(indent=2)
 
-database_path = os.environ.get(
-    "DOWNLOADS_DB_PATH", os.path.join(script_directory, "downloads.db")
-)
+database_path = get_option("DATABASE_PATH", os.path.join(PROJECT_PATH, "downloads.db"))
 
 # environment variables
 # DOWNLOADER="ytdlp"
@@ -37,7 +34,6 @@ database_path = os.environ.get(
 # YTDLP_UPDATE_OPTIONS="1"
 # YTDLP_VIDEO_DIRECTORY="$HOME/mnt/"
 # YTDLP_AUDIO_DIRECTORY="$HOME/mnt/ssd/Music"
-# VENV_PATH="$HOME/venv"
 
 # create connection and tables
 db_exists = os.path.exists(database_path)
@@ -263,28 +259,28 @@ default_downloaders = [
     ),
     Downloader(
         "ytdlp_video",
-        os.path.join(downloaders_directory, "video_mp4_best.json"),
+        os.path.join(DOWNLOADER_DIRECTORY, "video_mp4_best.json"),
         "ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_video_subs",
-        os.path.join(downloaders_directory, "video_mp4_subs.json"),
+        os.path.join(DOWNLOADER_DIRECTORY, "video_mp4_subs.json"),
         "ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_video_avc1",
-        os.path.join(downloaders_directory, "video_avc1.json"),
+        os.path.join(DOWNLOADER_DIRECTORY, "video_avc1.json"),
         "ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_audio",
-        os.path.join(downloaders_directory, "audio_mp3_best.json"),
+        os.path.join(DOWNLOADER_DIRECTORY, "audio_mp3_best.json"),
         "ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
@@ -429,5 +425,5 @@ def downloader_command(subparsers):
     downloader_cmd.add_argument("-m", "--module", type=str, default=None)
     downloader_cmd.add_argument("-a", "--downloader_args", type=str, default=None)
     downloader_cmd.add_argument(
-        "-k", "--filter_keys", type=str, default=os.environ.get("DOWNLOADER_KEYS")
+        "-k", "--filter_keys", type=str, default=get_option("DOWNLOADER_KEYS")
     )

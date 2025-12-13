@@ -5,6 +5,8 @@ import json
 from pprint import PrettyPrinter
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
+from src.options import get_option
+
 bool_choices = ["0", "1", 0, 1, "true", "false", True, False, None]
 parent_directory = os.path.dirname(os.path.abspath(__file__))
 pp = PrettyPrinter(indent=2)
@@ -67,10 +69,10 @@ def get_outtmpl(
 
     if not output_directory:
         if ytdlp_format == "ytdlp_audio":
-            output_directory = os.environ.get("YTDLP_AUDIO_DIRECTORY")
+            output_directory = get_option("YTDLP_AUDIO_DIRECTORY")
 
         elif ytdlp_format == "ytdlp_video":
-            output_directory = os.environ.get("YTDLP_VIDEO_DIRECTORY")
+            output_directory = get_option("YTDLP_VIDEO_DIRECTORY")
 
     if output_directory:
         outtmpl = f"{output_directory}/{outtmpl}"
@@ -428,28 +430,26 @@ if __name__ == "__main__":
     parser.add_argument(
         "-f",
         "--ytdlp_format",
-        default=os.environ.get("YTDLP_FORMAT", "ytdlp_video"),
+        default=get_option("YTDLP_FORMAT", "ytdlp_video"),
         choices=["ytdlp_video", "ytdlp_audio"],
     )
     parser.add_argument(
         "-d",
         "--output_directory",
         type=str,
-        default=os.environ.get("YTDLP_OUTPUT_DIRECTORY"),
+        default=get_option("YTDLP_OUTPUT_DIRECTORY"),
     )
-    parser.add_argument(
-        "-p", "--prefix", default=os.environ.get("YTDLP_PREFIX"), type=str
-    )
+    parser.add_argument("-p", "--prefix", default=get_option("YTDLP_PREFIX"), type=str)
     parser.add_argument("-e", "--extension", default=None)
     parser.add_argument("-cf", "--custom_format", default=None)
     parser.add_argument("-ppa", "--postprocessor_args", default=None, nargs="+")
     parser.add_argument(
-        "-o", "--options_path", default=os.environ.get("YTDLP_OPTIONS_PATH", "")
+        "-o", "--options_path", default=get_option("YTDLP_OPTIONS_PATH", "")
     )
     parser.add_argument(
         "-u",
         "--update_options",
-        default=os.environ.get("YTDLP_UPDATE_OPTIONS", False),
+        default=get_option("YTDLP_UPDATE_OPTIONS", False),
         type=str_to_bool,
         choices=bool_choices,
     )

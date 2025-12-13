@@ -13,6 +13,7 @@ from src.downloader import (
     download_action,
     get_downloader_names,
 )
+from src.options import get_option
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     create_db,
@@ -319,7 +320,7 @@ def download_command(subparsers):
     download_cmd.add_argument(
         "-t",
         "--downloader_type",
-        default=os.environ.get("DOWNLOADER_TYPE", "ytdlp_video"),
+        default=get_option("DOWNLOADER_TYPE", "ytdlp_video"),
         choices=choices,
         type=str,
     )
@@ -334,14 +335,14 @@ def download_command(subparsers):
     download_cmd.add_argument(
         "-o",
         "--output_directory",
-        default=os.environ.get("DOWNLOADS_DIRECTORY"),
+        default=get_option("DOWNLOAD_DIRECTORY"),
         type=str,
     )
     download_cmd.add_argument(
-        "-k", "--filter_keys", type=str, default=os.environ.get("DOWNLOAD_KEYS")
+        "-k", "--filter_keys", type=str, default=get_option("DOWNLOAD_KEYS")
     )
     download_cmd.add_argument(
-        "-p", "--proxy", default=os.environ.get("DOWNLOAD_PROXY"), type=str
+        "-p", "--proxy", default=get_option("DOWNLOAD_PROXY"), type=str
     )
     download_cmd.add_argument("-f", "--output_filename", default=None, type=str)
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)

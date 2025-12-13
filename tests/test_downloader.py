@@ -11,7 +11,7 @@ os.sys.path.insert(0, str(parent_directory))
 
 from downloaders.ytdlp import download as ytdlp_download
 from downloaders.ytdlp_channel import download as ytdlp_download_channel
-from downloader import (
+from src.downloader import (
     Downloader,
     Download,
     default_downloaders,

@@ -3,6 +3,7 @@ from shutil import copy
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_PATH = os.path.dirname(SCRIPT_DIR)
+DOWNLOADER_DIRECTORY = os.path.join(PROJECT_PATH, "downloaders")
 CONFIG_PATH = os.path.join(PROJECT_PATH, ".config")
 DEFAULT_CONFIG_PATH = os.path.join(PROJECT_PATH, ".default")
 
@@ -60,6 +61,10 @@ def get_option(key, default=None):
 
     # expand paths like ~/
     value = config.get(key, default)
+
+    if value is None or value.strip() == "":
+        value = default
+
     if isinstance(value, str) and value.startswith("~"):
         return os.path.expanduser(value)
 
