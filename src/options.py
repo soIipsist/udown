@@ -75,7 +75,9 @@ def set_option(key, value):
     global _config_cache
 
     config = load_config()
-    config[key] = value
+
+    if key in config:
+        config[key] = value
 
     _write_raw_config(config)
     _config_cache = config
