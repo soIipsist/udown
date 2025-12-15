@@ -150,7 +150,7 @@ class TestDownloader(TestBase):
         downloader = Downloader(
             downloader_type, downloader_path, module, func, downloader_args
         )
-        download = Download(url=playlist_urls[0], downloader=downloader)
+        download = Download(url=playlist_urls[0], downloader_type=downloader)
         output_downloader_args = downloader.get_downloader_args(
             download, ytdlp_download
         )
@@ -178,7 +178,7 @@ class TestDownloader(TestBase):
         )
         download = Download(
             url=playlist_urls[0],
-            downloader=downloader,
+            downloader_type=downloader,
             extra_args="update_options=True, some_arg='hell', some_arg2='hh'",
         )
         output_downloader_args = downloader.get_downloader_args(

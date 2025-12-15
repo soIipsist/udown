@@ -22,7 +22,7 @@ def main():
         "downloaders": downloader_action,
         "options": options_action,
     }
-    action = cmd_dict.get(command)
+    action = cmd_dict.get(command, download_action)
 
     if "command" in args:
         args.pop("command")

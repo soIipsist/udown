@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 from venv import logger
 from src.downloader import (
     Downloader,
-    download_action,
     get_downloader_names,
 )
 from src.options import get_option
@@ -52,7 +51,7 @@ class Download(SQLiteItem):
     def __init__(
         self,
         url: str = None,
-        downloader=None,
+        downloader_type=None,
         download_status: DownloadStatus = DownloadStatus.STARTED,
         start_date: str = None,
         output_directory: Optional[str] = None,
@@ -74,7 +73,7 @@ class Download(SQLiteItem):
         ]
         super().__init__(download_values, column_names, db_path=database_path)
         self.url = url
-        self.downloader = downloader
+        self.downloader = downloader_type
         self.download_status = download_status
         self.output_directory = output_directory
         self.output_filename = output_filename
@@ -310,6 +309,41 @@ class Download(SQLiteItem):
             output_filename=output_filename,
             output_directory=output_directory,
         )
+
+
+def list_downloads(args):
+    download = Download(**args)
+    downloads = download.filter_by()
+
+    logger.info(f"Fetching downloads from file {database_path}.")
+    print(f"Total downloads ({len(downloads)}):")
+
+    for d in downloads:
+        print(d)
+
+    return downloads
+
+
+def download_action(**args):
+
+    downloads = []
+    url = args.get("url")
+    filter_keys = args.get("filter_keys")
+
+    if "filter_keys" in args:
+        args.pop("filter_keys")
+
+    if not url:
+        list_downloads(args)
+    else:
+        pass
+        # download = Download.parse_download_string(
+        #     url, downloader_type, output_directory, output_filename
+        # )
+        # if download is not None:
+        #     downloads.append(download)
+
+    # Downloader.start_downloads(downloads)
 
 
 def download_command(subparsers):

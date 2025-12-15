@@ -318,46 +318,6 @@ def get_downloader_names():
     return downloader_names
 
 
-def download_action(
-    url: str = None,
-    downloader_type: str = None,
-    output_directory: str = None,
-    output_filename: str = None,
-    extra_args: str = None,
-    **kwargs,
-):
-    from src.download import Download
-
-    downloads = []
-
-    if not url:
-        download_status = kwargs.get("download_status")
-        download = Download(
-            downloader=downloader_type,
-            download_status=download_status,
-            extra_args=extra_args,
-        )
-        downloads = download.filter_by()
-
-        logger.info(f"Fetching downloads from file {database_path}.")
-        print(f"Total downloads ({len(downloads)}):")
-
-        for d in downloads:
-            filter_keys = kwargs.get("filter_keys")
-            pp.pprint(d.as_dict(filter_keys))
-        downloads = []
-    else:
-        download = Download.parse_download_string(
-            url, downloader_type, output_directory, output_filename
-        )
-        if download is not None:
-            download.proxy = kwargs.get("proxy")
-            download.extra_args = extra_args
-            downloads.append(download)
-
-    Downloader.start_downloads(downloads)
-
-
 def downloader_action(
     action: str,
     downloader_type: str = None,

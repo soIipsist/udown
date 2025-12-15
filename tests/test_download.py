@@ -47,6 +47,9 @@ class TestDownload(TestBase):
         if output_directory and os.path.exists(output_directory):
             shutil.rmtree(output_directory)
 
+    def test_list_downloads(self):
+        Download.select_all
+
 
 if __name__ == "__main__":
     test_methods = []

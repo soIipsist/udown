@@ -37,7 +37,7 @@ def download(
     downloads = [
         Download(
             url=video_url,
-            downloader=downloader,
+            downloader_type=downloader,
             output_directory=os.environ.get("DOWNLOADS_DIRECTORY"),
             proxy=proxy,
             extra_args=f"sleep_interval={sleep_interval}, max_sleep_interval={max_sleep_interval}",
