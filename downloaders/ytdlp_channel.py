@@ -1,8 +1,9 @@
 import os
-from ytdlp import get_channel_info, download
+from downloaders.ytdlp import get_channel_info, download
 from argparse import ArgumentParser
 from pprint import PrettyPrinter
-from src.downloader import Downloader, Download, get_downloader_names
+from src.download import Download
+from src.downloader import Downloader, get_downloader_names
 from src.options import get_option
 
 pp = PrettyPrinter(indent=2)

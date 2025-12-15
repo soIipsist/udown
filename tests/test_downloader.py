@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import shlex
 import shutil
+from src.options import METADATA_DIR
 from test_base import *
 
 current_file = Path(__file__).resolve()
@@ -13,9 +14,9 @@ from downloaders.ytdlp import download as ytdlp_download
 from downloaders.ytdlp_channel import download as ytdlp_download_channel
 from src.downloader import (
     Downloader,
-    Download,
     default_downloaders,
 )
+from src.download import Download
 
 # playlist_urls = [
 #     "https://www.youtube.com/playlist?list=PL3A_1s_Z8MQbYIvki-pbcerX8zrF4U8zQ"
@@ -43,12 +44,12 @@ urllib_urls = [
 ]
 
 downloader = default_downloaders[0]
-scripts_dir = os.path.dirname(os.getcwd())
 
-video_options_1 = os.path.join(scripts_dir, "video_options.json")
-video_options_2 = os.path.join(scripts_dir, "video_options_2.json")
-video_options_3 = os.path.join(scripts_dir, "video_options_3.json")
-wget_options = os.path.join(scripts_dir, "wget_options.json")
+
+video_options_1 = os.path.join(METADATA_DIR, "video_mp4_best.json")
+video_options_2 = os.path.join(METADATA_DIR, "video_mp4_subs.json")
+video_options_3 = os.path.join(METADATA_DIR, "video_avc1.json")
+wget_options = os.path.join(METADATA_DIR, "wget_options.json")
 
 pp = PrettyPrinter(indent=2)
 
@@ -231,12 +232,12 @@ class TestDownloader(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        # TestDownloader.test_parse_download_string,
+        TestDownloader.test_parse_download_string,
         # TestDownloader.test_get_downloader_func,
         # TestDownloader.test_get_downloader_args,
-        TestDownloader.test_get_downloader_with_extra_args,
+        # TestDownloader.test_get_downloader_with_extra_args,
         # TestDownloader.test_start_downloads,
-        # TestDownloader.test_from_dict
+        # TestDownloader.test_from_dict,
         # TestDownloader.test_get_extra_args
     ]
     run_test_methods(test_methods)
