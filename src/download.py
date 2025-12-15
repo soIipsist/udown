@@ -333,17 +333,12 @@ def download_action(**args):
     if "filter_keys" in args:
         args.pop("filter_keys")
 
-    if not url:
-        list_downloads(args)
+    if url:
+        download = Download.parse_download_string(**args)
+        if download is not None:
+            downloads.append(download)
     else:
-        pass
-        # download = Download.parse_download_string(
-        #     url, downloader_type, output_directory, output_filename
-        # )
-        # if download is not None:
-        #     downloads.append(download)
-
-    # Downloader.start_downloads(downloads)
+        list_downloads(args)
 
 
 def download_command(subparsers):

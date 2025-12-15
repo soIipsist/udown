@@ -16,41 +16,17 @@ from src.downloader import (
     Downloader,
     default_downloaders,
 )
-from src.download import Download
-
-
-downloader = default_downloaders[0]
-
-video_options_1 = os.path.join(METADATA_DIR, "video_mp4_best.json")
-video_options_2 = os.path.join(METADATA_DIR, "video_mp4_subs.json")
-video_options_3 = os.path.join(METADATA_DIR, "video_avc1.json")
-wget_options = os.path.join(METADATA_DIR, "wget_options.json")
-
-pp = PrettyPrinter(indent=2)
-
-# global vars
-downloader_path = video_options_1
-# downloads_path = "downloads.txt"
-downloader_type = "ytdlp_audio"
-module = "ytdlp"
-func = "download"
-downloader_args = "url, downloader_path, update_options=False"
-output_directory = os.path.join(os.getcwd(), "videos")
-# output_directory = None
-# output_filename = "yolo.jpg"
-output_filename = None
+from src.download import Download, list_downloads
 
 
 class TestDownload(TestBase):
     def setUp(self) -> None:
         super().setUp()
-        if output_directory and os.path.exists(output_directory):
-            shutil.rmtree(output_directory)
 
     def test_list_downloads(self):
-        Download.select_all
+        list_downloads()
 
 
 if __name__ == "__main__":
-    test_methods = []
+    test_methods = [TestDownload.test_list_downloads]
     run_test_methods(test_methods)
