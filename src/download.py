@@ -341,9 +341,9 @@ class Download(SQLiteItem):
         if not downloader:
             raise ValueError("No downloader available for this download.")
 
-        print("FILE", self.output_filename)
-        # results = downloader.start_downloads([self])
-        # return results
+        print("FILE", self.output_filename, self.output_path, self.output_directory)
+        results = downloader.start_downloads([self])
+        return results
 
 
 def list_downloads(args: dict = None):
@@ -401,7 +401,7 @@ def download_command(subparsers):
         type=str,
     )
     download_cmd.add_argument("-f", "--output_filename", default=None, type=str)
-    download_cmd.add_argument("-p", "--output_path", default=None, type=str)
+    download_cmd.add_argument("-op", "--output_path", default=None, type=str)
     download_cmd.add_argument("-sd", "--start_date", default=None, type=str)
     download_cmd.add_argument("-ed", "--end_date", default=None, type=str)
     download_cmd.add_argument("-te", "--time_elapsed", default=None, type=str)
