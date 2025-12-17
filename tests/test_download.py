@@ -41,6 +41,18 @@ class TestDownload(TestBase):
                 output_filename="red.mp4",
                 output_directory=OUTPUT_DIR,
             ),
+            Download(
+                video_urls[2],
+                download_status=DownloadStatus.COMPLETED,
+                output_filename="red.mp4",
+                output_directory=OUTPUT_DIR,
+            ),
+            Download(
+                playlist_urls[0],
+                download_status=DownloadStatus.COMPLETED,
+                output_filename="green.mp4",
+                output_directory=OUTPUT_DIR,
+            ),
         ]
         Download.insert_all(downloads)
         downloads = list_downloads()

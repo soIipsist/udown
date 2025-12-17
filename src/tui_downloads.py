@@ -3,12 +3,42 @@ from textual.widgets import DataTable, Header, Footer
 from textual.containers import Container
 from textual.reactive import reactive
 from textual.widgets import Input
+from textual import events
+from textual.screen import ModalScreen
+from textual.widgets import DataTable, Header, Footer
+
+
+class DownloadDetails(ModalScreen):
+    BINDINGS = [
+        ("escape", "dismiss", "Close"),
+        ("q", "dismiss", "Close"),
+    ]
+
+    def __init__(self, download):
+        super().__init__()
+        self.download = download
+
+    def compose(self):
+        yield Header(show_clock=False)
+        yield DataTable(id="details")
+        yield Footer()
+
+    def on_mount(self):
+        table = self.query_one("#details", DataTable)
+        table.add_columns("Field", "Value")
+
+        for key, value in self.download.as_dict().items():
+            table.add_row(
+                key,
+                "" if value is None else str(value),
+            )
 
 
 class DownloadApp(App):
     def __init__(self, downloads):
         super().__init__()
         self.downloads = downloads
+        self.row_map = {}
 
     CSS = """
     Screen {
@@ -71,6 +101,21 @@ class DownloadApp(App):
     .hidden {
         display: none;
     }
+    
+    DownloadDetails {
+        background: #0f0f14;
+    }
+
+    DownloadDetails DataTable {
+        margin: 2;
+        border: round #7c3aed;
+        background: #11111b;
+    }
+
+    DownloadDetails > Header,
+    DownloadDetails > Footer {
+        background: #16161d;
+    }
     """
 
     BINDINGS = [
@@ -83,7 +128,7 @@ class DownloadApp(App):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Input(placeholder="Search downloads...", id="search", classes="hidden")
-        yield Container(DataTable(id="downloads"))
+        yield DataTable(id="downloads")
         yield Footer()
 
     def on_mount(self):
@@ -95,6 +140,7 @@ class DownloadApp(App):
             "Output",
             "Started",
         )
+        table.focus()
         self.load()
 
     def reload(self, downloads):
@@ -104,8 +150,9 @@ class DownloadApp(App):
     def load(self):
         table = self.query_one("#downloads", DataTable)
         table.clear()
+        self.row_map.clear()
 
-        for d in self.downloads:
+        for idx, d in enumerate(self.downloads):
             table.add_row(
                 d.url,
                 str(d.downloader),
@@ -114,6 +161,7 @@ class DownloadApp(App):
                 d.start_date,
                 key=str(d.url),
             )
+            self.row_map[idx] = d
 
     def action_search(self):
         search = self.query_one("#search", Input)
@@ -133,6 +181,8 @@ class DownloadApp(App):
     def apply_filter(self, query: str):
         table = self.query_one("#downloads", DataTable)
         table.clear()
+        self.row_map.clear()
+        idx = 0
 
         q = query.lower().strip()
 
@@ -157,3 +207,25 @@ class DownloadApp(App):
                     d.start_date,
                     key=str(d.url),
                 )
+                self.row_map[idx] = d
+                idx += 1
+
+    def on_key(self, event: events.Key) -> None:
+        if event.key != "enter":
+            return
+
+        table = self.query_one("#downloads", DataTable)
+
+        if not table.has_focus:
+            return
+
+        row = table.cursor_row
+        if row is None:
+            return
+
+        download = self.row_map.get(row)
+        if not download:
+            return
+
+        self.push_screen(DownloadDetails(download))
+        event.stop()
