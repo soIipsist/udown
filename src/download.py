@@ -16,9 +16,7 @@ from src.options import get_option
 from src.tui_downloads import DownloadApp
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
-    create_db,
     download_values,
-    downloader_values,
 )
 from src.downloader import database_path, pp
 
@@ -265,10 +263,10 @@ class Download(SQLiteItem):
         return os.path.join(output_directory, filename)
 
     def __repr__(self):
-        return f"{self.downloader}, {self.url}"
+        return f"{self.downloader_type}, {self.url}"
 
     def __str__(self):
-        return f"{self.downloader}, {self.url}"
+        return f"{self.downloader_type}, {self.url}"
 
     def insert(self):
         if not self.downloader_type:
@@ -324,6 +322,16 @@ class Download(SQLiteItem):
             output_directory=output_directory,
         )
 
+    def download(self, downloader: Downloader = None):
+        if not downloader:
+            downloader = self.downloader
+
+        if not downloader:
+            raise ValueError("No downloader available for this download.")
+
+        results = Downloader.start_downloads([self])
+        return results
+
 
 def list_downloads(args: dict = None):
     if not args:
@@ -331,12 +339,6 @@ def list_downloads(args: dict = None):
 
     download = Download(**args)
     downloads = download.filter_by()
-
-    logger.info(f"Fetching downloads from file {database_path}.")
-    print(f"Total downloads ({len(downloads)}):")
-
-    for d in downloads:
-        print(d)
 
     return downloads
 

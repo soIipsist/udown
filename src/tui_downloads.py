@@ -38,6 +38,7 @@ class DownloadApp(App):
     def __init__(self, downloads):
         super().__init__()
         self.downloads = downloads
+        self.conn = getattr(self.downloads[0], "conn") if len(downloads) > 0 else None
         self.row_map = {}
 
     CSS = """
@@ -123,6 +124,7 @@ class DownloadApp(App):
         ("r", "refresh", "Refresh"),
         ("/", "search", "Search"),
         ("escape", "clear_search", "Clear search"),
+        ("tab", "focus_next", "Focus next"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -167,6 +169,17 @@ class DownloadApp(App):
         search = self.query_one("#search", Input)
         search.remove_class("hidden")
         search.focus()
+
+    def action_focus_next(self):
+        search = self.query_one("#search", Input)
+        table = self.query_one("#downloads", DataTable)
+
+        if search.has_focus:
+            search.add_class("hidden")
+            table.focus()
+        else:
+            search.remove_class("hidden")
+            search.focus()
 
     def action_clear_search(self):
         search = self.query_one("#search", Input)
@@ -229,3 +242,8 @@ class DownloadApp(App):
 
         self.push_screen(DownloadDetails(download))
         event.stop()
+
+    def on_unmount(self) -> None:
+        if self.conn:
+            self.conn.close()
+            print("Database connection closed.")

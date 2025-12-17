@@ -25,9 +25,6 @@ OUTPUT_DIR = os.getcwd()
 
 class TestDownload(TestBase):
     def setUp(self) -> None:
-        super().setUp()
-
-    def test_list_downloads(self):
         downloads = [
             Download(
                 video_urls[0],
@@ -55,6 +52,9 @@ class TestDownload(TestBase):
             ),
         ]
         Download.insert_all(downloads)
+        super().setUp()
+
+    def test_list_downloads(self):
         downloads = list_downloads()
         print(downloads)
 
@@ -62,10 +62,22 @@ class TestDownload(TestBase):
         downloads = list_downloads()
         DownloadApp(downloads).run()
 
+    def test_download_all(self):
+        downloads = list_downloads()
+        downloads = [downloads[0]]
+
+        for download in downloads:
+            self.assertTrue(isinstance(download, Download))
+            download: Download
+            results = download.download()
+
+            print(results)
+
 
 if __name__ == "__main__":
     test_methods = [
         # TestDownload.test_list_downloads,
-        TestDownload.test_downloads_table
+        # TestDownload.test_downloads_table
+        TestDownload.test_download_all
     ]
     run_test_methods(test_methods)

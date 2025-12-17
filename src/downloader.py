@@ -83,7 +83,7 @@ class Downloader(SQLiteItem):
 
     @downloader_type.setter
     def downloader_type(self, downloader_type):
-        self._downloader_type = downloader_type or None
+        self._downloader_type = downloader_type
 
     @property
     def downloader_path(self):
@@ -199,7 +199,6 @@ class Downloader(SQLiteItem):
             try:
                 if not downloader:
                     raise ValueError(f"Downloader not found at index {idx}!")
-
                 func = downloader.get_function()
                 downloader_args = downloader.get_downloader_args(download, func)
                 logger.info(f"Downloader args: \n{downloader_args}")
@@ -253,52 +252,56 @@ default_downloaders = [
     Downloader(
         "ytdlp",
         None,
-        "ytdlp",
+        "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_video",
         os.path.join(DOWNLOADER_DIRECTORY, "video_mp4_best.json"),
-        "ytdlp",
+        "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_video_subs",
         os.path.join(DOWNLOADER_DIRECTORY, "video_mp4_subs.json"),
-        "ytdlp",
+        "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_video_avc1",
         os.path.join(DOWNLOADER_DIRECTORY, "video_avc1.json"),
-        "ytdlp",
+        "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_audio",
         os.path.join(DOWNLOADER_DIRECTORY, "audio_mp3_best.json"),
-        "ytdlp",
+        "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "wget",
         None,
-        "wget",
+        "downloaders.wget",
         "download",
         "url, output_directory",
     ),
     Downloader(
-        "urllib", None, "url_lib", "download", "url, output_directory, output_filename"
+        "urllib",
+        None,
+        "downloaders.url_lib",
+        "download",
+        "url, output_directory, output_filename",
     ),
     Downloader(
         "ytdlp_channel",
         None,
-        "ytdlp_channel",
+        "downloaders.ytdlp_channel",
         "download",
         "url",
     ),
@@ -346,7 +349,6 @@ def downloader_action(
         logger.info(f"Fetching downloaders from file {database_path}.")
 
         if downloader_type:
-            print("yo", downloader_type)
 
             downloaders = d.filter_by(
                 ["downloader_type", "downloader_path", "module", "func"]
