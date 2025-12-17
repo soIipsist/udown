@@ -54,8 +54,12 @@ class Download(SQLiteItem):
         downloader_type=None,
         download_status: DownloadStatus = DownloadStatus.STARTED,
         start_date: str = None,
+        end_date: str = None,
+        time_elapsed: str = None,
         output_directory: Optional[str] = None,
         output_filename: Optional[str] = None,
+        output_path: Optional[str] = None,
+        source_url: Optional[str] = None,
         proxy: Optional[str] = None,
         extra_args: Optional[str] = None,
     ):
@@ -66,6 +70,8 @@ class Download(SQLiteItem):
             "start_date",
             "end_date",
             "time_elapsed",
+            "output_directory",
+            "output_filename",
             "output_path",
             "source_url",
             "proxy",
@@ -75,9 +81,13 @@ class Download(SQLiteItem):
         self.url = url
         self.downloader_type = downloader_type
         self.download_status = download_status
+        self.start_date = start_date
+        self.end_date = end_date
+        self.time_elapsed = time_elapsed
         self.output_directory = output_directory
         self.output_filename = output_filename
-        self.start_date = start_date
+        self.output_path = output_path
+        self.source_url = source_url
         self.proxy = proxy
         self.extra_args = extra_args
 
@@ -160,14 +170,11 @@ class Download(SQLiteItem):
 
     @property
     def output_path(self):
-
-        if not self._output_path:
-            self._output_path = self.get_output_path()
         return self._output_path
 
     @output_path.setter
     def output_path(self, output_path: str):
-        self._output_path = output_path
+        self._output_path = self.get_output_path(output_path)
 
     @property
     def start_date(self):
@@ -244,7 +251,12 @@ class Download(SQLiteItem):
         filter_condition = f"url = {self.url} AND downloader = {self.downloader.downloader_type} AND output_path = {self.output_path}"
         self.update(filter_condition)
 
-    def get_output_path(self):
+    def get_output_path(self, output_path: str = None):
+        if output_path:
+            self.output_filename = os.path.basename(output_path)
+            self.output_directory = os.path.dirname(output_path)
+            return output_path
+
         filename = (
             self.output_filename
             if self.output_filename
@@ -329,8 +341,9 @@ class Download(SQLiteItem):
         if not downloader:
             raise ValueError("No downloader available for this download.")
 
-        results = Downloader.start_downloads([self])
-        return results
+        print("FILE", self.output_filename)
+        # results = downloader.start_downloads([self])
+        # return results
 
 
 def list_downloads(args: dict = None):
@@ -387,11 +400,16 @@ def download_command(subparsers):
         default=get_option("DOWNLOAD_DIRECTORY"),
         type=str,
     )
+    download_cmd.add_argument("-f", "--output_filename", default=None, type=str)
+    download_cmd.add_argument("-p", "--output_path", default=None, type=str)
+    download_cmd.add_argument("-sd", "--start_date", default=None, type=str)
+    download_cmd.add_argument("-ed", "--end_date", default=None, type=str)
+    download_cmd.add_argument("-te", "--time_elapsed", default=None, type=str)
+
     download_cmd.add_argument(
         "-k", "--filter_keys", type=str, default=get_option("DOWNLOAD_KEYS")
     )
     download_cmd.add_argument(
         "-p", "--proxy", default=get_option("DOWNLOAD_PROXY"), type=str
     )
-    download_cmd.add_argument("-f", "--output_filename", default=None, type=str)
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)

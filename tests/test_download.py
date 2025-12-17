@@ -18,7 +18,7 @@ from src.downloader import (
     default_downloaders,
 )
 from src.download import Download, list_downloads, DownloadStatus
-from tests.test_downloader import playlist_urls, video_urls
+from tests.test_downloader import playlist_urls, video_urls, wget_urls, urllib_urls
 
 OUTPUT_DIR = os.getcwd()
 
@@ -28,26 +28,26 @@ class TestDownload(TestBase):
         downloads = [
             Download(
                 video_urls[0],
-                download_status=DownloadStatus.STARTED,
                 output_filename="red.mp4",
                 output_directory=OUTPUT_DIR,
             ),
             Download(
                 video_urls[1],
-                download_status=DownloadStatus.COMPLETED,
                 output_filename="red.mp4",
                 output_directory=OUTPUT_DIR,
             ),
             Download(
                 video_urls[2],
-                download_status=DownloadStatus.COMPLETED,
                 output_filename="red.mp4",
                 output_directory=OUTPUT_DIR,
             ),
             Download(
                 playlist_urls[0],
-                download_status=DownloadStatus.COMPLETED,
-                output_filename="green.mp4",
+                output_filename=None,
+                output_directory=OUTPUT_DIR,
+            ),
+            Download(
+                wget_urls[0],
                 output_directory=OUTPUT_DIR,
             ),
         ]
@@ -77,7 +77,7 @@ class TestDownload(TestBase):
 if __name__ == "__main__":
     test_methods = [
         # TestDownload.test_list_downloads,
-        # TestDownload.test_downloads_table
-        TestDownload.test_download_all
+        TestDownload.test_downloads_table
+        # TestDownload.test_download_all
     ]
     run_test_methods(test_methods)

@@ -8,6 +8,8 @@ download_values = [
     "start_date DATE",
     "end_date DATE",
     "time_elapsed text",
+    "output_directory text",
+    "output_filename text",
     "output_path text",
     "source_url text",
     "proxy text",
