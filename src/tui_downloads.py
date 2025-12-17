@@ -2,6 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Header, Footer
 from textual.containers import Container
 from textual.reactive import reactive
+from textual.widgets import Input
 
 
 class DownloadApp(App):
@@ -58,22 +59,36 @@ class DownloadApp(App):
         background: #5b21b6;
         color: #ffffff;
     }
+    
+    Input#search {
+        dock: top;
+        margin: 1 2;
+        background: #181825;
+        color: #cdd6f4;
+        border: round #7c3aed;
+    }
+
+    .hidden {
+        display: none;
+    }
     """
 
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("r", "refresh", "Refresh"),
+        ("/", "search", "Search"),
+        ("escape", "clear_search", "Clear search"),
     ]
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield DataTable(id="downloads")
+        yield Input(placeholder="Search downloads...", id="search", classes="hidden")
+        yield Container(DataTable(id="downloads"))
         yield Footer()
 
     def on_mount(self):
         table = self.query_one(DataTable)
         table.add_columns(
-            "ID",
             "URL",
             "Downloader",
             "Status",
@@ -92,11 +107,53 @@ class DownloadApp(App):
 
         for d in self.downloads:
             table.add_row(
-                str(d.id),
                 d.url,
                 str(d.downloader),
                 d.download_status,
                 d.output_path or "",
                 d.start_date,
-                key=str(d.id),
+                key=str(d.url),
             )
+
+    def action_search(self):
+        search = self.query_one("#search", Input)
+        search.remove_class("hidden")
+        search.focus()
+
+    def action_clear_search(self):
+        search = self.query_one("#search", Input)
+        search.value = ""
+        search.add_class("hidden")
+        self.apply_filter("")
+
+    def on_input_changed(self, event: Input.Changed):
+        if event.input.id == "search":
+            self.apply_filter(event.value)
+
+    def apply_filter(self, query: str):
+        table = self.query_one("#downloads", DataTable)
+        table.clear()
+
+        q = query.lower().strip()
+
+        for d in self.downloads:
+            haystack = " ".join(
+                str(x).lower()
+                for x in (
+                    d.url,
+                    d.downloader,
+                    d.download_status,
+                    d.output_path,
+                )
+                if x
+            )
+
+            if q in haystack:
+                table.add_row(
+                    d.url,
+                    str(d.downloader),
+                    d.download_status,
+                    d.output_path or "",
+                    d.start_date,
+                    key=str(d.url),
+                )

@@ -4,6 +4,7 @@ import os
 import shlex
 import shutil
 from src.options import METADATA_DIR
+from src.tui_downloads import DownloadApp
 from test_base import *
 
 current_file = Path(__file__).resolve()
@@ -45,7 +46,14 @@ class TestDownload(TestBase):
         downloads = list_downloads()
         print(downloads)
 
+    def test_downloads_table(self):
+        downloads = list_downloads()
+        DownloadApp(downloads).run()
+
 
 if __name__ == "__main__":
-    test_methods = [TestDownload.test_list_downloads]
+    test_methods = [
+        # TestDownload.test_list_downloads,
+        TestDownload.test_downloads_table
+    ]
     run_test_methods(test_methods)
