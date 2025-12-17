@@ -13,6 +13,7 @@ from src.downloader import (
     get_downloader_names,
 )
 from src.options import get_option
+from src.tui_downloads import DownloadApp
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     create_db,
@@ -29,7 +30,8 @@ class DownloadStatus(str, Enum):
 
 
 class Download(SQLiteItem):
-    _downloader = None
+    _downloader: Downloader = None
+    _downloader_type: str = None
     _download_status = DownloadStatus.STARTED
     _start_date = str(datetime.now())
     _end_date = None
@@ -61,7 +63,7 @@ class Download(SQLiteItem):
     ):
         column_names = [
             "url",
-            "downloader",
+            "downloader_type",
             "download_status",
             "start_date",
             "end_date",
@@ -73,7 +75,7 @@ class Download(SQLiteItem):
         ]
         super().__init__(download_values, column_names, db_path=database_path)
         self.url = url
-        self.downloader = downloader_type
+        self.downloader_type = downloader_type
         self.download_status = download_status
         self.output_directory = output_directory
         self.output_filename = output_filename
@@ -204,10 +206,17 @@ class Download(SQLiteItem):
         self._url = url
 
     @property
+    def downloader_type(self):
+        return self._downloader_type
+
+    @downloader_type.setter
+    def downloader_type(self, downloader_type: str):
+        self._downloader_type = downloader_type
+
+    @property
     def downloader(self):
-        if isinstance(self._downloader, str):
-            return Downloader(downloader_type=self._downloader).select_first()
-        return self._downloader
+        if isinstance(self._downloader_type, str):
+            return Downloader(downloader_type=self._downloader_type).select_first()
 
     @downloader.setter
     def downloader(self, downloader):
@@ -261,6 +270,11 @@ class Download(SQLiteItem):
     def __str__(self):
         return f"{self.downloader}, {self.url}"
 
+    def insert(self):
+        if not self.downloader_type:
+            self.downloader_type = "ytdlp_video"
+        return super().insert()
+
     @classmethod
     def parse_download_string(
         cls,
@@ -311,7 +325,10 @@ class Download(SQLiteItem):
         )
 
 
-def list_downloads(args):
+def list_downloads(args: dict = None):
+    if not args:
+        args = {}
+
     download = Download(**args)
     downloads = download.filter_by()
 
@@ -338,7 +355,8 @@ def download_action(**args):
         if download is not None:
             downloads.append(download)
     else:
-        list_downloads(args)
+        downloads = list_downloads(args)
+        DownloadApp(downloads).run()
 
 
 def download_command(subparsers):

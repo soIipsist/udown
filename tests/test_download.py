@@ -16,7 +16,10 @@ from src.downloader import (
     Downloader,
     default_downloaders,
 )
-from src.download import Download, list_downloads
+from src.download import Download, list_downloads, DownloadStatus
+from tests.test_downloader import playlist_urls, video_urls
+
+OUTPUT_DIR = os.getcwd()
 
 
 class TestDownload(TestBase):
@@ -24,7 +27,23 @@ class TestDownload(TestBase):
         super().setUp()
 
     def test_list_downloads(self):
-        list_downloads()
+        downloads = [
+            Download(
+                video_urls[0],
+                download_status=DownloadStatus.STARTED,
+                output_filename="red.mp4",
+                output_directory=OUTPUT_DIR,
+            ),
+            Download(
+                video_urls[1],
+                download_status=DownloadStatus.COMPLETED,
+                output_filename="red.mp4",
+                output_directory=OUTPUT_DIR,
+            ),
+        ]
+        Download.insert_all(downloads)
+        downloads = list_downloads()
+        print(downloads)
 
 
 if __name__ == "__main__":

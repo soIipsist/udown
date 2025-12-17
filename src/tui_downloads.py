@@ -3,8 +3,6 @@ from textual.widgets import DataTable, Header, Footer
 from textual.containers import Container
 from textual.reactive import reactive
 
-from src.download import Download
-
 
 class DownloadApp(App):
     def __init__(self, downloads):
@@ -12,8 +10,53 @@ class DownloadApp(App):
         self.downloads = downloads
 
     CSS = """
+    Screen {
+        background: #0f0f14;
+    }
+
+    Header {
+        background: #16161d;
+        color: #cdd6f4;
+    }
+
+    Footer {
+        background: #16161d;
+        color: #a6adc8;
+    }
+
+    Container {
+        padding: 1;
+    }
+
     DataTable {
-        height: 1fr;
+        background: transparent;
+        color: #cdd6f4;
+        border: round #313244;
+    }
+
+    DataTable > .datatable--header {
+        background: #181825;
+        color: #bac2de;
+        text-style: bold;
+    }
+
+    DataTable > .datatable--odd-row {
+        background: #0f0f14;
+    }
+
+    DataTable > .datatable--even-row {
+        background: #11111b;
+    }
+
+    DataTable > .datatable--cursor {
+        background: #7c3aed;      /* PURPLE */
+        color: #ffffff;
+        text-style: bold;
+    }
+
+    DataTable > .datatable--hover {
+        background: #5b21b6;
+        color: #ffffff;
     }
     """
 
@@ -24,7 +67,7 @@ class DownloadApp(App):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Container(DataTable(id="downloads"))
+        yield DataTable(id="downloads")
         yield Footer()
 
     def on_mount(self):
@@ -37,6 +80,10 @@ class DownloadApp(App):
             "Output",
             "Started",
         )
+        self.load()
+
+    def reload(self, downloads):
+        self.downloads = downloads
         self.load()
 
     def load(self):

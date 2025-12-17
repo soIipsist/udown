@@ -3,7 +3,7 @@ from utils.sqlite import create_connection, create_table
 
 download_values = [
     "url text NOT NULL",
-    "downloader text NOT NULL",
+    "downloader_type text NOT NULL",
     "download_status text NOT NULL",
     "start_date DATE",
     "end_date DATE",
