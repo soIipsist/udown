@@ -218,17 +218,19 @@ class Downloader(SQLiteItem):
                     error_message = result.get("error")
                     entry_filename = result.get("entry_filename")
 
-                    if entry_filename:
-                        download.output_filename = entry_filename
-
                     downloader_type = download.downloader_type
                     output_directory = download.output_directory
+                    output_filename = (
+                        download.output_filename
+                        if download.output_filename
+                        else entry_filename
+                    )
 
                     child_download = Download(
                         entry_url,
                         downloader_type,
                         output_directory=output_directory,
-                        output_filename=entry_filename,
+                        output_filename=output_filename,
                     )
 
                     filter_condition = (

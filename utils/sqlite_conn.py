@@ -14,7 +14,7 @@ download_values = [
     "source_url text",
     "proxy text",
     "extra_args text",
-    "PRIMARY KEY (url, output_path)",
+    "PRIMARY KEY (url, downloader_type, output_path)",
 ]
 
 downloader_values = [

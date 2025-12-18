@@ -48,6 +48,12 @@ class TestDownload(TestBase):
             ),
             Download(
                 wget_urls[0],
+                downloader_type="wget",
+                output_directory=OUTPUT_DIR,
+            ),
+            Download(
+                urllib_urls[0],
+                downloader_type="urllib",
                 output_directory=OUTPUT_DIR,
             ),
         ]
@@ -64,7 +70,11 @@ class TestDownload(TestBase):
 
     def test_download_all(self):
         downloads = list_downloads()
-        downloads = [downloads[0]]
+        video_downloads = [downloads[0]]
+        wget_downloads = [Download(wget_urls[0], downloader_type="wget")]
+        urllib_downloads = [Download(urllib_urls[0], downloader_type="urllib")]
+        playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
+        downloads = playlist_downloads
 
         for download in downloads:
             self.assertTrue(isinstance(download, Download))
@@ -75,7 +85,7 @@ class TestDownload(TestBase):
 if __name__ == "__main__":
     test_methods = [
         # TestDownload.test_list_downloads,
-        TestDownload.test_downloads_table
-        # TestDownload.test_download_all
+        # TestDownload.test_downloads_table
+        TestDownload.test_download_all
     ]
     run_test_methods(test_methods)
