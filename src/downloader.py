@@ -221,14 +221,22 @@ class Downloader(SQLiteItem):
                     if entry_filename:
                         download.output_filename = entry_filename
 
+                    downloader_type = download.downloader_type
+                    output_directory = download.output_directory
+
                     child_download = Download(
                         entry_url,
-                        download.downloader,
-                        output_directory=download.output_directory,
-                        output_filename=download.output_filename,
+                        downloader_type,
+                        output_directory=output_directory,
+                        output_filename=entry_filename,
                     )
 
-                    child_download.insert()
+                    filter_condition = (
+                        f"url = {child_download.url} AND "
+                        f"downloader_type = {child_download.downloader_type} AND "
+                        f"output_path = {child_download.output_path}"
+                    )
+                    child_download.upsert(filter_condition)
 
                     if status_code == 1:
                         child_download.set_download_status_query(

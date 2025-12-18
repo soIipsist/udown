@@ -71,13 +71,11 @@ class TestDownload(TestBase):
             download: Download
             results = download.download()
 
-            print(results)
-
 
 if __name__ == "__main__":
     test_methods = [
         # TestDownload.test_list_downloads,
-        # TestDownload.test_downloads_table
-        TestDownload.test_download_all
+        TestDownload.test_downloads_table
+        # TestDownload.test_download_all
     ]
     run_test_methods(test_methods)

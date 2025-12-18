@@ -248,29 +248,30 @@ class Download(SQLiteItem):
                 f"An unexpected error has occured: {error_message}! \n{pp.pformat(data)} "
             )
 
-        filter_condition = f"url = {self.url} AND downloader = {self.downloader.downloader_type} AND output_path = {self.output_path}"
+        filter_condition = f"url = {self.url} AND downloader_type = {self.downloader.downloader_type} AND output_path = {self.output_path}"
         self.update(filter_condition)
 
-    def get_output_path(self, output_path: str = None):
+    def get_output_path(self, output_path: str | bytes = None):
+        def to_str(val):
+            if isinstance(val, bytes):
+                return val.decode("utf-8", errors="replace")
+            return val
+
         if output_path:
-            self.output_filename = os.path.basename(output_path)
-            self.output_directory = os.path.dirname(output_path)
-            return output_path
+            return to_str(output_path)
 
-        filename = (
-            self.output_filename
-            if self.output_filename
-            else os.path.basename(urlparse(self.url).path)
-        )
+        filename = self._output_filename
+        if not filename:
+            parsed = urlparse(to_str(self.url))
+            filename = os.path.basename(parsed.path)
 
-        # Decode if bytes (just in case)
-        if isinstance(filename, bytes):
-            filename = filename.decode("utf-8")
+        filename = to_str(filename)
 
-        if isinstance(self.output_directory, bytes):
-            output_directory = self.output_directory.decode("utf-8")
-        else:
-            output_directory = self.output_directory
+        output_directory = self._output_directory
+        if not output_directory:
+            output_directory = os.getcwd()
+
+        output_directory = to_str(output_directory)
 
         return os.path.join(output_directory, filename)
 
@@ -341,7 +342,6 @@ class Download(SQLiteItem):
         if not downloader:
             raise ValueError("No downloader available for this download.")
 
-        print("FILE", self.output_filename, self.output_path, self.output_directory)
         results = downloader.start_downloads([self])
         return results
 
