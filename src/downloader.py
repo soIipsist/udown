@@ -212,11 +212,16 @@ class Downloader(SQLiteItem):
                 else:
                     result_iter = [result_iter]
 
+                is_playlist = False
+
                 for result in result_iter:
+                    source_url = None
                     entry_url = result.get("entry_url", download.url)
                     status_code = result.get("status", 1)
                     error_message = result.get("error")
                     entry_filename = result.get("entry_filename")
+                    original_url = result.get("original_url")
+                    # progress = result.get("progress")
 
                     downloader_type = download.downloader_type
                     output_directory = download.output_directory
@@ -226,11 +231,16 @@ class Downloader(SQLiteItem):
                         else entry_filename
                     )
 
+                    if result.get("is_playlist") is True:
+                        is_playlist = True
+                        source_url = original_url
+
                     child_download = Download(
                         entry_url,
                         downloader_type,
                         output_directory=output_directory,
                         output_filename=output_filename,
+                        source_url=source_url,
                     )
 
                     filter_condition = (
@@ -254,6 +264,9 @@ class Downloader(SQLiteItem):
             except Exception as e:
                 print("Exception: ", e)
                 continue
+
+        if is_playlist:
+            download.set_download_status_query(DownloadStatus.COMPLETED)
 
         return download_results
 

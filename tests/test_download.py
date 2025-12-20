@@ -1,9 +1,6 @@
 import inspect
 from pathlib import Path
 import os
-import shlex
-import shutil
-from src.options import METADATA_DIR
 from src.tui_downloads import DownloadApp
 from test_base import *
 
@@ -11,20 +8,41 @@ current_file = Path(__file__).resolve()
 parent_directory = current_file.parents[2]
 os.sys.path.insert(0, str(parent_directory))
 
-from downloaders.ytdlp import download as ytdlp_download
-from downloaders.ytdlp_channel import download as ytdlp_download_channel
 from src.downloader import (
     Downloader,
     default_downloaders,
 )
 from src.download import Download, list_downloads, DownloadStatus
 from tests.test_downloader import playlist_urls, video_urls, wget_urls, urllib_urls
+from utils.sqlite import delete_items, create_connection, close_connection
+from src.downloader import database_path
 
+conn = create_connection(database_path)
 OUTPUT_DIR = os.getcwd()
+
+
+def remove_files(
+    output_dir: str = OUTPUT_DIR,
+    extension: str = ".py",
+    excluded_extensions: list = [".txt"],
+):
+    for root, _, files in os.walk(output_dir):
+        for filename in files:
+            if filename.endswith(extension):
+                continue
+
+            if excluded_extensions and filename.endswith(tuple(excluded_extensions)):
+                continue
+
+            file_path = os.path.join(root, filename)
+            os.remove(file_path)
 
 
 class TestDownload(TestBase):
     def setUp(self) -> None:
+        delete_items(conn, "downloads", None)
+        remove_files(excluded_extensions=None)
+
         downloads = [
             Download(
                 video_urls[0],
@@ -81,11 +99,15 @@ class TestDownload(TestBase):
             download: Download
             results = download.download()
 
+    def tearDown(self):
+        close_connection(conn)
+        return super().tearDown()
+
 
 if __name__ == "__main__":
     test_methods = [
-        # TestDownload.test_list_downloads,
+        TestDownload.test_list_downloads,
         # TestDownload.test_downloads_table
-        TestDownload.test_download_all
+        # TestDownload.test_download_all
     ]
     run_test_methods(test_methods)
