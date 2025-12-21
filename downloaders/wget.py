@@ -1,8 +1,9 @@
 import argparse
+import os
 import subprocess
 
 
-def download(urls: list, output_directory: str = None):
+def download(urls: list, output_directory: str = None, output_filename: str = None):
     results = []
 
     if isinstance(urls, str):
@@ -14,26 +15,43 @@ def download(urls: list, output_directory: str = None):
         try:
             print("Downloading with wget...")
 
-            cmd = (
-                ["wget", "-P", output_directory, url]
-                if output_directory
-                else ["wget", url]
+            if output_filename:
+                if output_directory:
+                    os.makedirs(output_directory, exist_ok=True)
+                    output_path = os.path.join(output_directory, output_filename)
+                else:
+                    output_path = output_filename
+
+                cmd = ["wget", "-O", output_path, url]
+
+            else:
+                if output_directory:
+                    os.makedirs(output_directory, exist_ok=True)
+                    cmd = ["wget", "-P", output_directory, url]
+                else:
+                    cmd = ["wget", url]
+
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                check=True,
             )
 
-            proc = subprocess.run(cmd, capture_output=True, text=True, check=True)
             result["stdout"] = proc.stdout
             result["stderr"] = proc.stderr
+
         except KeyboardInterrupt as e:
-            print("User interrupted the download.")
             result["status"] = 1
             result["error"] = str(e)
+
         except subprocess.CalledProcessError as e:
             result["status"] = 1
-            result["error"] = str(e)
+            result["error"] = e.stderr or str(e)
+
         except Exception as e:
             result["status"] = 1
             result["error"] = f"Unexpected: {e}"
-            print("Exception", e)
 
         results.append(result)
 
