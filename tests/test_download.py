@@ -13,7 +13,13 @@ from src.downloader import (
     default_downloaders,
 )
 from src.download import Download, list_downloads, DownloadStatus
-from tests.test_downloader import playlist_urls, video_urls, wget_urls, urllib_urls
+from tests.test_downloader import (
+    playlist_urls,
+    video_urls,
+    wget_urls,
+    urllib_urls,
+    channel_urls,
+)
 from utils.sqlite import delete_items, create_connection, close_connection
 from src.downloader import database_path
 
@@ -41,7 +47,7 @@ def remove_files(
 class TestDownload(TestBase):
     def setUp(self) -> None:
         delete_items(conn, "downloads", None)
-        remove_files(excluded_extensions=None)
+        remove_files()
 
         downloads = [
             Download(
@@ -51,12 +57,8 @@ class TestDownload(TestBase):
             ),
             Download(
                 video_urls[1],
-                output_filename="red.mp4",
-                output_directory=OUTPUT_DIR,
-            ),
-            Download(
-                video_urls[2],
-                output_filename="red.mp4",
+                downloader_type="ytdlp_audio",
+                output_filename="blue.mp4",
                 output_directory=OUTPUT_DIR,
             ),
             Download(
@@ -65,13 +67,18 @@ class TestDownload(TestBase):
                 output_directory=OUTPUT_DIR,
             ),
             Download(
-                wget_urls[0],
+                wget_urls[1],
                 downloader_type="wget",
                 output_directory=OUTPUT_DIR,
             ),
             Download(
-                urllib_urls[0],
+                urllib_urls[1],
                 downloader_type="urllib",
+                output_directory=OUTPUT_DIR,
+            ),
+            Download(
+                channel_urls[0],
+                downloader_type="ytdlp_channel",
                 output_directory=OUTPUT_DIR,
             ),
         ]
@@ -88,11 +95,11 @@ class TestDownload(TestBase):
 
     def test_download_all(self):
         downloads = list_downloads()
-        video_downloads = [downloads[0]]
-        wget_downloads = [Download(wget_urls[0], downloader_type="wget")]
+        video_downloads = [downloads[0], downloads[1]]
+        wget_downloads = [Download(wget_urls[1], downloader_type="wget")]
         urllib_downloads = [Download(urllib_urls[0], downloader_type="urllib")]
         playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
-        downloads = playlist_downloads
+        downloads = video_downloads
 
         for download in downloads:
             self.assertTrue(isinstance(download, Download))
@@ -106,8 +113,8 @@ class TestDownload(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        TestDownload.test_list_downloads,
+        # TestDownload.test_list_downloads,
         # TestDownload.test_downloads_table
-        # TestDownload.test_download_all
+        TestDownload.test_download_all
     ]
     run_test_methods(test_methods)

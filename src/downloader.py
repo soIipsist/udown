@@ -216,11 +216,10 @@ class Downloader(SQLiteItem):
 
                 for result in result_iter:
                     source_url = None
-                    entry_url = result.get("entry_url", download.url)
+                    url = result.get("url", download.url)
                     status_code = result.get("status", 1)
                     error_message = result.get("error")
-                    entry_filename = result.get("entry_filename")
-                    original_url = result.get("original_url")
+                    source_url = result.get("source_url")
                     # progress = result.get("progress")
 
                     downloader_type = download.downloader_type
@@ -228,15 +227,15 @@ class Downloader(SQLiteItem):
                     output_filename = (
                         download.output_filename
                         if download.output_filename
-                        else entry_filename
+                        else result.get("output_filename")
                     )
 
                     if result.get("is_playlist") is True:
                         is_playlist = True
-                        source_url = original_url
+                        source_url = source_url
 
                     child_download = Download(
-                        entry_url,
+                        url,
                         downloader_type,
                         output_directory=output_directory,
                         output_filename=output_filename,
@@ -250,7 +249,7 @@ class Downloader(SQLiteItem):
                     )
                     child_download.upsert(filter_condition)
 
-                    if status_code == 1:
+                    if status_code == 1 or error_message is not None:
                         child_download.set_download_status_query(
                             DownloadStatus.INTERRUPTED, error_message
                         )

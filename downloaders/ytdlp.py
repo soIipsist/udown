@@ -225,12 +225,12 @@ def get_options(
     return options
 
 
-def get_entry_url(original_url: str, entry: dict, is_playlist: bool) -> str:
+def get_entry_url(source_url: str, entry: dict, is_playlist: bool) -> str:
 
     url = entry.get("webpage_url")
 
     if not is_playlist:
-        return original_url
+        return source_url
 
     if url:
         return url
@@ -238,7 +238,7 @@ def get_entry_url(original_url: str, entry: dict, is_playlist: bool) -> str:
     id = entry.get("id")
     if not id:
         return None
-    parsed = urlparse(original_url)
+    parsed = urlparse(source_url)
     hostname = parsed.hostname or ""
 
     if "youtube" in hostname or "youtu.be" in hostname:
@@ -342,10 +342,10 @@ def download(
                     entry_url = None
 
                     result = {
-                        "original_url": url,
-                        "entry_index": idx,
+                        "url": entry_url,
+                        "source_url": url,
+                        "index": idx,
                         "is_playlist": is_playlist,
-                        "entry_url": entry_url,
                         "status": 1,
                     }
 
@@ -364,8 +364,8 @@ def download(
                         yield result
                         continue
 
-                    result["entry_url"] = entry_url
-                    result["entry_filename"] = entry_filename
+                    result["url"] = entry_url
+                    result["output_filename"] = entry_filename
                     print(f"Downloading: {entry.get('title', entry_url)}")
                     status = ytdl.download([entry_url])
 
@@ -384,7 +384,7 @@ def download(
         except KeyboardInterrupt as e:
             print("User interrupted the download.")
             result = {
-                "original_url": url,
+                "source_url": url,
                 "status": 1,
                 "error": str(e),
                 "is_playlist": is_playlist,
@@ -394,7 +394,7 @@ def download(
         except yt_dlp.utils.DownloadError as e:
             print(f"Download error: {e}")
             result = {
-                "original_url": url,
+                "source_url": url,
                 "status": 1,
                 "error": str(e),
                 "is_playlist": is_playlist,
@@ -404,7 +404,7 @@ def download(
         except SystemExit as e:
             print(f"SystemExit: {e} — continuing...")
             result = {
-                "original_url": url,
+                "source_url": url,
                 "status": 1,
                 "error": f"SystemExit: {e}",
                 "is_playlist": is_playlist,
@@ -414,7 +414,7 @@ def download(
         except Exception as e:
             print(f"Unexpected error: {e}")
             result = {
-                "original_url": url,
+                "source_url": url,
                 "status": 1,
                 "error": f"Unexpected error: {e}",
                 "is_playlist": is_playlist,

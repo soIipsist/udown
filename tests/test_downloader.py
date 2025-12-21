@@ -29,7 +29,6 @@ playlist_urls = [
 ]
 
 video_urls = [
-    "https://www.youtube.com/watch?v=j17yEgxPwkk",
     "https://youtu.be/j17yEgxPwkk?si=mV_z1hW6oZRkvzvh",
     "https://youtu.be/tPEE9ZwTmy0?si=CvPXvCucN4ST-fcN",
 ]
@@ -41,6 +40,10 @@ wget_urls = [
 urllib_urls = [
     "https://upload.wikimedia.org/wikipedia/commons/9/98/Elegant_Background-10.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/e/ea/Elegant_Background-13.jpg",
+]
+
+channel_urls = [
+    "https://www.youtube.com/playlist?list=PL4-sEuX-6HJV8C2TTbgguSByrLXKB_0WY"
 ]
 
 downloader = default_downloaders[0]
