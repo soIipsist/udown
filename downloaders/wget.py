@@ -40,51 +40,38 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
 
         proc = subprocess.Popen(
             cmd,
-            stderr=subprocess.PIPE,
-            stdout=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
         )
 
         try:
-            for line in proc.stderr:
+            for line in proc.stdout:
                 line = line.strip()
-
                 match = PROGRESS_RE.search(line)
                 if match:
                     percent = match.group(1)
-                    yield {
-                        "url": url,
-                        "status": 0,
-                        "progress": f"{percent}%",
-                    }
+                    yield {"url": url, "status": 0, "progress": f"{percent}%"}
 
             proc.wait()
 
             if proc.returncode == 0:
-                yield {
-                    "url": url,
-                    "status": 0,
-                    "progress": "100",
-                }
+                yield {"url": url, "status": 0, "progress": "100%"}
             else:
-                yield {
-                    "url": url,
-                    "status": 1,
-                    "error": "wget failed",
-                }
+                yield {"url": url, "status": 1, "error": "wget failed"}
 
         except KeyboardInterrupt:
             proc.terminate()
-            yield {
-                "url": url,
-                "status": 1,
-                "error": "Interrupted",
-            }
+            proc.wait()
+            yield {"url": url, "status": 1, "error": "Interrupted"}
 
         finally:
-            if proc.stderr:
-                proc.stderr.close()
+            if proc.stdout:
+                proc.stdout.close()
+            if proc.poll() is None:
+                proc.terminate()
+                proc.wait()
 
 
 if __name__ == "__main__":

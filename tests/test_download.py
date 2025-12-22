@@ -97,9 +97,7 @@ class TestDownload(TestBase):
     def test_download_all(self):
         downloads = list_downloads()
         video_downloads = [downloads[0], downloads[1]]
-        wget_downloads = [
-            Download(wget_urls[1], downloader_type="wget", output_filename="red.png")
-        ]
+        wget_downloads = [Download(wget_urls[2], downloader_type="wget")]
         urllib_downloads = [Download(urllib_urls[0], downloader_type="urllib")]
         playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
         downloads = wget_downloads

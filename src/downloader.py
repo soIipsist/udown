@@ -250,7 +250,7 @@ class Downloader(SQLiteItem):
 
                     if progress is not None:
                         child_download.progress = progress
-                        continue
+                        print("PROG", progress)
 
                     child_download.upsert(filter_condition)
 

@@ -35,6 +35,7 @@ video_urls = [
 wget_urls = [
     "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/e/ea/Elegant_Background-13.jpg",
+    "https://ash-speed.hetzner.com/100MB.bin",
 ]
 
 urllib_urls = [
