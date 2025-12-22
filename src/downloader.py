@@ -220,7 +220,7 @@ class Downloader(SQLiteItem):
                     status_code = result.get("status", 1)
                     error_message = result.get("error")
                     source_url = result.get("source_url")
-                    # progress = result.get("progress")
+                    progress = result.get("progress")
 
                     downloader_type = download.downloader_type
                     output_directory = download.output_directory
@@ -247,6 +247,11 @@ class Downloader(SQLiteItem):
                         f"downloader_type = {child_download.downloader_type} AND "
                         f"output_path = {child_download.output_path}"
                     )
+
+                    if progress is not None:
+                        child_download.progress = progress
+                        continue
+
                     child_download.upsert(filter_condition)
 
                     if status_code == 1 or error_message is not None:

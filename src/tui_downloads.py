@@ -133,6 +133,13 @@ class DownloadApp(App):
         yield DataTable(id="downloads")
         yield Footer()
 
+    def refresh_table(self):
+        table = self.query_one(DataTable)
+
+        for row_key, download in self.download_map.items():
+            if download.progress:
+                table.update_cell(row_key, "Progress", download.progress)
+
     def on_mount(self):
         table = self.query_one(DataTable)
         table.add_columns(
@@ -140,10 +147,11 @@ class DownloadApp(App):
             "Downloader",
             "Status",
             "Output",
-            "Started",
+            "Progress",
         )
         table.focus()
         self.load()
+        self.set_interval(0.2, self.refresh_table)
 
     def reload(self, downloads):
         self.downloads = downloads
@@ -160,7 +168,7 @@ class DownloadApp(App):
                 str(d.downloader),
                 d.download_status,
                 d.output_path or "",
-                d.start_date,
+                d.progress,
                 key=str(d.url),
             )
             self.row_map[idx] = d
@@ -207,6 +215,7 @@ class DownloadApp(App):
                     d.downloader,
                     d.download_status,
                     d.output_path,
+                    d.progress,
                 )
                 if x
             )
@@ -217,7 +226,7 @@ class DownloadApp(App):
                     str(d.downloader),
                     d.download_status,
                     d.output_path or "",
-                    d.start_date,
+                    d.progress,
                     key=str(d.url),
                 )
                 self.row_map[idx] = d
