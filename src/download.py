@@ -391,7 +391,7 @@ def download_command(subparsers):
     download_cmd.add_argument(
         "-t",
         "--downloader_type",
-        default=get_option("DOWNLOADER_TYPE", "ytdlp_video"),
+        default=get_option("DOWNLOADER_TYPE", ""),
         choices=choices,
         type=str,
     )

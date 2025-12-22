@@ -62,7 +62,9 @@ def get_outtmpl(
     outtmpl = f"%(title)s.%(ext)s"
 
     if output_filename:
-        outtmpl = f"{output_filename}.%(ext)s"
+        base, _ = os.path.splitext(output_filename)
+        base = base or output_filename
+        outtmpl = f"{base}.%(ext)s"
 
     if prefix:
         outtmpl = f"{prefix}{outtmpl}"

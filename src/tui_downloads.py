@@ -136,7 +136,7 @@ class DownloadApp(App):
     def refresh_table(self):
         table = self.query_one(DataTable)
 
-        for row_key, download in self.download_map.items():
+        for row_key, download in self.row_map.items():
             if download.progress:
                 table.update_cell(row_key, "Progress", download.progress)
 
