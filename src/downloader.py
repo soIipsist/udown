@@ -329,9 +329,7 @@ default_downloaders = [
     ),
 ]
 
-downloaders_exist = Downloader().select_all()
-
-if not db_exists or downloaders_exist is None:
+if not db_exists:
     Downloader.insert_all(default_downloaders)
     print("Successfully generated default downloaders.")
 

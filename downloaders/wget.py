@@ -19,7 +19,6 @@ def build_wget_cmd(url, output_directory=None, output_filename=None):
     elif output_directory:
         cmd += ["-P", output_directory]
 
-    print("USING CMD", cmd)
     cmd.append(url)
     return cmd
 
@@ -68,7 +67,9 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
             proc.terminate()
             result["status"] = 1
             result["error"] = "Interrupted"
-
+        finally:
+            proc.stderr.close()
+            proc.wait()
         results.append(result)
 
     return results

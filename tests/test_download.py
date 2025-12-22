@@ -46,7 +46,7 @@ def remove_files(
 
 class TestDownload(TestBase):
     def setUp(self) -> None:
-        delete_items(conn, "downloaders", None)
+        # delete_items(conn, "downloaders", None)
         delete_items(conn, "downloads", None)
         remove_files()
 
