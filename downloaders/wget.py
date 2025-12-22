@@ -52,27 +52,39 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
 
                 match = PROGRESS_RE.search(line)
                 if match:
-                    percent = int(match.group(1))
-                    result["progress"] = percent
-
-                    print(f"{url} → {percent}%")
+                    percent = match.group(1)
+                    yield {
+                        "url": url,
+                        "status": 0,
+                        "progress": f"{percent}%",
+                    }
 
             proc.wait()
 
-            if proc.returncode != 0:
-                result["status"] = 1
-                result["error"] = "wget failed"
+            if proc.returncode == 0:
+                yield {
+                    "url": url,
+                    "status": 0,
+                    "progress": "100",
+                }
+            else:
+                yield {
+                    "url": url,
+                    "status": 1,
+                    "error": "wget failed",
+                }
 
         except KeyboardInterrupt:
             proc.terminate()
-            result["status"] = 1
-            result["error"] = "Interrupted"
-        finally:
-            proc.stderr.close()
-            proc.wait()
-        results.append(result)
+            yield {
+                "url": url,
+                "status": 1,
+                "error": "Interrupted",
+            }
 
-    return results
+        finally:
+            if proc.stderr:
+                proc.stderr.close()
 
 
 if __name__ == "__main__":
