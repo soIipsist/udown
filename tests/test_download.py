@@ -46,6 +46,7 @@ def remove_files(
 
 class TestDownload(TestBase):
     def setUp(self) -> None:
+        delete_items(conn, "downloaders", None)
         delete_items(conn, "downloads", None)
         remove_files()
 
@@ -96,10 +97,12 @@ class TestDownload(TestBase):
     def test_download_all(self):
         downloads = list_downloads()
         video_downloads = [downloads[0], downloads[1]]
-        wget_downloads = [Download(wget_urls[1], downloader_type="wget")]
+        wget_downloads = [
+            Download(wget_urls[1], downloader_type="wget", output_filename="red.png")
+        ]
         urllib_downloads = [Download(urllib_urls[0], downloader_type="urllib")]
         playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
-        downloads = video_downloads
+        downloads = wget_downloads
 
         for download in downloads:
             self.assertTrue(isinstance(download, Download))

@@ -73,8 +73,17 @@ if __name__ == "__main__":
         help="Directory to save downloads",
     )
 
+    parser.add_argument(
+        "-f",
+        "--output_filename",
+        type=str,
+        default=None,
+        help="Output filename",
+    )
+
     args = vars(parser.parse_args())
     urls = args.get("urls")
     output_directory = args.get("output_directory")
+    output_filename = args.get("output_filename")
 
-    results = download(urls, output_directory)
+    results = download(urls, output_directory, output_filename)

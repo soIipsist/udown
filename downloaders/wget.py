@@ -1,6 +1,27 @@
 import argparse
 import os
 import subprocess
+import re
+
+PROGRESS_RE = re.compile(r"(\d+)%")
+
+
+def build_wget_cmd(url, output_directory=None, output_filename=None):
+    cmd = ["wget", "--progress=bar:force"]
+
+    if output_filename:
+        output_path = (
+            os.path.join(output_directory, output_filename)
+            if output_directory
+            else output_filename
+        )
+        cmd += ["-O", output_path]
+    elif output_directory:
+        cmd += ["-P", output_directory]
+
+    print("USING CMD", cmd)
+    cmd.append(url)
+    return cmd
 
 
 def download(urls: list, output_directory: str = None, output_filename: str = None):
@@ -10,48 +31,43 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
         urls = [urls]
 
     for url in urls:
-        result = {"url": url, "status": 0}
+        result = {
+            "url": url,
+            "status": 0,
+            "progress": 0,
+        }
+
+        cmd = build_wget_cmd(url, output_directory, output_filename)
+
+        proc = subprocess.Popen(
+            cmd,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            text=True,
+            bufsize=1,
+        )
 
         try:
-            print("Downloading with wget...")
+            for line in proc.stderr:
+                line = line.strip()
 
-            if output_filename:
-                if output_directory:
-                    os.makedirs(output_directory, exist_ok=True)
-                    output_path = os.path.join(output_directory, output_filename)
-                else:
-                    output_path = output_filename
+                match = PROGRESS_RE.search(line)
+                if match:
+                    percent = int(match.group(1))
+                    result["progress"] = percent
 
-                cmd = ["wget", "-O", output_path, url]
+                    print(f"{url} → {percent}%")
 
-            else:
-                if output_directory:
-                    os.makedirs(output_directory, exist_ok=True)
-                    cmd = ["wget", "-P", output_directory, url]
-                else:
-                    cmd = ["wget", url]
+            proc.wait()
 
-            proc = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
+            if proc.returncode != 0:
+                result["status"] = 1
+                result["error"] = "wget failed"
 
-            result["stdout"] = proc.stdout
-            result["stderr"] = proc.stderr
-
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
+            proc.terminate()
             result["status"] = 1
-            result["error"] = str(e)
-
-        except subprocess.CalledProcessError as e:
-            result["status"] = 1
-            result["error"] = e.stderr or str(e)
-
-        except Exception as e:
-            result["status"] = 1
-            result["error"] = f"Unexpected: {e}"
+            result["error"] = "Interrupted"
 
         results.append(result)
 
@@ -62,10 +78,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("urls", nargs="+", type=str)
     parser.add_argument("-d", "--output_directory", type=str, default=None)
+    parser.add_argument(
+        "-f",
+        "--output_filename",
+        type=str,
+        default=None,
+        help="Output filename",
+    )
 
     args = vars(parser.parse_args())
 
     urls = args.get("urls")
     output_directory = args.get("output_directory")
-
-    results = download(urls, output_directory)
+    output_filename = args.get("output_filename")
+    results = download(urls, output_directory, output_filename)

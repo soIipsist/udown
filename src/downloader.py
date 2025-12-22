@@ -311,7 +311,7 @@ default_downloaders = [
         None,
         "downloaders.wget",
         "download",
-        "url, output_directory",
+        "url, output_directory, output_filename",
     ),
     Downloader(
         "urllib",
@@ -329,7 +329,9 @@ default_downloaders = [
     ),
 ]
 
-if not db_exists:
+downloaders_exist = Downloader().select_all()
+
+if not db_exists or downloaders_exist is None:
     Downloader.insert_all(default_downloaders)
     print("Successfully generated default downloaders.")
 

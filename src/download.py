@@ -43,6 +43,7 @@ class Download(SQLiteItem):
     _source_url: str = None
     _extra_args: dict = None
     _proxy: str = None
+    _progress: str = None
 
     @property
     def downloader_path(self):
@@ -94,6 +95,14 @@ class Download(SQLiteItem):
         self.table_name = "downloads"
         self.conjunction_type = "OR"
         self.filter_condition = f"url = {self.url}"
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @progress.setter
+    def progress(self, progress: str):
+        self._progress = progress
 
     @property
     def proxy(self):
