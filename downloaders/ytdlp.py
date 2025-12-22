@@ -1,3 +1,4 @@
+import time
 import yt_dlp
 import argparse
 import os
@@ -10,6 +11,29 @@ from src.options import get_option
 bool_choices = ["0", "1", 0, 1, "true", "false", True, False, None]
 parent_directory = os.path.dirname(os.path.abspath(__file__))
 pp = PrettyPrinter(indent=2)
+
+
+class YTDLPProgressState:
+    def __init__(self):
+        self.progress = None
+        self.status = None
+        self.speed = None
+        self.eta = None
+
+    def hook(self, d):
+        if d["status"] == "downloading":
+            total = d.get("total_bytes") or d.get("total_bytes_estimate")
+            downloaded = d.get("downloaded_bytes")
+
+            if total and downloaded:
+                percent = downloaded / total * 100
+                self.progress = f"{percent:.1f}%"
+                self.speed = d.get("speed")
+                self.eta = d.get("eta")
+
+        elif d["status"] == "finished":
+            self.progress = "100%"
+            self.status = 0
 
 
 def get_urls(urls: list, removed_args: list = None):
@@ -289,6 +313,36 @@ def get_channel_info(channel_id_or_url: str):
     return results
 
 
+# def download_entry(entry, options, source_url):
+#     state = YTDLPProgressState()
+#     options["progress_hooks"] = [state.hook]
+
+#     with yt_dlp.YoutubeDL(options) as ytdl:
+#         thread = threading.Thread(
+#             target=ytdl.download,
+#             args=([entry_url],),
+#             daemon=True,
+#         )
+#         thread.start()
+
+#         while not state.done:
+#             if state.progress:
+#                 yield {
+#                     "url": entry_url,
+#                     "progress": state.progress,
+#                     "status": None,
+#                     "source_url": source_url,
+#                 }
+#             time.sleep(0.2)
+
+#         thread.join()
+
+#         if state.error:
+#             yield {"url": entry_url, "status": 1, "error": state.error}
+#         else:
+#             yield {"url": entry_url, "status": 0}
+
+
 def download(
     urls: list,
     options_path="",
@@ -327,6 +381,9 @@ def download(
 
     for url in urls:
         print(f"\nProcessing URL: {url}")
+        progress_state = YTDLPProgressState()
+        options["progress_hooks"] = [progress_state.hook]
+
         try:
             with yt_dlp.YoutubeDL(options) as ytdl:
                 info = ytdl.extract_info(url, download=False)
@@ -348,6 +405,7 @@ def download(
                         "source_url": url,
                         "index": idx,
                         "is_playlist": is_playlist,
+                        "progress": progress_state.progress,
                         "status": 1,
                     }
 
@@ -410,6 +468,7 @@ def download(
                 "status": 1,
                 "error": f"SystemExit: {e}",
                 "is_playlist": is_playlist,
+                "progress": progress_state.progress,
             }
             yield result
 
@@ -420,6 +479,7 @@ def download(
                 "status": 1,
                 "error": f"Unexpected error: {e}",
                 "is_playlist": is_playlist,
+                "progress": progress_state.progress,
             }
             yield result
 
