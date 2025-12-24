@@ -53,12 +53,13 @@ class TestDownload(TestBase):
         downloads = [
             Download(
                 video_urls[0],
+                downloader_type="ytdlp_video",
                 output_filename="red.mp4",
                 output_directory=OUTPUT_DIR,
             ),
             Download(
                 video_urls[1],
-                downloader_type="ytdlp_audio",
+                downloader_type="ytdlp_video",
                 output_filename="blue.mp4",
                 output_directory=OUTPUT_DIR,
             ),

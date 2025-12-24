@@ -20,9 +20,12 @@ class YTDLPProgressState:
         self.status = None
         self.speed = None
         self.eta = None
+        self.done = False
+        self.error = None
 
     def hook(self, d):
-        if d["status"] == "downloading":
+        status = d.get("status")
+        if status == "downloading":
             total = d.get("total_bytes") or d.get("total_bytes_estimate")
             downloaded = d.get("downloaded_bytes")
 
@@ -32,9 +35,14 @@ class YTDLPProgressState:
                 self.speed = d.get("speed")
                 self.eta = d.get("eta")
 
-        elif d["status"] == "finished":
+        elif status == "finished":
             self.progress = "100%"
             self.status = 0
+            self.done = True
+
+        elif status == "error":
+            self.error = "Download failed"
+            self.done = True
 
 
 def get_urls(urls: list, removed_args: list = None):
@@ -314,14 +322,13 @@ def get_channel_info(channel_id_or_url: str):
     return results
 
 
-def download_entry(result: dict, entry: dict, options: dict):
+def download_entry(result: dict, entry: dict, options: dict, state: YTDLPProgressState):
     entry_url = result.get("url")
     print(f"Downloading: {entry.get('title', entry_url)}")
 
-    state = YTDLPProgressState()
-
     entry_options = dict(options)
-    entry_options["progress_hooks"] = [state.hook]
+    print("OOOPTIONS")
+    pp.pprint(entry_options)
 
     with yt_dlp.YoutubeDL(entry_options) as ytdl:
         thread = threading.Thread(
@@ -383,13 +390,14 @@ def download(
     )
 
     urls = get_urls(urls, removed_args)
-
     pp.pprint(options)
 
     for url in urls:
         print(f"\nProcessing URL: {url}")
         progress_state = YTDLPProgressState()
         options["progress_hooks"] = [progress_state.hook]
+        options["remote_components"] = ["ejs:github"]
+        result = {"url": url}
 
         try:
             with yt_dlp.YoutubeDL(options) as ytdl:
@@ -408,8 +416,6 @@ def download(
                     entry_url = None
 
                     result = {
-                        "url": entry_url,
-                        "source_url": url,
                         "index": idx,
                         "is_playlist": is_playlist,
                         "progress": progress_state.progress,
@@ -433,12 +439,15 @@ def download(
 
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
-                    yield from download_entry(result, entry, options)
+
+                    print("oPTIONS BEFORE")
+                    pp.pprint(options)
+                    yield from download_entry(result, entry, options, progress_state)
 
         except KeyboardInterrupt as e:
             print("User interrupted the download.")
             result = {
-                "source_url": url,
+                "url": result.get("url") or url,
                 "status": 1,
                 "error": str(e),
                 "is_playlist": is_playlist,
@@ -448,7 +457,7 @@ def download(
         except yt_dlp.utils.DownloadError as e:
             print(f"Download error: {e}")
             result = {
-                "source_url": url,
+                "url": result.get("url") or url,
                 "status": 1,
                 "error": str(e),
                 "is_playlist": is_playlist,
@@ -458,7 +467,7 @@ def download(
         except SystemExit as e:
             print(f"SystemExit: {e} — continuing...")
             result = {
-                "source_url": url,
+                "url": result.get("url") or url,
                 "status": 1,
                 "error": f"SystemExit: {e}",
                 "is_playlist": is_playlist,
@@ -469,7 +478,7 @@ def download(
         except Exception as e:
             print(f"Unexpected error: {e}")
             result = {
-                "source_url": url,
+                "url": result.get("url") or url,
                 "status": 1,
                 "error": f"Unexpected error: {e}",
                 "is_playlist": is_playlist,
