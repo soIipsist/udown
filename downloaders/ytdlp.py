@@ -1,3 +1,4 @@
+import threading
 import time
 import yt_dlp
 import argparse
@@ -313,34 +314,40 @@ def get_channel_info(channel_id_or_url: str):
     return results
 
 
-# def download_entry(entry, options, source_url):
-#     state = YTDLPProgressState()
-#     options["progress_hooks"] = [state.hook]
+def download_entry(result: dict, entry: dict, options: dict):
+    entry_url = result.get("url")
+    print(f"Downloading: {entry.get('title', entry_url)}")
 
-#     with yt_dlp.YoutubeDL(options) as ytdl:
-#         thread = threading.Thread(
-#             target=ytdl.download,
-#             args=([entry_url],),
-#             daemon=True,
-#         )
-#         thread.start()
+    state = YTDLPProgressState()
 
-#         while not state.done:
-#             if state.progress:
-#                 yield {
-#                     "url": entry_url,
-#                     "progress": state.progress,
-#                     "status": None,
-#                     "source_url": source_url,
-#                 }
-#             time.sleep(0.2)
+    entry_options = dict(options)
+    entry_options["progress_hooks"] = [state.hook]
 
-#         thread.join()
+    with yt_dlp.YoutubeDL(entry_options) as ytdl:
+        thread = threading.Thread(
+            target=ytdl.download,
+            args=([entry_url],),
+            daemon=True,
+        )
+        thread.start()
 
-#         if state.error:
-#             yield {"url": entry_url, "status": 1, "error": state.error}
-#         else:
-#             yield {"url": entry_url, "status": 0}
+        while not state.done:
+            if state.progress:
+                result["progress"] = state.progress
+                result["status"] = None
+                yield dict(result)
+            time.sleep(0.2)
+
+        thread.join()
+
+        if state.error:
+            result["status"] = 1
+            result["error"] = state.error
+        else:
+            result["status"] = 0
+            result["progress"] = "100%"
+
+        yield dict(result)
 
 
 def download(
@@ -426,20 +433,7 @@ def download(
 
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
-                    print(f"Downloading: {entry.get('title', entry_url)}")
-                    status = ytdl.download([entry_url])
-
-                    result.update(
-                        {
-                            "status": status,
-                            "entry": entry,
-                        }
-                    )
-
-                    if status != 0:
-                        result["error"] = "Download failed"
-
-                    yield result
+                    yield from download_entry(result, entry, options)
 
         except KeyboardInterrupt as e:
             print("User interrupted the download.")
