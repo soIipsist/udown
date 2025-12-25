@@ -6,7 +6,7 @@ import os
 import json
 from pprint import PrettyPrinter
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
-
+from queue import Queue
 from src.options import get_option
 
 bool_choices = ["0", "1", 0, 1, "true", "false", True, False, None]
@@ -16,6 +16,7 @@ pp = PrettyPrinter(indent=2)
 
 class YTDLPProgressState:
     def __init__(self):
+        self.queue = Queue()
         self.progress = None
         self.status = None
         self.speed = None
@@ -28,6 +29,9 @@ class YTDLPProgressState:
         if status == "downloading":
             total = d.get("total_bytes") or d.get("total_bytes_estimate")
             downloaded = d.get("downloaded_bytes")
+            self.queue.put(d.get("_percent_str"))
+
+            print("HOOK:", d["status"], d.get("_percent_str"))
 
             if total and downloaded:
                 percent = downloaded / total * 100
@@ -36,6 +40,7 @@ class YTDLPProgressState:
                 self.eta = d.get("eta")
 
         elif status == "finished":
+            self.queue.put("100%")
             self.progress = "100%"
             self.status = 0
             self.done = True
@@ -322,39 +327,36 @@ def get_channel_info(channel_id_or_url: str):
     return results
 
 
-def download_entry(result: dict, entry: dict, options: dict, state: YTDLPProgressState):
+def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
     entry_url = result.get("url")
     print(f"Downloading: {entry.get('title', entry_url)}")
 
-    entry_options = dict(options)
-    print("OOOPTIONS")
-    pp.pprint(entry_options)
+    download_thread = threading.Thread(
+        target=ytdl.download,
+        args=([entry_url],),
+        daemon=True,
+    )
+    download_thread.start()
 
-    with yt_dlp.YoutubeDL(entry_options) as ytdl:
-        thread = threading.Thread(
-            target=ytdl.download,
-            args=([entry_url],),
-            daemon=True,
-        )
-        thread.start()
+    while not state.done or not state.queue.empty():
+        try:
+            progress = state.queue.get(timeout=0.2)
+            result["progress"] = progress
+            result["status"] = None
+            yield dict(result)
+        except:
+            pass
 
-        while not state.done:
-            if state.progress:
-                result["progress"] = state.progress
-                result["status"] = None
-                yield dict(result)
-            time.sleep(0.2)
+    download_thread.join()
 
-        thread.join()
+    if state.error:
+        result["status"] = 1
+        result["error"] = state.error
+    else:
+        result["status"] = 0
+        result["progress"] = "100%"
 
-        if state.error:
-            result["status"] = 1
-            result["error"] = state.error
-        else:
-            result["status"] = 0
-            result["progress"] = "100%"
-
-        yield dict(result)
+    yield dict(result)
 
 
 def download(
@@ -416,6 +418,7 @@ def download(
                     entry_url = None
 
                     result = {
+                        "url": url,
                         "index": idx,
                         "is_playlist": is_playlist,
                         "progress": progress_state.progress,
@@ -440,9 +443,7 @@ def download(
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
 
-                    print("oPTIONS BEFORE")
-                    pp.pprint(options)
-                    yield from download_entry(result, entry, options, progress_state)
+                    yield from download_entry(result, entry, progress_state, ytdl)
 
         except KeyboardInterrupt as e:
             print("User interrupted the download.")
