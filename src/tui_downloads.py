@@ -173,7 +173,7 @@ class DownloadsTable(DataTable):
                 d.url,
                 str(d.downloader),
                 d.download_status,
-                d.output_path or "",
+                d.output_filename,
                 d.progress,
             )
             self.row_map[idx] = d
@@ -304,6 +304,5 @@ class UDownApp(App):
 
     def on_download_requested(self, message: DownloadRequested):
         download = message.download
-
         results = download.download()
-        self.refresh_table()
+        # self.refresh_table()

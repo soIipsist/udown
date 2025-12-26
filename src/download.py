@@ -381,7 +381,9 @@ def download_action(**args):
     else:
         if filter_keys:
             filter_keys = filter_keys.split(",")
-        downloads = Download(**args).filter_by(filter_keys)
+
+        d = Download(**args)
+        downloads = d.filter_by(filter_keys)
 
     return downloads
 

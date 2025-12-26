@@ -332,9 +332,10 @@ def map_sqlite_results_to_objects(
 ):
     """Maps SQLite query results to a list of objects"""
 
+    all_columns = get_cached_column_names(object_type)
+
     if not column_names:
-        # return [object_type(*row) for row in sqlite_results]
-        column_names = get_cached_column_names(object_type)
+        column_names = all_columns
 
     objects = []
 
@@ -344,8 +345,11 @@ def map_sqlite_results_to_objects(
     for result in sqlite_results:
         o = object_type()
 
-        for value, column_name in zip_longest(result, column_names):
+        for value, column_name in zip_longest(result, all_columns):
             # Only evaluate if this column is in the pre-determined list
+
+            if column_name not in column_names:
+                continue
 
             if (
                 column_name in eval_needed
