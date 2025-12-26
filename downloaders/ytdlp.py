@@ -31,7 +31,7 @@ class YTDLPProgressState:
             downloaded = d.get("downloaded_bytes")
             self.queue.put(d.get("_percent_str"))
 
-            print("HOOK:", d["status"], d.get("_percent_str"))
+            # print("HOOK:", d["status"], d.get("_percent_str"))
 
             if total and downloaded:
                 percent = downloaded / total * 100
