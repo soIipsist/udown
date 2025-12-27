@@ -8,6 +8,7 @@ from textual.screen import ModalScreen, Screen
 from textual.screen import Screen
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Header, Footer
+from src.downloader import downloader_values, download_values
 
 
 class DownloadDetails(ModalScreen):
@@ -37,32 +38,73 @@ class DownloadDetails(ModalScreen):
 
 
 class DownloadersTable(DataTable):
+    def __init__(self, downloaders):
+        super().__init__()
+        self.downloaders = downloaders
+        self.row_map = {}
+
     def on_mount(self):
         self.add_columns(
-            "URL",
-            "Downloader",
-            "Status",
-            "Output",
-            "Progress",
+            "Type",
+            "Path",
+            "Arguments",
         )
         self.cursor_type = "row"
         self.focus()
 
-    def load(self, downloads):
+    def load(self):
         self.clear()
-        for d in downloads:
+        self.row_map.clear()
+
+        for idx, d in enumerate(self.downloaders):
             self.add_row(
-                d.url,
-                str(d.downloader),
-                d.download_status,
-                d.output_path or "",
-                d.progress,
-                key=str(d.url),  # IMPORTANT: stable key
+                d.downloader_type,
+                d.downloader_path,
+                d.downloader_args,
+                key=str(d.downloader_type),
+            )
+            self.row_map[idx] = d
+
+    def apply_filter(self, query: str):
+        self.clear()
+        self.row_map.clear()
+        q = query.lower().strip()
+        table_row_index = 0
+
+        for d in self.downloaders:
+            haystack = " ".join(
+                str(x).lower()
+                for x in (
+                    d.downloader_type,
+                    d.downloader_path,
+                    d.downloader_args,
+                )
+                if x
             )
 
-    def update_progress(self, download):
-        if download.id in self.rows:
-            self.update_cell(str(download.id), "Progress", download.progress)
+            if q in haystack:
+                self.add_row(
+                    d.downloader_type,
+                    d.downloader_path,
+                    d.downloader_args,
+                    key=str(d.downloader_type),
+                )
+                self.row_map[table_row_index] = d
+                table_row_index += 1
+
+    def on_key(self, event: events.Key) -> None:
+        """Open download details modal on Enter."""
+        if event.key != "enter" or not self.has_focus:
+            return
+
+        row = self.cursor_row
+        if row is None:
+            return
+
+        downloader = self.row_map.get(row)
+        if downloader:
+            self.app.push_screen(DownloadDetails(downloader))
+            event.stop()
 
 
 class DownloadsTable(DataTable):
@@ -86,12 +128,11 @@ class DownloadsTable(DataTable):
         self.set_interval(0.2, self.refresh_table)
 
     def load(self):
-        table = self
-        table.clear()
+        self.clear()
         self.row_map.clear()
 
         for idx, d in enumerate(self.downloads):
-            table.add_row(
+            self.add_row(
                 d.url,
                 str(d.downloader),
                 d.download_status,
@@ -150,11 +191,6 @@ class DownloadsTable(DataTable):
         if download:
             self.app.push_screen(DownloadDetails(download))
             event.stop()
-
-    def action_search(self):
-        search = self.query_one("#search", Input)
-        search.remove_class("hidden")
-        search.focus()
 
 
 class UDownApp(App):
