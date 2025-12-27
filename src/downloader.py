@@ -425,3 +425,5 @@ def downloader_command(subparsers):
     downloader_cmd.add_argument(
         "-k", "--filter_keys", type=str, default=get_option("DOWNLOADER_KEYS")
     )
+
+    return downloader_cmd

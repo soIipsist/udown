@@ -3,9 +3,6 @@ from src.download import download_command, download_action, list_downloads
 from src.downloader import downloader_command, downloader_action, list_downloaders, pp
 from src.options import options_action, options_command, get_option
 
-downloads = []
-downloaders = []
-
 
 def main():
     parser = argparse.ArgumentParser(prog="udown")
@@ -13,32 +10,22 @@ def main():
 
     # udown download [some_url] -t downloader_type
     # udown downloaders
+    download_parser = download_command(subparsers)
+    download_parser.set_defaults(func=download_action)
 
-    download_command(subparsers)
-    downloader_command(subparsers)
-    options_command(subparsers)
-    args = vars(parser.parse_args())
+    downloader_parser = downloader_command(subparsers)
+    downloader_parser.set_defaults(func=downloader_action)
 
-    command = args.get("command")
-    cmd_dict = {
-        "download": download_action,
-        "downloaders": downloader_action,
-        "options": options_action,
-    }
-    action = cmd_dict.get(command, download_action)
+    options_parser = options_command(subparsers)
+    options_parser.set_defaults(func=options_action)
 
-    if "command" in args:
-        args.pop("command")
+    args = parser.parse_args()
 
-    output = action(**args)
+    args_dict = vars(args)
+    func = args_dict.pop("func")
+    args_dict.pop("command", None)
 
-    if output is not None:
-        pp.pprint(output)
-
-    downloads = list_downloads(args)
-    downloaders = list_downloaders(args)
-    # UDownApp(downloads).run()
-    # print(args)
+    output = func(**args_dict)
 
 
 if __name__ == "__main__":

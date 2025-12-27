@@ -421,3 +421,5 @@ def download_command(subparsers):
         "-p", "--proxy", default=get_option("DOWNLOAD_PROXY"), type=str
     )
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)
+
+    return download_cmd

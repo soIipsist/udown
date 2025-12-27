@@ -122,3 +122,5 @@ def options_command(subparsers):
     )
     options_cmd.add_argument("key", type=str, nargs="?", default=None)
     options_cmd.add_argument("value", type=str, nargs="?", default=None)
+
+    return options_cmd
