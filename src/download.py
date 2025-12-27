@@ -13,7 +13,7 @@ from src.downloader import (
     get_downloader_names,
 )
 from src.options import get_option
-from src.tui_downloads import DownloadApp
+from src.tui_downloads import UDownApp
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
@@ -380,7 +380,7 @@ def download_action(**args):
             downloads.append(download)
     else:
         downloads = list_downloads(args)
-        DownloadApp(downloads).run()
+        UDownApp(downloads).run()
 
 
 def download_command(subparsers):

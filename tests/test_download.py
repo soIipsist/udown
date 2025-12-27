@@ -1,7 +1,7 @@
 import inspect
 from pathlib import Path
 import os
-from src.tui_downloads import DownloadApp
+from src.tui_downloads import UDownApp
 from test_base import *
 
 current_file = Path(__file__).resolve()
@@ -93,7 +93,7 @@ class TestDownload(TestBase):
 
     def test_downloads_table(self):
         downloads = list_downloads()
-        DownloadApp(downloads).run()
+        UDownApp(downloads).run()
 
     def test_download_all(self):
         downloads = list_downloads()
