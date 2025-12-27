@@ -346,7 +346,11 @@ class UDownApp(App):
 
     def on_delete_confirmed(self, message: DeleteConfirmed):
         item = message.item
-        item.delete()
-        self.app.notify(item.downloader_type, timeout=None)
-        assert hasattr(item, "delete")
-        print("DELETE MESSAGE RECEIVED", message.item)
+
+        filter_condition = (
+            f"url = {item.url}"
+            if self.table_type == "download"
+            else f"downloader_type = {item.downloader_type}"
+        )
+        item.delete(filter_condition)
+        self.app.notify(filter_condition, timeout=None)

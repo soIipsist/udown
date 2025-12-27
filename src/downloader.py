@@ -117,9 +117,9 @@ class Downloader(SQLiteItem):
         self.module = module
         self.func = func
         self.downloader_args = downloader_args
+        self.table_name = "downloaders"
         self.conjunction_type = "OR"
         self.filter_condition = f"downloader_type = {self.downloader_type}"
-        self.table_name = "downloaders"
 
     def __repr__(self):
         return f"{self.downloader_type}"
@@ -372,16 +372,15 @@ def list_downloaders(d, downloader_type):
 
 def downloader_action(
     action: str,
-    downloader_type: str = None,
-    downloader_path: str = None,
-    module: str = None,
-    func: str = None,
-    downloader_args: str = None,
-    filter_keys: str = None,
+    **args,
 ):
-    d = Downloader(
-        downloader_type, downloader_path, module, func, downloader_args
-    ).filter_by(filter_keys)
+    downloaders = []
+    filter_keys = args.get("filter_keys")
+
+    if "filter_keys" in args:
+        args.pop("filter_keys")
+
+    d = Downloader(**args)
 
     if action == "add":
         if d.module is None:
@@ -394,9 +393,9 @@ def downloader_action(
     elif action == "reset":
         Downloader.insert_all(default_downloaders)
         print("Successfully generated default downloaders.")
-    else:  # list downloaders
-        downloaders = list_downloaders(d, downloader_type)
-
+    else:
+        filter_keys = filter_keys.split(",")
+        downloaders = d.filter_by(filter_keys)
     return downloaders
 
 

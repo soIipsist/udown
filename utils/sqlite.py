@@ -298,7 +298,7 @@ def filter_items(
     conn: sqlite3.Connection,
     table_name: str,
     query_params: list,
-    object: object,
+    obj: object,
     conjunction_type: bool = "AND",
 ):
     """Given an object and a list of attributes, return filtered items."""
@@ -307,8 +307,8 @@ def filter_items(
 
     for param in query_params:
 
-        if hasattr(object, param):
-            value = getattr(object, param)
+        if hasattr(obj, param):
+            value = getattr(obj, param)
             if value:
                 if isinstance(value, str):
                     value_str = f"'%{value}%'"
@@ -318,7 +318,7 @@ def filter_items(
 
     filter_condition = f" {conjunction_type} ".join(filter_condition)
     # print("FILTER CONDITION", filter_condition)
-    items = select_items(conn, table_name, filter_condition, type(object), query_params)
+    items = select_items(conn, table_name, filter_condition, type(obj), query_params)
     return items
 
 
