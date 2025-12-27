@@ -396,6 +396,8 @@ def downloader_action(
     else:  # list downloaders
         downloaders = list_downloaders(d, downloader_type)
 
+    return downloaders
+
 
 def downloader_command(subparsers):
     choices = get_downloader_names()

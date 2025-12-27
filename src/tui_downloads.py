@@ -233,10 +233,10 @@ class UDownApp(App):
         ("escape", "clear_search", "Clear search"),
     ]
 
-    def __init__(self, downloads=None, downloaders=None):
+    def __init__(self, items=None, table_type="download"):
         super().__init__()
-        self.downloads = downloads or []
-        self.downloaders = downloaders or []
+        self.items = items
+        self.table_type = table_type
 
     def compose(self):
         yield Header()
@@ -248,14 +248,14 @@ class UDownApp(App):
         self.render_table()  # default view
         self.set_interval(0.2, self.refresh_table)
 
-    def render_table(self, table_type="downloaders"):
+    def render_table(self):
         """Render a specific table based on type."""
         container = self.query_one("#table-container")
 
-        if table_type == "downloads":
-            table = DownloadsTable(self.downloads)
-        elif table_type == "downloaders":
-            table = DownloadersTable(self.downloaders)
+        if self.table_type == "download":
+            table = DownloadsTable(self.items)
+        elif self.table_type == "downloaders":
+            table = DownloadersTable(self.items)
         else:
             return
 

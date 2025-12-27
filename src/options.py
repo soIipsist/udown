@@ -104,7 +104,7 @@ def options_action(
     elif action == "set":
         return set_option(key, value)
     elif action == "reset":
-        return reset_options(config_path)
+        reset_options()
         print("Successfully generated default downloaders.")
     else:
         return all_options()

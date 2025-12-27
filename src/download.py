@@ -379,7 +379,11 @@ def download_action(**args):
         if download is not None:
             downloads.append(download)
     else:
-        pass
+        if filter_keys:
+            filter_keys = filter_keys.split(",")
+        downloads = Download(**args).filter_by(filter_keys)
+
+    return downloads
 
 
 def download_command(subparsers):
