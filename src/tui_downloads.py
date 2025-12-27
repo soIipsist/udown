@@ -1,3 +1,4 @@
+import sys
 from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Header, Footer
 from textual.containers import Container
@@ -13,38 +14,6 @@ from textual.screen import ModalScreen
 from textual.widgets import Static, Button
 from textual.containers import Vertical, Horizontal
 from textual.message import Message
-
-
-class ConfirmDelete(ModalScreen):
-    BINDINGS = [
-        ("escape", "cancel", "Cancel"),
-    ]
-
-    class Confirmed(Message):
-        def __init__(self, item):
-            super().__init__()
-            self.item = item
-
-    def __init__(self, item):
-        super().__init__()
-        self.item = item
-
-    def compose(self):
-        yield Vertical(
-            Static("Are you sure you want to delete this item?"),
-            Horizontal(
-                Button("Delete", variant="error", id="confirm"),
-                Button("Cancel", id="cancel"),
-            ),
-            id="confirm-delete",
-        )
-
-    def on_button_pressed(self, event: Button.Pressed):
-        if event.button.id == "confirm":
-            self.post_message(self.Confirmed(self.item))
-            self.dismiss()
-        else:
-            self.dismiss()
 
 
 class DownloadDetails(ModalScreen):
@@ -71,6 +40,35 @@ class DownloadDetails(ModalScreen):
                 key,
                 "" if value is None else str(value),
             )
+
+
+class DeleteConfirmed(Message):
+    def __init__(self, item):
+        self.item = item
+        super().__init__()
+
+
+class ConfirmDelete(ModalScreen):
+    BINDINGS = [("escape", "cancel", "Cancel")]
+
+    def __init__(self, item):
+        super().__init__()
+        self.item = item
+
+    def compose(self):
+        yield Vertical(
+            Static("Are you sure you want to delete this item?"),
+            Horizontal(
+                Button("Delete", variant="error", id="confirm"),
+                Button("Cancel", id="cancel"),
+            ),
+            id="confirm-delete",
+        )
+
+    def on_button_pressed(self, event: Button.Pressed):
+        if event.button.id == "confirm":
+            self.app.post_message(DeleteConfirmed(self.item))
+        self.dismiss()
 
 
 class DownloaderDetails(ModalScreen):
@@ -178,8 +176,8 @@ class DownloadersTable(DataTable):
 
 class DownloadRequested(Message):
     def __init__(self, download):
-        super().__init__()
         self.download = download
+        super().__init__()
 
 
 class DownloadsTable(DataTable):
@@ -346,7 +344,9 @@ class UDownApp(App):
         results = download.download()
         # self.refresh_table()
 
-    def on_confirm_delete_confirmed(self, message: ConfirmDelete.Confirmed):
+    def on_delete_confirmed(self, message: DeleteConfirmed):
         item = message.item
         item.delete()
-        self.render_table()
+        self.app.notify(item.downloader_type, timeout=None)
+        assert hasattr(item, "delete")
+        print("DELETE MESSAGE RECEIVED", message.item)

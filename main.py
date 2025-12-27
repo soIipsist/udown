@@ -28,7 +28,8 @@ def main():
 
     output = func(**args_dict)
 
-    app = UDownApp(output, command).run()
+    print(output[0].filter_condition)
+    # app = UDownApp(output, command).run()
 
 
 if __name__ == "__main__":

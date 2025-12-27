@@ -118,7 +118,7 @@ class Downloader(SQLiteItem):
         self.func = func
         self.downloader_args = downloader_args
         self.conjunction_type = "OR"
-        self.filter_condition = f"downloader_type = {self._downloader_type}"
+        self.filter_condition = f"downloader_type = {self.downloader_type}"
         self.table_name = "downloaders"
 
     def __repr__(self):
@@ -379,8 +379,9 @@ def downloader_action(
     downloader_args: str = None,
     filter_keys: str = None,
 ):
-    d = Downloader(downloader_type, downloader_path, module, func, downloader_args)
-    downloaders = [d]
+    d = Downloader(
+        downloader_type, downloader_path, module, func, downloader_args
+    ).filter_by(filter_keys)
 
     if action == "add":
         if d.module is None:
