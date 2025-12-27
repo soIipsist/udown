@@ -1,7 +1,10 @@
 import argparse
-from src.download import download_command, download_action
-from src.downloader import downloader_command, downloader_action, pp
+from src.download import download_command, download_action, list_downloads
+from src.downloader import downloader_command, downloader_action, list_downloaders, pp
 from src.options import options_action, options_command, get_option
+
+downloads = []
+downloaders = []
 
 
 def main():
@@ -32,6 +35,9 @@ def main():
     if output is not None:
         pp.pprint(output)
 
+    downloads = list_downloads(args)
+    downloaders = list_downloaders(args)
+    # UDownApp(downloads).run()
     # print(args)
 
 

@@ -379,8 +379,7 @@ def download_action(**args):
         if download is not None:
             downloads.append(download)
     else:
-        downloads = list_downloads(args)
-        UDownApp(downloads).run()
+        pass
 
 
 def download_command(subparsers):

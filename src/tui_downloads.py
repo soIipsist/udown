@@ -37,6 +37,32 @@ class DownloadDetails(ModalScreen):
             )
 
 
+class DownloaderDetails(ModalScreen):
+    BINDINGS = [
+        ("escape", "dismiss", "Close"),
+        ("q", "dismiss", "Close"),
+    ]
+
+    def __init__(self, downloader):
+        super().__init__()
+        self.downloader = downloader
+
+    def compose(self):
+        yield Header(show_clock=False)
+        yield DataTable(id="details")
+        yield Footer()
+
+    def on_mount(self):
+        table = self.query_one("#details", DataTable)
+        table.add_columns("Field", "Value")
+
+        for key, value in self.downloader.as_dict().items():
+            table.add_row(
+                key,
+                "" if value is None else str(value),
+            )
+
+
 class DownloadersTable(DataTable):
     def __init__(self, downloaders):
         super().__init__()
@@ -103,8 +129,11 @@ class DownloadersTable(DataTable):
 
         downloader = self.row_map.get(row)
         if downloader:
-            self.app.push_screen(DownloadDetails(downloader))
+            self.app.push_screen(DownloaderDetails(downloader))
             event.stop()
+
+    def refresh_table(self):
+        pass
 
 
 class DownloadsTable(DataTable):
@@ -219,7 +248,7 @@ class UDownApp(App):
         self.render_table()  # default view
         self.set_interval(0.2, self.refresh_table)
 
-    def render_table(self, table_type="downloads"):
+    def render_table(self, table_type="downloaders"):
         """Render a specific table based on type."""
         container = self.query_one("#table-container")
 

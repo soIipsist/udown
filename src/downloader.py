@@ -356,6 +356,20 @@ def get_downloader_names():
     return downloader_names
 
 
+def list_downloaders(d, downloader_type):
+    logger.info(f"Fetching downloaders from file {database_path}.")
+
+    if downloader_type:
+
+        downloaders = d.filter_by(
+            ["downloader_type", "downloader_path", "module", "func"]
+        )
+    else:
+        downloaders = d.select_all()
+
+    return downloaders
+
+
 def downloader_action(
     action: str,
     downloader_type: str = None,
@@ -380,20 +394,7 @@ def downloader_action(
         Downloader.insert_all(default_downloaders)
         print("Successfully generated default downloaders.")
     else:  # list downloaders
-
-        logger.info(f"Fetching downloaders from file {database_path}.")
-
-        if downloader_type:
-
-            downloaders = d.filter_by(
-                ["downloader_type", "downloader_path", "module", "func"]
-            )
-        else:
-            downloaders = d.select_all()
-
-        for downloader in downloaders:
-            downloader: Downloader
-            pp.pprint(downloader.as_dict(filter_keys))
+        downloaders = list_downloaders(d, downloader_type)
 
 
 def downloader_command(subparsers):
