@@ -9,6 +9,7 @@ from textual.screen import Screen
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Header, Footer
 from src.downloader import downloader_values, download_values
+from textual.message import Message
 
 
 class DownloadDetails(ModalScreen):
@@ -136,7 +137,14 @@ class DownloadersTable(DataTable):
         pass
 
 
+class DownloadRequested(Message):
+    def __init__(self, download):
+        super().__init__()
+        self.download = download
+
+
 class DownloadsTable(DataTable):
+    BINDINGS = [("d", "download", "Download")]
 
     def __init__(self, downloads):
         super().__init__()
@@ -167,7 +175,6 @@ class DownloadsTable(DataTable):
                 d.download_status,
                 d.output_path or "",
                 d.progress,
-                key=str(d.url),
             )
             self.row_map[idx] = d
 
@@ -202,13 +209,11 @@ class DownloadsTable(DataTable):
                     d.download_status,
                     d.output_path or "",
                     d.progress,
-                    key=str(d.url),
                 )
                 self.row_map[table_row_index] = d
                 table_row_index += 1
 
     def on_key(self, event: events.Key) -> None:
-        """Open download details modal on Enter."""
         if event.key != "enter" or not self.has_focus:
             return
 
@@ -220,6 +225,20 @@ class DownloadsTable(DataTable):
         if download:
             self.app.push_screen(DownloadDetails(download))
             event.stop()
+
+    def action_download(self) -> None:
+        if not self.has_focus:
+            return
+
+        row = self.cursor_row
+        if row is None:
+            return
+
+        download = self.row_map.get(row)
+        if not download:
+            return
+
+        self.app.post_message(DownloadRequested(download))
 
 
 class UDownApp(App):
@@ -282,3 +301,9 @@ class UDownApp(App):
     def on_input_changed(self, event: Input.Changed):
         if event.input.id == "search" and hasattr(self, "active_table"):
             self.active_table.apply_filter(event.value)
+
+    def on_download_requested(self, message: DownloadRequested):
+        download = message.download
+
+        results = download.download()
+        self.refresh_table()
