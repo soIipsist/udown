@@ -66,13 +66,9 @@ class DownloadersTable(DataTable):
 
 
 class DownloadsTable(DataTable):
-    BINDINGS = [
-        ("/", "search", "Search"),
-        ("escape", "clear_search", "Clear search"),
-    ]
 
-    def __init__(self, downloads, id=None):
-        super().__init__(id=id)
+    def __init__(self, downloads):
+        super().__init__()
         self.downloads = downloads
         self.row_map = {}
 
@@ -106,15 +102,15 @@ class DownloadsTable(DataTable):
             self.row_map[idx] = d
 
     def refresh_table(self):
-        for row_key, download in self.row_map.items():
+        for row_index, download in self.row_map.items():
             if download.progress:
-                self.update_cell(row_key, "Progress", download.progress)
+                self.update_cell(row_index, "Progress", download.progress)
 
     def apply_filter(self, query: str):
         self.clear()
         self.row_map.clear()
-        idx = 0
         q = query.lower().strip()
+        table_row_index = 0  # real table row index
 
         for d in self.downloads:
             haystack = " ".join(
@@ -138,8 +134,8 @@ class DownloadsTable(DataTable):
                     d.progress,
                     key=str(d.url),
                 )
-                self.row_map[idx] = d
-                idx += 1
+                self.row_map[table_row_index] = d
+                table_row_index += 1
 
     def on_key(self, event: events.Key) -> None:
         """Open download details modal on Enter."""
@@ -156,7 +152,7 @@ class DownloadsTable(DataTable):
             event.stop()
 
     def action_search(self):
-        search = self.app.query_one("#search", Input)
+        search = self.query_one("#search", Input)
         search.remove_class("hidden")
         search.focus()
 
@@ -168,6 +164,8 @@ class UDownApp(App):
         ("q", "quit", "Quit"),
         ("r", "refresh", "Refresh"),
         ("tab", "focus_next", "Focus next"),
+        ("/", "search", "Search"),
+        ("escape", "clear_search", "Clear search"),
     ]
 
     def __init__(self, downloads=None, downloaders=None):
@@ -190,9 +188,9 @@ class UDownApp(App):
         container = self.query_one("#table-container")
 
         if table_type == "downloads":
-            table = DownloadsTable(self.downloads, id="downloads")
+            table = DownloadsTable(self.downloads)
         elif table_type == "downloaders":
-            table = DownloadersTable(self.downloaders, id="downloaders")
+            table = DownloadersTable(self.downloaders)
         else:
             return
 
@@ -203,3 +201,19 @@ class UDownApp(App):
     def refresh_table(self):
         if hasattr(self, "active_table"):
             self.active_table.refresh_table()
+
+    def action_search(self):
+        search = self.query_one("#search", Input)
+        search.remove_class("hidden")
+        search.focus()
+
+    def action_clear_search(self):
+        search = self.query_one("#search", Input)
+        search.value = ""
+        search.add_class("hidden")
+        if self.active_table:
+            self.active_table.apply_filter("")
+
+    def on_input_changed(self, event: Input.Changed):
+        if event.input.id == "search" and hasattr(self, "active_table"):
+            self.active_table.apply_filter(event.value)
