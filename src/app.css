@@ -1,0 +1,83 @@
+/* app.css */
+
+/* Global Screen Background */
+Screen {
+  background: #0f0f14;
+}
+
+/* Header & Footer */
+Header,
+Footer {
+  background: #16161d;
+  color: #cdd6f4;
+}
+
+/* Container Styling */
+Container {
+  padding: 1;
+}
+
+/* Input for search */
+Input#search {
+  margin: 1 2;
+  padding: 0 1;
+  background: #181825;
+  color: #cdd6f4;
+  border: round #7c3aed;
+}
+
+/* DataTable */
+DataTable {
+  background: transparent;
+  color: #cdd6f4;
+  border: round #313244;
+}
+
+/* Table Headers */
+DataTable > .datatable--header {
+  background: #181825;
+  color: #bac2de;
+}
+
+/* Table Rows */
+DataTable > .datatable--odd-row {
+  background: #0f0f14;
+}
+
+DataTable > .datatable--even-row {
+  background: #11111b;
+}
+
+/* Cursor Row */
+DataTable > .datatable--cursor {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+/* Hover Row */
+DataTable > .datatable--hover {
+  background: #5b21b6;
+  color: #ffffff;
+}
+
+/* Hidden Elements */
+.hidden {
+  display: none;
+}
+
+/* Download Details Modal */
+DownloadDetails {
+  background: #0f0f14;
+}
+
+DownloadDetails DataTable {
+  margin: 2;
+  border: round #7c3aed;
+  background: #11111b;
+}
+
+/* Modal Header/Footer */
+DownloadDetails > Header,
+DownloadDetails > Footer {
+  background: #16161d;
+}

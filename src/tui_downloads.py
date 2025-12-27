@@ -4,7 +4,9 @@ from textual.containers import Container
 from textual.reactive import reactive
 from textual.widgets import Input
 from textual import events
-from textual.screen import ModalScreen
+from textual.screen import ModalScreen, Screen
+from textual.screen import Screen
+from textual.app import ComposeResult
 from textual.widgets import DataTable, Header, Footer
 
 
@@ -41,83 +43,7 @@ class DownloadApp(App):
         self.conn = getattr(self.downloads[0], "conn") if len(downloads) > 0 else None
         self.row_map = {}
 
-    CSS = """
-    Screen {
-        background: #0f0f14;
-    }
-
-    Header {
-        background: #16161d;
-        color: #cdd6f4;
-    }
-
-    Footer {
-        background: #16161d;
-        color: #a6adc8;
-    }
-
-    Container {
-        padding: 1;
-    }
-
-    DataTable {
-        background: transparent;
-        color: #cdd6f4;
-        border: round #313244;
-    }
-
-    DataTable > .datatable--header {
-        background: #181825;
-        color: #bac2de;
-        text-style: bold;
-    }
-
-    DataTable > .datatable--odd-row {
-        background: #0f0f14;
-    }
-
-    DataTable > .datatable--even-row {
-        background: #11111b;
-    }
-
-    DataTable > .datatable--cursor {
-        background: #7c3aed;      /* PURPLE */
-        color: #ffffff;
-        text-style: bold;
-    }
-
-    DataTable > .datatable--hover {
-        background: #5b21b6;
-        color: #ffffff;
-    }
-    
-    Input#search {
-        dock: top;
-        margin: 1 2;
-        background: #181825;
-        color: #cdd6f4;
-        border: round #7c3aed;
-    }
-
-    .hidden {
-        display: none;
-    }
-    
-    DownloadDetails {
-        background: #0f0f14;
-    }
-
-    DownloadDetails DataTable {
-        margin: 2;
-        border: round #7c3aed;
-        background: #11111b;
-    }
-
-    DownloadDetails > Header,
-    DownloadDetails > Footer {
-        background: #16161d;
-    }
-    """
+    CSS_PATH = "app.css"
 
     BINDINGS = [
         ("q", "quit", "Quit"),
