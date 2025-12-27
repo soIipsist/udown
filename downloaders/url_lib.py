@@ -5,11 +5,27 @@ import urllib3
 from urllib.parse import urlparse
 from pathlib import Path
 
+DEFAULT_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Connection": "keep-alive",
+}
+
 
 def download(
-    urls: list, output_directory: str = None, output_filename: str = None
+    urls: list,
+    output_directory: str = None,
+    output_filename: str = None,
+    headers: str = None,
 ) -> int:
-    http = urllib3.PoolManager()
+
+    headers = headers or DEFAULT_HEADERS
+    http = urllib3.PoolManager(headers=headers)
     results = []
 
     if isinstance(urls, str):
@@ -80,10 +96,29 @@ if __name__ == "__main__":
         default=None,
         help="Output filename",
     )
+    parser.add_argument(
+        "--user_agent",
+        type=str,
+        default=None,
+        help="Custom User-Agent header",
+    )
 
-    args = vars(parser.parse_args())
-    urls = args.get("urls")
-    output_directory = args.get("output_directory")
-    output_filename = args.get("output_filename")
+    parser.add_argument("--headers", type=str, default=DEFAULT_HEADERS)
+    args = parser.parse_args()
 
-    results = download(urls, output_directory, output_filename)
+    headers = DEFAULT_HEADERS.copy()
+    if args.header:
+        for h in args.header:
+            key, value = h.split(":", 1)
+            headers[key.strip()] = value.strip()
+
+    if args.user_agent:
+        headers["User-Agent"] = args.user_agent
+
+    download(
+        args.urls,
+        args.output_directory,
+        args.output_filename,
+        args.user_agent,
+        headers,
+    )

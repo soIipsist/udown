@@ -359,6 +359,141 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
     yield dict(result)
 
 
+# def download_without_progress(
+#     urls: list,
+#     options_path="",
+#     ytdlp_format: str = "ytdlp_video",
+#     custom_format: str = None,
+#     update_options: bool = False,
+#     prefix: str = None,
+#     extension: str = None,
+#     postprocessor_args: list = None,
+#     removed_args: list = None,
+#     output_directory=None,
+#     output_filename=None,
+#     sleep_interval: str = None,
+#     max_sleep_interval: str = None,
+#     proxy: str = None,
+# ):
+#     print("Downloading with yt-dlp...")
+#     options = get_options(
+#         options_path,
+#         ytdlp_format,
+#         custom_format,
+#         update_options,
+#         prefix,
+#         extension,
+#         postprocessor_args,
+#         output_directory,
+#         output_filename,
+#         sleep_interval,
+#         max_sleep_interval,
+#         proxy,
+#     )
+
+#     urls = get_urls(urls, removed_args)
+
+#     pp.pprint(options)
+
+#     for url in urls:
+#         print(f"\nProcessing URL: {url}")
+#         try:
+#             with yt_dlp.YoutubeDL(options) as ytdl:
+#                 info = ytdl.extract_info(url, download=False)
+
+#                 # Determine if it's a playlist or a single video
+#                 is_playlist = info.get("entries") is not None
+#                 entries = info.get("entries") if is_playlist else [info]
+
+#                 if is_playlist:
+#                     print(
+#                         f"Playlist: {info.get('title', 'Untitled')} ({len(entries)} videos)"
+#                     )
+
+#                 for idx, entry in enumerate(entries):
+#                     entry_url = None
+
+#                     result = {
+#                         "original_url": url,
+#                         "entry_index": idx,
+#                         "is_playlist": is_playlist,
+#                         "entry_url": entry_url,
+#                         "status": 1,
+#                     }
+
+#                     if not entry:
+#                         print(f"Skipping unavailable video at index {idx}.")
+#                         result["error"] = "Unavailable entry"
+#                         yield result
+#                         continue
+
+#                     entry_url = get_entry_url(url, entry, is_playlist)
+#                     entry_filename = get_entry_filename(entry)
+
+#                     if not entry_url:
+#                         print(f"Missing URL at index {idx}. Skipping.")
+#                         result["error"] = "Missing entry URL"
+#                         yield result
+#                         continue
+
+#                     result["entry_url"] = entry_url
+#                     result["entry_filename"] = entry_filename
+#                     print(f"Downloading: {entry.get('title', entry_url)}")
+#                     status = ytdl.download([entry_url])
+
+#                     result.update(
+#                         {
+#                             "status": status,
+#                             "entry": entry,
+#                         }
+#                     )
+
+#                     if status != 0:
+#                         result["error"] = "Download failed"
+
+#                     yield result
+
+#         except KeyboardInterrupt as e:
+#             print("User interrupted the download.")
+#             result = {
+#                 "original_url": url,
+#                 "status": 1,
+#                 "error": str(e),
+#                 "is_playlist": is_playlist,
+#             }
+#             yield result
+
+#         except yt_dlp.utils.DownloadError as e:
+#             print(f"Download error: {e}")
+#             result = {
+#                 "original_url": url,
+#                 "status": 1,
+#                 "error": str(e),
+#                 "is_playlist": is_playlist,
+#             }
+#             yield result
+
+#         except SystemExit as e:
+#             print(f"SystemExit: {e} — continuing...")
+#             result = {
+#                 "original_url": url,
+#                 "status": 1,
+#                 "error": f"SystemExit: {e}",
+#                 "is_playlist": is_playlist,
+#             }
+#             yield result
+
+#         except Exception as e:
+#             print(f"Unexpected error: {e}")
+#             result = {
+#                 "original_url": url,
+#                 "status": 1,
+#                 "error": f"Unexpected error: {e}",
+#                 "is_playlist": is_playlist,
+#             }
+#             yield result
+
+
 def download(
     urls: list,
     options_path="",
