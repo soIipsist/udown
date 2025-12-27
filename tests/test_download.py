@@ -101,7 +101,7 @@ class TestDownload(TestBase):
         wget_downloads = [Download(wget_urls[2], downloader_type="wget")]
         urllib_downloads = [Download(urllib_urls[0], downloader_type="urllib")]
         playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
-        downloads = playlist_downloads
+        downloads = urllib_downloads
 
         for download in downloads:
             self.assertTrue(isinstance(download, Download))

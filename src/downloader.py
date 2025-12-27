@@ -275,6 +275,7 @@ class Downloader(SQLiteItem):
         return download_results
 
 
+user_agent = "Mozilla/5.0"
 default_downloaders = [
     Downloader(
         "ytdlp",
@@ -324,6 +325,13 @@ default_downloaders = [
         "downloaders.url_lib",
         "download",
         "url, output_directory, output_filename",
+    ),
+    Downloader(
+        "urllib2",
+        None,
+        "downloaders.url_lib",
+        "download",
+        f"url, output_directory, output_filename, user_agent={user_agent}",
     ),
     Downloader(
         "ytdlp_channel",

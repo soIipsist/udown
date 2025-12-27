@@ -1,5 +1,6 @@
 import argparse
 import os
+from pprint import PrettyPrinter
 import subprocess
 import urllib3
 from urllib.parse import urlparse
@@ -16,15 +17,25 @@ DEFAULT_HEADERS = {
     "Connection": "keep-alive",
 }
 
+pp = PrettyPrinter(indent=2)
+
 
 def download(
     urls: list,
     output_directory: str = None,
     output_filename: str = None,
+    user_agent: str = None,
     headers: str = None,
 ) -> int:
 
     headers = headers or DEFAULT_HEADERS
+
+    if user_agent:
+        headers["User-Agent"] = user_agent
+
+    # print("Using headers: ")
+    # pp.pprint(headers)
+
     http = urllib3.PoolManager(headers=headers)
     results = []
 
@@ -111,9 +122,6 @@ if __name__ == "__main__":
         for h in args.header:
             key, value = h.split(":", 1)
             headers[key.strip()] = value.strip()
-
-    if args.user_agent:
-        headers["User-Agent"] = args.user_agent
 
     download(
         args.urls,
