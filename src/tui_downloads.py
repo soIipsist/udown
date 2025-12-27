@@ -9,7 +9,42 @@ from textual.screen import Screen
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Header, Footer
 from src.downloader import downloader_values, download_values
+from textual.screen import ModalScreen
+from textual.widgets import Static, Button
+from textual.containers import Vertical, Horizontal
 from textual.message import Message
+
+
+class ConfirmDelete(ModalScreen):
+    BINDINGS = [
+        ("escape", "cancel", "Cancel"),
+    ]
+
+    class Confirmed(Message):
+        def __init__(self, item):
+            super().__init__()
+            self.item = item
+
+    def __init__(self, item):
+        super().__init__()
+        self.item = item
+
+    def compose(self):
+        yield Vertical(
+            Static("Are you sure you want to delete this item?"),
+            Horizontal(
+                Button("Delete", variant="error", id="confirm"),
+                Button("Cancel", id="cancel"),
+            ),
+            id="confirm-delete",
+        )
+
+    def on_button_pressed(self, event: Button.Pressed):
+        if event.button.id == "confirm":
+            self.post_message(self.Confirmed(self.item))
+            self.dismiss()
+        else:
+            self.dismiss()
 
 
 class DownloadDetails(ModalScreen):
@@ -41,6 +76,7 @@ class DownloadDetails(ModalScreen):
 class DownloaderDetails(ModalScreen):
     BINDINGS = [
         ("escape", "dismiss", "Close"),
+        ("d", "delete", "Delete"),
         ("q", "dismiss", "Close"),
     ]
 
@@ -62,6 +98,9 @@ class DownloaderDetails(ModalScreen):
                 key,
                 "" if value is None else str(value),
             )
+
+    def action_delete(self):
+        self.app.push_screen(ConfirmDelete(self.downloader))
 
 
 class DownloadersTable(DataTable):
@@ -306,3 +345,8 @@ class UDownApp(App):
         download = message.download
         results = download.download()
         # self.refresh_table()
+
+    def on_confirm_delete_confirmed(self, message: ConfirmDelete.Confirmed):
+        item = message.item
+        item.delete()
+        self.render_table()
