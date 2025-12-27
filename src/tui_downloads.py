@@ -57,7 +57,7 @@ class DownloadersTable(DataTable):
                 d.download_status,
                 d.output_path or "",
                 d.progress,
-                key=str(d.id),  # IMPORTANT: stable key
+                key=str(d.url),  # IMPORTANT: stable key
             )
 
     def update_progress(self, download):
@@ -66,7 +66,18 @@ class DownloadersTable(DataTable):
 
 
 class DownloadsTable(DataTable):
+    BINDINGS = [
+        ("/", "search", "Search"),
+        ("escape", "clear_search", "Clear search"),
+    ]
+
+    def __init__(self, downloads, id=None):
+        super().__init__(id=id)
+        self.downloads = downloads
+        self.row_map = {}
+
     def on_mount(self):
+
         self.add_columns(
             "URL",
             "Downloader",
@@ -74,28 +85,90 @@ class DownloadsTable(DataTable):
             "Output",
             "Progress",
         )
-        self.cursor_type = "row"
         self.focus()
+        self.load()
+        self.set_interval(0.2, self.refresh_table)
 
-    def load(self, downloads):
-        self.clear()
-        for d in downloads:
-            self.add_row(
+    def load(self):
+        table = self
+        table.clear()
+        self.row_map.clear()
+
+        for idx, d in enumerate(self.downloads):
+            table.add_row(
                 d.url,
                 str(d.downloader),
                 d.download_status,
                 d.output_path or "",
                 d.progress,
-                key=str(d.id),  # IMPORTANT: stable key
+                key=str(d.url),
+            )
+            self.row_map[idx] = d
+
+    def refresh_table(self):
+        for row_key, download in self.row_map.items():
+            if download.progress:
+                self.update_cell(row_key, "Progress", download.progress)
+
+    def apply_filter(self, query: str):
+        self.clear()
+        self.row_map.clear()
+        idx = 0
+        q = query.lower().strip()
+
+        for d in self.downloads:
+            haystack = " ".join(
+                str(x).lower()
+                for x in (
+                    d.url,
+                    d.downloader,
+                    d.download_status,
+                    d.output_path,
+                    d.progress,
+                )
+                if x
             )
 
-    def update_progress(self, download):
-        if download.id in self.rows:
-            self.update_cell(str(download.id), "Progress", download.progress)
+            if q in haystack:
+                self.add_row(
+                    d.url,
+                    str(d.downloader),
+                    d.download_status,
+                    d.output_path or "",
+                    d.progress,
+                    key=str(d.url),
+                )
+                self.row_map[idx] = d
+                idx += 1
+
+    def on_key(self, event: events.Key) -> None:
+        """Open download details modal on Enter."""
+        if event.key != "enter" or not self.has_focus:
+            return
+
+        row = self.cursor_row
+        if row is None:
+            return
+
+        download = self.row_map.get(row)
+        if download:
+            self.app.push_screen(DownloadDetails(download))
+            event.stop()
+
+    def action_search(self):
+        search = self.app.query_one("#search", Input)
+        search.remove_class("hidden")
+        search.focus()
 
 
 class UDownApp(App):
     CSS_PATH = "app.css"
+
+    BINDINGS = [
+        ("q", "quit", "Quit"),
+        ("r", "refresh", "Refresh"),
+        ("tab", "focus_next", "Focus next"),
+    ]
 
     def __init__(self, downloads=None, downloaders=None):
         super().__init__()
@@ -115,7 +188,6 @@ class UDownApp(App):
     def render_table(self, table_type="downloads"):
         """Render a specific table based on type."""
         container = self.query_one("#table-container")
-        container.clear()  # remove previous table
 
         if table_type == "downloads":
             table = DownloadsTable(self.downloads, id="downloads")
@@ -131,151 +203,3 @@ class UDownApp(App):
     def refresh_table(self):
         if hasattr(self, "active_table"):
             self.active_table.refresh_table()
-
-
-# class UDownApp(App):
-#     def __init__(self, downloads):
-#         super().__init__()
-#         self.downloads = downloads
-#         self.conn = getattr(self.downloads[0], "conn") if len(downloads) > 0 else None
-#         self.row_map = {}
-
-#     CSS_PATH = "app.css"
-
-#     BINDINGS = [
-#         ("q", "quit", "Quit"),
-#         ("r", "refresh", "Refresh"),
-#         ("/", "search", "Search"),
-#         ("escape", "clear_search", "Clear search"),
-#         ("tab", "focus_next", "Focus next"),
-#     ]
-
-#     def compose(self) -> ComposeResult:
-#         yield Header()
-#         yield Input(placeholder="Search downloads...", id="search", classes="hidden")
-#         yield DataTable(id="downloads")
-#         yield Footer()
-
-#     def refresh_table(self):
-#         table = self.query_one(DataTable)
-
-#         for row_key, download in self.row_map.items():
-#             if download.progress:
-#                 table.update_cell(row_key, "Progress", download.progress)
-
-#     def on_mount(self):
-#         table = self.query_one(DataTable)
-#         table.add_columns(
-#             "URL",
-#             "Downloader",
-#             "Status",
-#             "Output",
-#             "Progress",
-#         )
-#         table.focus()
-#         self.load()
-#         self.set_interval(0.2, self.refresh_table)
-
-#     def reload(self, downloads):
-#         self.downloads = downloads
-#         self.load()
-
-#     def load(self):
-#         table = self.query_one("#downloads", DataTable)
-#         table.clear()
-#         self.row_map.clear()
-
-#         for idx, d in enumerate(self.downloads):
-#             table.add_row(
-#                 d.url,
-#                 str(d.downloader),
-#                 d.download_status,
-#                 d.output_path or "",
-#                 d.progress,
-#                 key=str(d.url),
-#             )
-#             self.row_map[idx] = d
-
-#     def action_search(self):
-#         search = self.query_one("#search", Input)
-#         search.remove_class("hidden")
-#         search.focus()
-
-#     def action_focus_next(self):
-#         search = self.query_one("#search", Input)
-#         table = self.query_one("#downloads", DataTable)
-
-#         if search.has_focus:
-#             search.add_class("hidden")
-#             table.focus()
-#         else:
-#             search.remove_class("hidden")
-#             search.focus()
-
-#     def action_clear_search(self):
-#         search = self.query_one("#search", Input)
-#         search.value = ""
-#         search.add_class("hidden")
-#         self.apply_filter("")
-
-#     def on_input_changed(self, event: Input.Changed):
-#         if event.input.id == "search":
-#             self.apply_filter(event.value)
-
-#     def apply_filter(self, query: str):
-#         table = self.query_one("#downloads", DataTable)
-#         table.clear()
-#         self.row_map.clear()
-#         idx = 0
-
-#         q = query.lower().strip()
-
-#         for d in self.downloads:
-#             haystack = " ".join(
-#                 str(x).lower()
-#                 for x in (
-#                     d.url,
-#                     d.downloader,
-#                     d.download_status,
-#                     d.output_path,
-#                     d.progress,
-#                 )
-#                 if x
-#             )
-
-#             if q in haystack:
-#                 table.add_row(
-#                     d.url,
-#                     str(d.downloader),
-#                     d.download_status,
-#                     d.output_path or "",
-#                     d.progress,
-#                     key=str(d.url),
-#                 )
-#                 self.row_map[idx] = d
-#                 idx += 1
-
-#     def on_key(self, event: events.Key) -> None:
-#         if event.key != "enter":
-#             return
-
-#         table = self.query_one("#downloads", DataTable)
-
-#         if not table.has_focus:
-#             return
-
-#         row = table.cursor_row
-#         if row is None:
-#             return
-
-#         download = self.row_map.get(row)
-#         if not download:
-#             return
-
-#         self.push_screen(DownloadDetails(download))
-#         event.stop()
-
-#     def on_unmount(self) -> None:
-#         if self.conn:
-#             self.conn.close()
-#             print("Database connection closed.")
