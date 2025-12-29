@@ -117,6 +117,10 @@ class DownloadersTable(DataTable):
         self.downloaders = downloaders
         self.row_map = {}
 
+    def set_items(self, items):
+        self.downloaders = items
+        self.load()
+
     def on_mount(self):
         self.add_columns(
             "Type",
@@ -197,6 +201,10 @@ class DownloadsTable(DataTable):
         self.downloads = downloads
         self.row_map = {}
 
+    def set_items(self, items):
+        self.downloads = items
+        self.load()
+
     def on_mount(self):
 
         self.add_columns(
@@ -225,7 +233,6 @@ class DownloadsTable(DataTable):
             self.row_map[idx] = d
 
     def refresh_table(self):
-        # self.load()
         for row_index, download in self.row_map.items():
             if download.progress:
                 self.update_cell(row_index, "Progress", download.progress)
@@ -285,10 +292,12 @@ class UDownApp(App):
         ("escape", "clear_search", "Clear search"),
     ]
 
-    def __init__(self, items=None, table_type="download"):
+    def __init__(self, items=None, table_type="download", action=None, args=None):
         super().__init__()
         self.items = items
         self.table_type = table_type
+        self.action = action
+        self.args = args
 
     def compose(self):
         yield Header()
@@ -298,7 +307,7 @@ class UDownApp(App):
 
     def on_mount(self):
         self.render_table()  # default view
-        self.set_interval(0.2, self.refresh_table)
+        self.set_interval(0.2, self.refresh_progress)
 
     def render_table(self):
         """Render a specific table based on type."""
@@ -315,9 +324,15 @@ class UDownApp(App):
         self.active_table = table
         self.active_table.load()  # initial load
 
-    def refresh_table(self):
+    def refresh_progress(self):
         if hasattr(self, "active_table"):
             self.active_table.refresh_table()
+
+    def reload_items(self):
+        self.items = self.action(**self.args)
+
+        if hasattr(self, "active_table"):
+            self.active_table.set_items(self.items)
 
     def action_search(self):
         search = self.query_one("#search", Input)
@@ -338,7 +353,6 @@ class UDownApp(App):
     def on_download_requested(self, message: DownloadRequested):
         download = message.download
         results = download.download()
-        # self.refresh_table()
 
     def on_delete_confirmed(self, message: DeleteConfirmed):
         item = message.item
@@ -349,3 +363,4 @@ class UDownApp(App):
             else f"downloader_type = {item.downloader_type}"
         )
         item.delete(filter_condition)
+        self.reload_items()

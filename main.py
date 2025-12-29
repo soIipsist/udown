@@ -29,7 +29,7 @@ def main():
     output = func(**args_dict)
 
     # print(output[0])
-    app = UDownApp(output, command).run()
+    app = UDownApp(output, command, func, args_dict).run()
 
 
 if __name__ == "__main__":
