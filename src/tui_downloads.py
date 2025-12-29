@@ -19,6 +19,8 @@ from textual.message import Message
 class DownloadDetails(ModalScreen):
     BINDINGS = [
         ("escape", "dismiss", "Close"),
+        ("d", "delete", "Delete"),
+        ("r", "download", "Retry download"),
         ("q", "dismiss", "Close"),
     ]
 
@@ -40,6 +42,14 @@ class DownloadDetails(ModalScreen):
                 key,
                 "" if value is None else str(value),
             )
+
+    def action_delete(self):
+        self.app.push_screen(ConfirmDelete(self.download))
+
+    def action_download(self) -> None:
+
+        download = self.download
+        self.app.post_message(DownloadRequested(download))
 
 
 class DeleteConfirmed(Message):
@@ -181,7 +191,6 @@ class DownloadRequested(Message):
 
 
 class DownloadsTable(DataTable):
-    BINDINGS = [("d", "download", "Download")]
 
     def __init__(self, downloads):
         super().__init__()
@@ -216,6 +225,7 @@ class DownloadsTable(DataTable):
             self.row_map[idx] = d
 
     def refresh_table(self):
+        # self.load()
         for row_index, download in self.row_map.items():
             if download.progress:
                 self.update_cell(row_index, "Progress", download.progress)
@@ -262,20 +272,6 @@ class DownloadsTable(DataTable):
         if download:
             self.app.push_screen(DownloadDetails(download))
             event.stop()
-
-    def action_download(self) -> None:
-        if not self.has_focus:
-            return
-
-        row = self.cursor_row
-        if row is None:
-            return
-
-        download = self.row_map.get(row)
-        if not download:
-            return
-
-        self.app.post_message(DownloadRequested(download))
 
 
 class UDownApp(App):
@@ -348,9 +344,8 @@ class UDownApp(App):
         item = message.item
 
         filter_condition = (
-            f"url = {item.url}"
+            f"url = {item.url} AND downloader_type = {item.downloader_type}"
             if self.table_type == "download"
             else f"downloader_type = {item.downloader_type}"
         )
         item.delete(filter_condition)
-        self.app.notify(filter_condition, timeout=None)

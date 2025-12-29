@@ -394,7 +394,7 @@ def downloader_action(
         Downloader.insert_all(default_downloaders)
         print("Successfully generated default downloaders.")
     else:
-        filter_keys = filter_keys.split(",")
+        filter_keys = filter_keys.split(",") if filter_keys else None
         downloaders = d.filter_by(filter_keys)
     return downloaders
 

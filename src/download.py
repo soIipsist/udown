@@ -179,6 +179,8 @@ class Download(SQLiteItem):
 
     @property
     def output_path(self):
+        if not self._output_path:
+            return os.path.join(self._output_directory, self._output_filename)
         return self._output_path
 
     @output_path.setter
