@@ -192,16 +192,17 @@ class Downloader(SQLiteItem):
             if download.output_directory:
                 os.makedirs(download.output_directory, exist_ok=True)
 
-            logger.info(f"Starting {download.downloader} download.")
+            # logger.info(f"Starting {download.downloader} download.")
             downloader = download.downloader
             downloader: Downloader
+            is_playlist = False
 
             try:
                 if not downloader:
                     raise ValueError(f"Downloader not found at index {idx}!")
                 func = downloader.get_function()
                 downloader_args = downloader.get_downloader_args(download, func)
-                logger.info(f"Downloader args: \n{downloader_args}")
+                # logger.info(f"Downloader args: \n{downloader_args}")
 
                 result_iter = func(**downloader_args)
 

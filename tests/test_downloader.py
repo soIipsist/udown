@@ -41,6 +41,7 @@ wget_urls = [
 urllib_urls = [
     "https://upload.wikimedia.org/wikipedia/commons/9/98/Elegant_Background-10.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/e/ea/Elegant_Background-13.jpg",
+    "https://ash-speed.hetzner.com/100MB.bin",
 ]
 
 channel_urls = [

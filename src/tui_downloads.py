@@ -4,7 +4,7 @@ from textual.widgets import DataTable, Header, Footer
 from textual.containers import Container
 from textual.reactive import reactive
 from textual.widgets import Input
-from textual import events
+from textual import events, work
 from textual.screen import ModalScreen, Screen
 from textual.screen import Screen
 from textual.app import ComposeResult
@@ -366,9 +366,14 @@ class UDownApp(App):
         if event.input.id == "search" and hasattr(self, "active_table"):
             self.active_table.apply_filter(event.value)
 
+    # @work(thread=True)
+    # def run_download(self, download, downloader):
+    #     download.download(downloader)
+
     def on_download_requested(self, message: DownloadRequested):
         download = message.download
-        results = download.download()
+        downloader = download.downloader  # resolve on main thread
+        # self.run_download(download, downloader)
 
     def on_delete_confirmed(self, message: DeleteConfirmed):
         item = message.item

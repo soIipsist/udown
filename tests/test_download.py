@@ -69,12 +69,12 @@ class TestDownload(TestBase):
                 output_directory=OUTPUT_DIR,
             ),
             Download(
-                wget_urls[1],
+                wget_urls[2],
                 downloader_type="wget",
                 output_directory=OUTPUT_DIR,
             ),
             Download(
-                urllib_urls[1],
+                urllib_urls[2],
                 downloader_type="urllib",
                 output_directory=OUTPUT_DIR,
             ),

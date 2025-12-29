@@ -221,8 +221,10 @@ tests/*.mp3
 tests/*.jpg
 tests/*.jpeg
 tests/*.png
+tests/*.bin
 *.mp4
 *.mp3
 *.jpg
 *.jpeg
 *.png
+*.bin
