@@ -200,9 +200,6 @@ class DownloadersTable(DataTable):
             self.app.push_screen(DownloaderDetails(downloader))
             event.stop()
 
-    def refresh_table(self):
-        pass
-
 
 class DownloadRequested(Message):
     def __init__(self, download):
@@ -232,7 +229,6 @@ class DownloadsTable(DataTable):
         )
         self.focus()
         self.load()
-        self.set_interval(0.2, self.refresh_table)
 
     def load(self):
         self.clear()
@@ -248,11 +244,6 @@ class DownloadsTable(DataTable):
             )
             self.row_map[idx] = d
 
-    def refresh_table(self):
-        for row_index, download in self.row_map.items():
-            if download.progress:
-                self.update_cell(row_index, "Progress", download.progress)
-
     def apply_filter(self, query: str):
         self.clear()
         self.row_map.clear()
@@ -264,7 +255,7 @@ class DownloadsTable(DataTable):
                 str(x).lower()
                 for x in (
                     d.url,
-                    d.downloader,
+                    d.downloader_type,
                     d.download_status,
                     d.output_path,
                     d.progress,
@@ -275,7 +266,7 @@ class DownloadsTable(DataTable):
             if q in haystack:
                 self.add_row(
                     d.url,
-                    str(d.downloader),
+                    str(d.downloader_type),
                     d.download_status,
                     d.output_path or "",
                     d.progress,
@@ -342,7 +333,9 @@ class UDownApp(App):
 
     def refresh_progress(self):
         if hasattr(self, "active_table"):
-            self.active_table.refresh_table()
+            for row_index, download in self.active_table.row_map.items():
+                if download.progress:
+                    self.active_table.update_cell_at((row_index, 4), download.progress)
 
     def reload_items(self):
         self.items = self.action(**self.args)
@@ -373,7 +366,7 @@ class UDownApp(App):
     def on_download_requested(self, message: DownloadRequested):
         download = message.download
         downloader = download.downloader  # resolve on main thread
-        # self.run_download(download, downloader)
+        download.download(downloader)
 
     def on_delete_confirmed(self, message: DeleteConfirmed):
         item = message.item

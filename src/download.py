@@ -43,7 +43,7 @@ class Download(SQLiteItem):
     _source_url: str = None
     _extra_args: dict = None
     _proxy: str = None
-    _progress: str = None
+    _progress: str = "0"
 
     @property
     def downloader_path(self):
