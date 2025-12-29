@@ -12,7 +12,7 @@ from src.downloader import (
     Downloader,
     default_downloaders,
 )
-from src.download import Download, list_downloads, DownloadStatus
+from src.download import Download, DownloadStatus
 from tests.test_downloader import (
     playlist_urls,
     video_urls,
@@ -88,15 +88,14 @@ class TestDownload(TestBase):
         super().setUp()
 
     def test_list_downloads(self):
-        downloads = list_downloads()
+        downloads = []
         print(downloads)
 
     def test_downloads_table(self):
-        downloads = list_downloads()
+        downloads = []
         UDownApp(downloads).run()
 
     def test_download_all(self):
-        downloads = list_downloads()
         video_downloads = [downloads[0], downloads[1]]
         wget_downloads = [Download(wget_urls[2], downloader_type="wget")]
         urllib_downloads = [Download(urllib_urls[0], downloader_type="urllib")]

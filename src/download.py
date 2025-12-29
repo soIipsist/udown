@@ -359,16 +359,6 @@ class Download(SQLiteItem):
         return results
 
 
-def list_downloads(args: dict = None):
-    if not args:
-        args = {}
-
-    download = Download(**args)
-    downloads = download.filter_by()
-
-    return downloads
-
-
 def download_action(**args):
 
     downloads = []
