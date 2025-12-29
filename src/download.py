@@ -63,6 +63,7 @@ class Download(SQLiteItem):
         source_url: Optional[str] = None,
         proxy: Optional[str] = None,
         extra_args: Optional[str] = None,
+        progress: Optional[str] = None,
     ):
         column_names = [
             "url",
@@ -77,6 +78,7 @@ class Download(SQLiteItem):
             "source_url",
             "proxy",
             "extra_args",
+            "progress",
         ]
         super().__init__(download_values, column_names, db_path=database_path)
         self.url = url
@@ -91,7 +93,7 @@ class Download(SQLiteItem):
         self.source_url = source_url
         self.proxy = proxy
         self.extra_args = extra_args
-
+        self.progress = progress
         self.table_name = "downloads"
         self.conjunction_type = "OR"
         self.filter_condition = f"url = {self.url}"
@@ -429,5 +431,6 @@ def download_command(subparsers):
         "-p", "--proxy", default=get_option("DOWNLOAD_PROXY"), type=str
     )
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)
+    download_cmd.add_argument("-pr", "--progress", default=None, type=str)
 
     return download_cmd
