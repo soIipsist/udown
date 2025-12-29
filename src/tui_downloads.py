@@ -44,7 +44,14 @@ class DownloadDetails(ModalScreen):
             )
 
     def action_delete(self):
-        self.app.push_screen(ConfirmDelete(self.download))
+        def on_result(confirmed: bool):
+            if confirmed:
+                self.dismiss()
+
+        self.app.push_screen(
+            ConfirmDelete(self.download),
+            on_result,
+        )
 
     def action_download(self) -> None:
 
@@ -78,7 +85,9 @@ class ConfirmDelete(ModalScreen):
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "confirm":
             self.app.post_message(DeleteConfirmed(self.item))
-        self.dismiss()
+            self.dismiss(True)
+        else:
+            self.dismiss(False)
 
 
 class DownloaderDetails(ModalScreen):
@@ -108,7 +117,14 @@ class DownloaderDetails(ModalScreen):
             )
 
     def action_delete(self):
-        self.app.push_screen(ConfirmDelete(self.downloader))
+        def on_result(confirmed: bool):
+            if confirmed:
+                self.dismiss()
+
+        self.app.push_screen(
+            ConfirmDelete(self.downloader),
+            on_result,
+        )
 
 
 class DownloadersTable(DataTable):
