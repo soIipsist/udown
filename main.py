@@ -25,7 +25,7 @@ def main():
     args_dict = vars(args)
     func = args_dict.pop("func")
     command = args_dict.pop("command", None)
-
+    action = args_dict.get("action", None)
     output = func(**args_dict)
 
     # print(output[0])

@@ -12,7 +12,7 @@ from src.downloader import (
     Downloader,
     default_downloaders,
 )
-from src.download import Download, DownloadStatus
+from src.download import Download, DownloadStatus, download_action
 from tests.test_downloader import (
     playlist_urls,
     video_urls,
@@ -79,6 +79,16 @@ downloads = [
     ),
 ]
 
+pp = PrettyPrinter(indent=1)
+video_downloads = [downloads[0], downloads[1]]
+wget_downloads = [Download(wget_urls[2], downloader_type="wget")]
+urllib_downloads = [
+    Download(urllib_urls[0], downloader_type="urllib"),
+    Download(urllib_urls[-1], downloader_type="urllib"),
+]
+playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
+downloads = wget_downloads
+
 
 class TestDownload(TestBase):
     def setUp(self) -> None:
@@ -90,22 +100,10 @@ class TestDownload(TestBase):
         super().setUp()
 
     def test_list_downloads(self):
-        downloads = []
-        print(downloads)
-
-    def test_downloads_table(self):
-        downloads = []
-        UDownApp(downloads).run()
+        downloads = download_action()
+        pp.pprint(downloads)
 
     def test_download_all(self):
-        video_downloads = [downloads[0], downloads[1]]
-        wget_downloads = [Download(wget_urls[2], downloader_type="wget")]
-        urllib_downloads = [
-            Download(urllib_urls[0], downloader_type="urllib"),
-            Download(urllib_urls[-1], downloader_type="urllib"),
-        ]
-        playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
-        downloads = urllib_downloads
 
         for download in downloads:
             self.assertTrue(isinstance(download, Download))
@@ -119,8 +117,7 @@ class TestDownload(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        # TestDownload.test_list_downloads,
-        # TestDownload.test_downloads_table
-        TestDownload.test_download_all
+        TestDownload.test_list_downloads,
+        # TestDownload.test_download_all
     ]
     run_test_methods(test_methods)
