@@ -44,46 +44,48 @@ def remove_files(
             os.remove(file_path)
 
 
+downloads = [
+    Download(
+        video_urls[0],
+        downloader_type="ytdlp_video",
+        output_filename="red.mp4",
+        output_directory=OUTPUT_DIR,
+    ),
+    Download(
+        video_urls[1],
+        downloader_type="ytdlp_video",
+        output_filename="blue.mp4",
+        output_directory=OUTPUT_DIR,
+    ),
+    Download(
+        playlist_urls[0],
+        output_filename=None,
+        output_directory=OUTPUT_DIR,
+    ),
+    Download(
+        wget_urls[2],
+        downloader_type="wget",
+        output_directory=OUTPUT_DIR,
+    ),
+    Download(
+        urllib_urls[2],
+        downloader_type="urllib",
+        output_directory=OUTPUT_DIR,
+    ),
+    Download(
+        channel_urls[0],
+        downloader_type="ytdlp_channel",
+        output_directory=OUTPUT_DIR,
+    ),
+]
+
+
 class TestDownload(TestBase):
     def setUp(self) -> None:
         # delete_items(conn, "downloaders", None)
         delete_items(conn, "downloads", None)
         remove_files()
 
-        downloads = [
-            Download(
-                video_urls[0],
-                downloader_type="ytdlp_video",
-                output_filename="red.mp4",
-                output_directory=OUTPUT_DIR,
-            ),
-            Download(
-                video_urls[1],
-                downloader_type="ytdlp_video",
-                output_filename="blue.mp4",
-                output_directory=OUTPUT_DIR,
-            ),
-            Download(
-                playlist_urls[0],
-                output_filename=None,
-                output_directory=OUTPUT_DIR,
-            ),
-            Download(
-                wget_urls[2],
-                downloader_type="wget",
-                output_directory=OUTPUT_DIR,
-            ),
-            Download(
-                urllib_urls[2],
-                downloader_type="urllib",
-                output_directory=OUTPUT_DIR,
-            ),
-            Download(
-                channel_urls[0],
-                downloader_type="ytdlp_channel",
-                output_directory=OUTPUT_DIR,
-            ),
-        ]
         Download.insert_all(downloads)
         super().setUp()
 
@@ -98,7 +100,10 @@ class TestDownload(TestBase):
     def test_download_all(self):
         video_downloads = [downloads[0], downloads[1]]
         wget_downloads = [Download(wget_urls[2], downloader_type="wget")]
-        urllib_downloads = [Download(urllib_urls[0], downloader_type="urllib")]
+        urllib_downloads = [
+            Download(urllib_urls[0], downloader_type="urllib"),
+            Download(urllib_urls[-1], downloader_type="urllib"),
+        ]
         playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
         downloads = urllib_downloads
 

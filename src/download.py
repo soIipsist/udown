@@ -240,6 +240,11 @@ class Download(SQLiteItem):
     def downloader(self, downloader):
         self._downloader = downloader
 
+    def set_progress_query(self, progress: str, filter_condition: str):
+        self.progress = progress
+        logger.info(f"Progress: {str(progress)}")
+        self.update(filter_condition)
+
     def set_download_status_query(
         self, status: DownloadStatus, error_message: str = None
     ):
@@ -422,5 +427,6 @@ def download_command(subparsers):
     )
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)
     download_cmd.add_argument("-pr", "--progress", default=None, type=str)
+    # download_cmd.add_argument("--ui", default=get_option("USE_TUI", True))
 
     return download_cmd
