@@ -372,15 +372,11 @@ def list_downloaders(d, downloader_type):
 
 
 def downloader_action(
-    action: str,
+    action: str = "list",
+    filter_keys: list = None,
     **args,
 ):
     downloaders = []
-    filter_keys = args.get("filter_keys")
-
-    if "filter_keys" in args:
-        args.pop("filter_keys")
-
     d = Downloader(**args)
 
     if action == "add":
@@ -406,11 +402,11 @@ def downloader_command(subparsers):
     # downloader cmd
     downloader_cmd = subparsers.add_parser("downloaders", help="List downloaders")
     downloader_cmd.add_argument(
-        "action",
+        "-a",
+        "--action",
         type=str,
         choices=["add", "delete", "list", "reset"],
         default="list",
-        nargs="?",
     )
     downloader_cmd.add_argument(
         "-t",

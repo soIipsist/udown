@@ -364,14 +364,11 @@ class Download(SQLiteItem):
         return results
 
 
-def download_action(**args):
+def download_action(
+    url: str = None, action: str = "list", filter_keys: str = None, **args
+):
 
     downloads = []
-    url = args.get("url")
-    filter_keys = args.get("filter_keys")
-
-    if "filter_keys" in args:
-        args.pop("filter_keys")
 
     if url:
         download = Download.parse_download_string(**args)
@@ -392,6 +389,12 @@ def download_command(subparsers):
 
     download_cmd = subparsers.add_parser("download", help="Download a URL")
     download_cmd.add_argument("url", type=str, nargs="?")
+    download_cmd.add_argument(
+        "-a",
+        "--action",
+        default="list",
+        choices=["download", "add", "delete", "list", "reset"],
+    )
     download_cmd.add_argument(
         "-t",
         "--downloader_type",
