@@ -315,14 +315,32 @@ class Download(SQLiteItem):
         return super().insert()
 
     @classmethod
+    def get_downloads_from_file(cls, downloads_path: str):
+        if not os.path.exists(downloads_path):
+            return
+
+        downloads = []
+        with open(downloads_path, "r") as file:
+            for line in file:
+                line = line.strip()
+                if not line:
+                    continue
+
+                print(line)
+                download = Download.parse_download_string(line)
+                downloads.append(download)
+
+        return downloads
+
+    @classmethod
     def parse_download_string(
         cls,
-        url: str,
-        downloader_type=None,
-        output_directory: str = None,
-        output_filename: str = None,
         **args,
     ):
+        url = args.get("url")
+        downloader_type = args.get("downloader_type")
+        output_directory = args.get("output_directory")
+        output_filename = args.get("output_filename")
 
         url = url.strip()
         parts = url.split(" ") if " " in url else [url]
