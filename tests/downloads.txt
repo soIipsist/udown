@@ -1,0 +1,5 @@
+https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY ytdlp_audio "some title"
+https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY wget "some sss"
+ytdlp_audio https://youtu.be/abc123 "title.mp3"
+https://youtu.be/abc123 "yolo.mp4"
+wget 'yolo' https://www.youtu.com
