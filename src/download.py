@@ -392,10 +392,15 @@ class Download(SQLiteItem):
 
 
 def download_action(**args):
-    action = args.pop("action", "list")
+    action = args.pop("action", None)
+    url = args.get("url")
     ui = args.pop("ui", True)
     filter_keys = args.pop("filter_keys", None)
     conjunction_type = args.pop("conjunction_type", "AND")
+
+    # print("ACTION", action)
+    if action is None:
+        action = "download" if url else "list"
 
     if "url" in args and args["url"]:
         downloads = Download.parse_download_string(**args)
@@ -449,7 +454,7 @@ def download_command(subparsers):
     download_cmd.add_argument(
         "-a",
         "--action",
-        default=get_option("DOWNLOAD_ACTION", "list"),
+        default=get_option("DOWNLOAD_ACTION", None),
         choices=["download", "add", "insert", "delete", "list"],
     )
     download_cmd.add_argument(
@@ -495,7 +500,7 @@ def download_command(subparsers):
         "--conjunction_type",
         default=get_option("DOWNLOAD_OP", "AND"),
         type=str,
-        choices=["AND", "OR", "NOT"],
+        choices=["AND", "OR"],
     )
 
     return download_cmd

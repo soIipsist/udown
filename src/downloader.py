@@ -432,7 +432,7 @@ def downloader_command(subparsers):
         "--conjunction_type",
         default=get_option("DOWNLOADER_OP", "AND"),
         type=str,
-        choices=["AND", "OR", "NOT"],
+        choices=["AND", "OR"],
     )
 
     return downloader_cmd
