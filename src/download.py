@@ -44,6 +44,15 @@ class Download(SQLiteItem):
     _extra_args: dict = None
     _proxy: str = None
     _progress: str = "0"
+    _results = None
+
+    @property
+    def results(self):
+        return self._results
+
+    @results.setter
+    def results(self, results: list):
+        self._results = results
 
     @property
     def downloader_path(self):
@@ -96,6 +105,7 @@ class Download(SQLiteItem):
         self.progress = progress
         self.table_name = "downloads"
         self.conjunction_type = "OR"
+        self.results = None
         self.filter_condition = f"url = {self.url}"
 
     @property
@@ -363,6 +373,7 @@ class Download(SQLiteItem):
             raise ValueError("No downloader available for this download.")
 
         results = downloader.start_downloads([self])
+        self.results = results
         return results
 
 
@@ -374,7 +385,7 @@ def download_action(**args):
     filter_keys = args.pop("filter_keys", None)
     ui = args.pop("ui", True)
 
-    if url is not None:
+    if url:
 
         if action == "list":  # action changes if url is provided
             action = "download"
@@ -388,11 +399,12 @@ def download_action(**args):
         downloads.append(download)
 
     elif action == "download":
-        results = download.download()
+        download.download()
         downloads.append(download)
 
     elif action == "delete":
-        download.delete()
+        filter_condition = f"url = {download.url} AND downloader_type = {download.downloader.downloader_type} AND output_path = {download.output_path}"
+        download.delete(filter_condition)
         downloads.append(download)
 
     else:
@@ -418,7 +430,7 @@ def download_command(subparsers):
         "-a",
         "--action",
         default="list",
-        choices=["download", "add", "delete", "list", "reset"],
+        choices=["download", "add", "delete", "list"],
     )
     download_cmd.add_argument(
         "-t",

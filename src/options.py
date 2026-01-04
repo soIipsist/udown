@@ -62,16 +62,11 @@ def load_config():
 
 
 def get_option(key, default=None):
-    config = load_config()
+    value = os.environ.get(key) or load_config().get(key) or default
 
-    # expand paths like ~/
-    value = config.get(key, default)
-
-    if value is None or value.strip() == "":
-        value = default
-
-    if isinstance(value, str) and value.startswith("~"):
-        return os.path.expanduser(value)
+    if isinstance(value, str):
+        value = value.strip() or default
+        value = os.path.expanduser(value)
 
     return value
 
