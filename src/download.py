@@ -370,6 +370,13 @@ def download_action(
 
     downloads = []
 
+    if action == "add":
+        pass
+    elif action == "delete":
+        d.delete()
+    else:
+        pass
+
     if url:
         download = Download.parse_download_string(**args)
         if download is not None:
@@ -430,6 +437,8 @@ def download_command(subparsers):
     )
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)
     download_cmd.add_argument("-pr", "--progress", default=None, type=str)
-    # download_cmd.add_argument("--ui", default=get_option("USE_TUI", True))
+    # download_cmd.add_argument(
+    #     "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+    # )
 
     return download_cmd

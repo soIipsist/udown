@@ -9,6 +9,10 @@ CONFIG_PATH = os.path.join(PROJECT_PATH, ".config")
 DEFAULT_CONFIG_PATH = os.path.join(PROJECT_PATH, ".default")
 
 
+def str_to_bool(string: str):
+    return string in ["1", "true", True, ""]
+
+
 def _load_raw_config():
     """Loads the .config file as raw key/value string pairs."""
     config = {}

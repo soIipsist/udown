@@ -10,7 +10,7 @@ from enum import Enum
 import sys
 from typing import List, Optional
 from urllib.parse import urlparse
-from src.options import get_option, PROJECT_PATH, DOWNLOADER_DIRECTORY
+from src.options import get_option, PROJECT_PATH, DOWNLOADER_DIRECTORY, str_to_bool
 from utils.logger import setup_logger
 from utils.sqlite import is_valid_path
 from utils.sqlite_item import SQLiteItem, create_connection
@@ -276,7 +276,6 @@ class Downloader(SQLiteItem):
         return download_results
 
 
-user_agent = "Mozilla/5.0"
 default_downloaders = [
     Downloader(
         "ytdlp",
@@ -328,13 +327,6 @@ default_downloaders = [
         "url, output_directory, output_filename",
     ),
     Downloader(
-        "urllib2",
-        None,
-        "downloaders.url_lib",
-        "download",
-        f"url, output_directory, output_filename, user_agent={user_agent}",
-    ),
-    Downloader(
         "ytdlp_channel",
         None,
         "downloaders.ytdlp_channel",
@@ -372,10 +364,12 @@ def list_downloaders(d, downloader_type):
 
 
 def downloader_action(
-    action: str = "list",
-    filter_keys: list = None,
     **args,
 ):
+    action = args.pop("action", "list")
+    filter_keys = args.pop("filter_keys", None)
+    ui = args.pop("ui", True)
+
     downloaders = []
     d = Downloader(**args)
 
@@ -393,6 +387,10 @@ def downloader_action(
     else:
         filter_keys = filter_keys.split(",") if filter_keys else None
         downloaders = d.filter_by(filter_keys)
+        if ui:
+            from src.tui_downloads import UDownApp
+
+            UDownApp(downloaders, "downloaders", downloader_action, args).run()
     return downloaders
 
 
@@ -420,9 +418,12 @@ def downloader_command(subparsers):
     )
     downloader_cmd.add_argument("-f", "--func", type=str, default=None)
     downloader_cmd.add_argument("-m", "--module", type=str, default=None)
-    downloader_cmd.add_argument("-a", "--downloader_args", type=str, default=None)
+    downloader_cmd.add_argument("-args", "--downloader_args", type=str, default=None)
     downloader_cmd.add_argument(
         "-k", "--filter_keys", type=str, default=get_option("DOWNLOADER_KEYS")
+    )
+    downloader_cmd.add_argument(
+        "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
     )
 
     return downloader_cmd

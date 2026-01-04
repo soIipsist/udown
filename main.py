@@ -2,7 +2,6 @@ import argparse
 from src.download import download_command, download_action
 from src.downloader import downloader_command, downloader_action, pp
 from src.options import options_action, options_command, get_option
-from src.tui_downloads import UDownApp
 
 
 def main():
@@ -24,12 +23,12 @@ def main():
 
     args_dict = vars(args)
     func = args_dict.pop("func")
-    command = args_dict.pop("command", None)
-    action = args_dict.get("action", None)
-    output = func(**args_dict)
+    ui = args_dict.get("ui", True)
+    # output = func(**args_dict)
 
-    # print(output[0])
-    app = UDownApp(output, command, func, args_dict).run()
+    print(args_dict)
+    # if not ui:
+    #     pp.pprint(output)
 
 
 if __name__ == "__main__":
