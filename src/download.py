@@ -315,73 +315,70 @@ class Download(SQLiteItem):
         return super().insert()
 
     @classmethod
-    def get_downloads_from_file(cls, downloads_path: str):
-        if not os.path.exists(downloads_path):
-            return
-
-        downloads = []
-        with open(downloads_path, "r") as file:
-            for line in file:
-                line = line.strip()
-                if not line:
-                    continue
-
-                print(line)
-                download = Download.parse_download_string(line)
-                downloads.append(download)
-
-        return downloads
-
-    @classmethod
     def parse_download_string(
         cls,
         **args,
     ):
+        downloads = []
         url = args.get("url")
-        downloader_type = args.get("downloader_type")
-        output_directory = args.get("output_directory")
-        output_filename = args.get("output_filename")
+        base_downloader_type = args.get("downloader_type")
+        base_output_directory = args.get("output_directory")
+        base_output_filename = args.get("output_filename")
 
-        url = url.strip()
-        parts = url.split(" ") if " " in url else [url]
+        def parse_line(line: str):
+            downloader_type = base_downloader_type
+            output_filename = base_output_filename
+            url = None
+            parts = line.split(" ") if " " in line else [line]
 
-        # parts = [f'"{arg}"' if " " in arg else arg for arg in parts]
+            for part in parts:
+                if part.startswith(("http://", "https://")):
+                    url = part
+                elif part.startswith('"') and part.endswith('"'):
+                    output_filename = part
+                elif part.startswith("'") and part.endswith("'"):
+                    output_filename = part
+                else:
+                    downloader_type = part if part else downloader_type
 
-        for part in parts:
-            if part.startswith(("http://", "https://")):
-                url = part
-            elif part.startswith('"') and part.endswith('"'):
-                output_filename = part
-            elif part.startswith("'") and part.endswith("'"):
-                output_filename = part
-            else:
-                downloader_type = part if part else downloader_type
+                if downloader_type is None:
+                    downloader_type = "ytdlp_video"
 
-        if downloader_type is None:
-            downloader_type = "ytdlp_video"
+                downloader = Downloader(downloader_type).select_first()
+                if not downloader:
+                    raise ValueError(
+                        f"Downloader of type '{downloader_type}' does not exist."
+                    )
 
-        downloader = Downloader(downloader_type).select_first()
-        if not downloader:
-            raise ValueError(f"Downloader of type '{downloader_type}' does not exist.")
+                if output_filename:
+                    output_filename = output_filename.strip("'").strip('"')
 
-        if output_filename:
-            output_filename = output_filename.strip("'").strip('"')
+                parsed_info = {
+                    "URL": url,
+                    "Downloader": downloader,
+                    "Output filename": output_filename,
+                }
 
-        parsed_info = {
-            "URL": url,
-            "Downloader": downloader,
-            "Output filename": output_filename,
-        }
+                logger.info(f"Parsed download string {url}:\n{pp.pformat(parsed_info)}")
 
-        logger.info(f"Parsed download string {url}:\n{pp.pformat(parsed_info)}")
+                return Download(
+                    url,
+                    downloader_type,
+                    output_filename=output_filename,
+                    output_directory=base_output_directory,
+                )
 
-        return Download(
-            url,
-            downloader_type,
-            output_filename=output_filename,
-            output_directory=output_directory,
-            **args,
-        )
+        if os.path.exists(url):
+            with open(url, "r") as file:
+                for line in file:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    downloads.append(parse_line(line))
+        else:
+            downloads.append(parse_line(url))
+
+        return downloads
 
     def download(self, downloader: Downloader = None):
         if not downloader:
@@ -408,33 +405,33 @@ def download_action(**args):
         if action == "list":  # action changes if url is provided
             action = "download"
 
-        download = Download.parse_download_string(**args)
+        downloads = Download.parse_download_string(**args)
     else:
         download = Download(**args)
 
     if action == "add":
         download.insert()
-        downloads.append(download)
 
     elif action == "download":
         download.download()
-        downloads.append(download)
 
     elif action == "delete":
         filter_condition = f"url = {download.url} AND downloader_type = {download.downloader.downloader_type} AND output_path = {download.output_path}"
         download.delete(filter_condition)
-        downloads.append(download)
 
     else:
         if filter_keys:
             filter_keys = filter_keys.split(",")
 
         downloads = download.filter_by(filter_keys)
-
+        download = None
         if ui:
             from src.tui_downloads import UDownApp
 
             UDownApp(downloads, action=download_action, args=args).run()
+
+    if download:
+        downloads.append(download)
 
     return downloads
 

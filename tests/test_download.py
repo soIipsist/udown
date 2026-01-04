@@ -176,7 +176,9 @@ class TestDownload(TestBase):
     #                 )
 
     def test_parse_download_string(self):
-        pass
+        download_str = "https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY ytdlp_audio"
+        downloads = Download.parse_download_string(url=download_str)
+        print(downloads)
 
     def tearDown(self):
         close_connection(conn)
