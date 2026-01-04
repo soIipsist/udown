@@ -314,7 +314,9 @@ class UDownApp(App):
 
     def on_mount(self):
         self.render_table()  # default view
-        self.set_interval(0.2, self.refresh_progress)
+
+        if self.table_type == "download":
+            self.set_interval(0.2, self.refresh_progress)
 
     def render_table(self):
         """Render a specific table based on type."""

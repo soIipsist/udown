@@ -12,7 +12,7 @@ from src.downloader import (
     Downloader,
     get_downloader_names,
 )
-from src.options import get_option
+from src.options import get_option, str_to_bool
 from src.tui_downloads import UDownApp
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
@@ -437,8 +437,8 @@ def download_command(subparsers):
     )
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)
     download_cmd.add_argument("-pr", "--progress", default=None, type=str)
-    # download_cmd.add_argument(
-    #     "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
-    # )
+    download_cmd.add_argument(
+        "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+    )
 
     return download_cmd

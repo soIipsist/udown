@@ -24,11 +24,12 @@ def main():
     args_dict = vars(args)
     func = args_dict.pop("func")
     ui = args_dict.get("ui", True)
-    # output = func(**args_dict)
+    args_dict.pop("command")
+    output = func(**args_dict)
 
     print(args_dict)
-    # if not ui:
-    #     pp.pprint(output)
+    if not ui:
+        pp.pprint(output)
 
 
 if __name__ == "__main__":
