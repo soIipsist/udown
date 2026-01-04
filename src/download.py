@@ -311,6 +311,7 @@ class Download(SQLiteItem):
         downloader_type=None,
         output_directory: str = None,
         output_filename: str = None,
+        **args,
     ):
 
         url = url.strip()
@@ -351,6 +352,7 @@ class Download(SQLiteItem):
             downloader_type,
             output_filename=output_filename,
             output_directory=output_directory,
+            **args,
         )
 
     def download(self, downloader: Downloader = None):
@@ -364,29 +366,45 @@ class Download(SQLiteItem):
         return results
 
 
-def download_action(
-    url: str = None, action: str = "list", filter_keys: str = None, **args
-):
-
+def download_action(**args):
     downloads = []
 
-    if action == "add":
-        pass
-    elif action == "delete":
-        d.delete()
-    else:
-        pass
+    url = args.get("url")
+    action = args.pop("action", "list")
+    filter_keys = args.pop("filter_keys", None)
+    ui = args.pop("ui", True)
 
-    if url:
+    if url is not None:
+
+        if action == "list":  # action changes if url is provided
+            action = "download"
+
         download = Download.parse_download_string(**args)
-        if download is not None:
-            downloads.append(download)
+    else:
+        download = Download(**args)
+
+    if action == "add":
+        download.insert()
+        downloads.append(download)
+
+    elif action == "download":
+        results = download.download()
+        downloads.append(download)
+
+    elif action == "delete":
+        download.delete()
+        downloads.append(download)
+
     else:
         if filter_keys:
             filter_keys = filter_keys.split(",")
 
-        d = Download(**args)
-        downloads = d.filter_by(filter_keys)
+        downloads = download.filter_by(filter_keys)
+
+        if ui:
+            from src.tui_downloads import UDownApp
+
+            UDownApp(downloads, action=download_action, args=args).run()
 
     return downloads
 
