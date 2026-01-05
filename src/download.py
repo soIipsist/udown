@@ -22,6 +22,13 @@ from utils.sqlite_conn import (
 from src.downloader import database_path, pp
 
 
+class DownloadAction(str, Enum):
+    INSERT = "insert"
+    ADD = "add"
+    DELETE = "delete"
+    LIST = "list"
+
+
 class DownloadStatus(str, Enum):
     STARTED = "started"
     COMPLETED = "completed"
@@ -385,45 +392,39 @@ class Download(SQLiteItem):
 
 
 def download_action(**args):
-    downloads = []
-
-    url = args.get("url")
     action = args.pop("action", "list")
-    filter_keys = args.pop("filter_keys", None)
     ui = args.pop("ui", True)
+    filter_keys = args.pop("filter_keys", None)
 
-    if url:
-
-        if action == "list":  # action changes if url is provided
-            action = "download"
-
+    if "url" in args and args["url"]:
         downloads = Download.parse_download_string(**args)
     else:
-        download = Download(**args)
+        downloads = [Download(**args)]
 
-    if action == "add":
-        download.insert()
+    if action in {"add", "insert"}:
+        for d in downloads:
+            d.insert()
 
     elif action == "download":
-        download.download()
+        for d in downloads:
+            d.download()
 
     elif action == "delete":
-        filter_condition = f"url = {download.url} AND downloader_type = {download.downloader.downloader_type} AND output_path = {download.output_path}"
-        download.delete(filter_condition)
+        for d in downloads:
+            filter_condition = f"url = {d.url} AND downloader_type = {d.downloader.downloader_type} AND output_path = {d.output_path}"
+            d.delete(filter_condition)
 
     else:
         if filter_keys:
             filter_keys = filter_keys.split(",")
+        args.pop("url", None)
+        d = Download(**args)
+        downloads = d.filter_by(filter_keys)
 
-        downloads = download.filter_by(filter_keys)
-        download = None
         if ui:
             from src.tui_downloads import UDownApp
 
             UDownApp(downloads, action=download_action, args=args).run()
-
-    if download:
-        downloads.append(download)
 
     return downloads
 
@@ -437,7 +438,7 @@ def download_command(subparsers):
         "-a",
         "--action",
         default="list",
-        choices=["download", "add", "delete", "list"],
+        choices=["download", "add", "insert", "delete", "list"],
     )
     download_cmd.add_argument(
         "-t",

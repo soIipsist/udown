@@ -373,7 +373,7 @@ def downloader_action(
     downloaders = []
     d = Downloader(**args)
 
-    if action == "add":
+    if action == "add" or action == "insert":
         if d.module is None:
             d.module = "ytdlp"
         if d.func is None:
@@ -403,7 +403,7 @@ def downloader_command(subparsers):
         "-a",
         "--action",
         type=str,
-        choices=["add", "delete", "list", "reset"],
+        choices=["add", "insert", "delete", "list", "reset"],
         default="list",
     )
     downloader_cmd.add_argument(
