@@ -403,10 +403,14 @@ def download_action(**args):
 
     if action in {"add", "insert"}:
         for d in downloads:
+            if not d.url:
+                raise ValueError("No URL provided.")
             d.insert()
 
     elif action == "download":
         for d in downloads:
+            if not d.url:
+                raise ValueError("No URL provided.")
             d.download()
 
     elif action == "delete":
@@ -442,7 +446,7 @@ def download_command(subparsers):
     download_cmd.add_argument(
         "-a",
         "--action",
-        default="list",
+        default=get_option("DOWNLOAD_ACTION", "list"),
         choices=["download", "add", "insert", "delete", "list"],
     )
     download_cmd.add_argument(
