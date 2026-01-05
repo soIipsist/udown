@@ -112,7 +112,7 @@ class Download(SQLiteItem):
         self.extra_args = extra_args
         self.progress = progress
         self.table_name = "downloads"
-        self.conjunction_type = "OR"
+        self.conjunction_type = "AND"
         self.results = None
         self.filter_condition = f"url = {self.url}"
 
@@ -395,6 +395,7 @@ def download_action(**args):
     action = args.pop("action", "list")
     ui = args.pop("ui", True)
     filter_keys = args.pop("filter_keys", None)
+    conjunction_type = args.pop("conjunction_type", "AND")
 
     if "url" in args and args["url"]:
         downloads = Download.parse_download_string(**args)
@@ -427,7 +428,9 @@ def download_action(**args):
         if filter_keys:
             filter_keys = filter_keys.split(",")
         args.pop("url", None)
+
         d = Download(**args)
+        d.conjunction_type = conjunction_type
         downloads = d.filter_by(filter_keys)
 
         if ui:
@@ -486,6 +489,9 @@ def download_command(subparsers):
     download_cmd.add_argument("-pr", "--progress", default=None, type=str)
     download_cmd.add_argument(
         "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+    )
+    download_cmd.add_argument(
+        "-c", "--conjunction_type", default="AND", type=str, choices=["AND", "OR"]
     )
 
     return download_cmd

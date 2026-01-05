@@ -369,9 +369,11 @@ def downloader_action(
     action = args.pop("action", "list")
     filter_keys = args.pop("filter_keys", None)
     ui = args.pop("ui", True)
+    conjunction_type = args.pop("conjunction_type", "AND")
 
     downloaders = []
     d = Downloader(**args)
+    d.conjunction_type = conjunction_type
 
     if action == "add" or action == "insert":
         if d.module is None:
@@ -424,6 +426,9 @@ def downloader_command(subparsers):
     )
     downloader_cmd.add_argument(
         "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+    )
+    downloader_cmd.add_argument(
+        "-c", "--conjunction_type", default="AND", type=str, choices=["AND", "OR"]
     )
 
     return downloader_cmd

@@ -88,7 +88,7 @@ urllib_downloads = [
     Download(urllib_urls[-1], downloader_type="urllib"),
 ]
 playlist_downloads = [Download(playlist_urls[0], downloader_type="ytdlp_video")]
-downloads = wget_downloads
+# downloads = video_downloads
 
 
 class TestDownload(TestBase):

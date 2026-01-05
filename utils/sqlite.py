@@ -309,6 +309,8 @@ def filter_items(
 
         if hasattr(obj, param):
             value = getattr(obj, param)
+            # print("PARAM", param, value)
+
             if value:
                 if isinstance(value, str):
                     value_str = f"'%{value}%'"
