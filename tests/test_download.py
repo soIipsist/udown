@@ -122,21 +122,56 @@ class TestDownload(TestBase):
         self.assertTrue(isinstance(download.extra_args, dict))
         print(download.extra_args)
 
+    def check_download_parts(self, parts, download: Download):
+        print(parts)
+        for part in parts:
+            if part.startswith(("http://", "https://")):
+                self.assertEqual(download.url, part)
+
+            elif Downloader(part).select_first():
+                self.assertEqual(download.downloader_type, part)
+
+            else:
+                self.assertEqual(download.output_filename, part)
+
     def test_parse_download_string(self):
         download_str = "https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY ytdlp_audio"
         downloads = Download.parse_download_string(url=download_str)
-        print(downloads)
         self.assertTrue(len(downloads) == 1)
 
+        download = downloads[0]
+        self.assertTrue(isinstance(download, Download))
+        download: Download
+        parts = download_str.split()
+        self.check_download_parts(parts, download)
+
+    def test_parse_download_from_file(self):
         # parse from file
         filepath = "downloads.txt"
         downloads = Download.parse_download_string(url=filepath)
-        print(downloads)
+        new_downloads = []
+
+        line_count = None
 
         with open(filepath, "r") as file:
-            line_count = len(file.readlines())
+            lines = file.readlines()
+            line_count = len(lines)
+
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    line_count -= 1
+                    continue
+
+                parts = shlex.split(line)
+                downloads = Download.parse_download_string(url=line)
+                download = downloads[0]
+
+                self.check_download_parts(parts, download)
+                new_downloads.append(download)
 
         self.assertTrue(len(downloads) == line_count)
+        self.assertTrue(downloads == new_downloads)
 
     def tearDown(self):
         close_connection(conn)
@@ -149,5 +184,6 @@ if __name__ == "__main__":
         # TestDownload.test_download_all,
         # TestDownload.test_get_extra_args,
         TestDownload.test_parse_download_string,
+        # TestDownload.test_parse_download_from_file
     ]
     run_test_methods(test_methods)

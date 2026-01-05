@@ -4,6 +4,7 @@ from datetime import datetime
 from enum import Enum
 import os
 import re
+import shlex
 import sqlite3
 from typing import Optional
 from urllib.parse import urlparse
@@ -326,47 +327,38 @@ class Download(SQLiteItem):
         base_output_filename = args.get("output_filename")
 
         def parse_line(line: str):
+            url = None
             downloader_type = base_downloader_type
             output_filename = base_output_filename
-            url = None
-            parts = line.split(" ") if " " in line else [line]
+
+            parts = shlex.split(line)
 
             for part in parts:
                 if part.startswith(("http://", "https://")):
                     url = part
-                elif part.startswith('"') and part.endswith('"'):
-                    output_filename = part
-                elif part.startswith("'") and part.endswith("'"):
-                    output_filename = part
-                else:
-                    downloader_type = part if part else downloader_type
+                    continue
 
-                if downloader_type is None:
-                    downloader_type = "ytdlp_video"
+                if Downloader(part).select_first():
+                    downloader_type = part
+                    continue
 
-                downloader = Downloader(downloader_type).select_first()
-                if not downloader:
-                    raise ValueError(
-                        f"Downloader of type '{downloader_type}' does not exist."
-                    )
+                output_filename = part
 
-                if output_filename:
-                    output_filename = output_filename.strip("'").strip('"')
+            if downloader_type is None:
+                downloader_type = "ytdlp_video"
 
-                parsed_info = {
-                    "URL": url,
-                    "Downloader": downloader,
-                    "Output filename": output_filename,
-                }
-
-                logger.info(f"Parsed download string {url}:\n{pp.pformat(parsed_info)}")
-
-                return Download(
-                    url,
-                    downloader_type,
-                    output_filename=output_filename,
-                    output_directory=base_output_directory,
+            downloader = Downloader(downloader_type).select_first()
+            if not downloader:
+                raise ValueError(
+                    f"Downloader of type '{downloader_type}' does not exist."
                 )
+
+            return Download(
+                url,
+                downloader_type,
+                output_filename=output_filename,
+                output_directory=base_output_directory,
+            )
 
         if os.path.exists(url):
             with open(url, "r") as file:

@@ -27,7 +27,8 @@ def main():
     args_dict.pop("command")
     output = func(**args_dict)
 
-    print(args_dict)
+    # print(args_dict)
+
     if not ui:
         pp.pprint(output)
 
