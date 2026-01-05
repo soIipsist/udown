@@ -383,11 +383,13 @@ def delete_items(
     query = f"DELETE FROM {table_name}"
 
     if filter_condition == "all" or filter_condition is None:
-        return execute_query(conn, query)
+        cursor, results = execute_query(conn, query, return_cursor=True)
     else:
         filter_condition, params = get_filter_condition(filter_condition)
         query += f" WHERE {filter_condition}"
-        return execute_query(conn, query, params)
+        cursor, results = execute_query(conn, query, params, return_cursor=True)
+
+    return cursor.rowcount > 0
 
 
 def delete_items_with_dialog(

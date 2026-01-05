@@ -411,8 +411,13 @@ def download_action(**args):
 
     elif action == "delete":
         for d in downloads:
-            filter_condition = f"url = {d.url} AND downloader_type = {d.downloader.downloader_type} AND output_path = {d.output_path}"
-            d.delete(filter_condition)
+            filter_condition = (
+                f"url = {d.url} AND downloader_type = {d.downloader.downloader_type}"
+            )
+            result = d.delete(filter_condition)
+
+            if result:
+                logger.info(f"Download successfully deleted: {d.url}")
 
     else:
         if filter_keys:
