@@ -491,7 +491,11 @@ def download_command(subparsers):
         "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
     )
     download_cmd.add_argument(
-        "-c", "--conjunction_type", default="AND", type=str, choices=["AND", "OR"]
+        "-c",
+        "--conjunction_type",
+        default=get_option("DOWNLOAD_OP", "AND"),
+        type=str,
+        choices=["AND", "OR", "NOT"],
     )
 
     return download_cmd
