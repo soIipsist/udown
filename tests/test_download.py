@@ -146,32 +146,34 @@ class TestDownload(TestBase):
         self.check_download_parts(parts, download)
 
     def test_parse_download_from_file(self):
-        # parse from file
         filepath = "downloads.txt"
-        downloads = Download.parse_download_string(url=filepath)
+
+        file_downloads = Download.parse_download_string(url=filepath)
         new_downloads = []
 
-        line_count = None
-
         with open(filepath, "r") as file:
-            lines = file.readlines()
-            line_count = len(lines)
-
-            for line in lines:
+            for line in file:
                 line = line.strip()
                 if not line:
-                    line_count -= 1
                     continue
 
                 parts = shlex.split(line)
-                downloads = Download.parse_download_string(url=line)
-                download = downloads[0]
+                single_downloads = Download.parse_download_string(url=line)
+                download = single_downloads[0]
 
                 self.check_download_parts(parts, download)
                 new_downloads.append(download)
 
-        self.assertTrue(len(downloads) == line_count)
-        self.assertTrue(downloads == new_downloads)
+        self.assertEqual(
+            [
+                (d.url, d.downloader_type, d.output_path, d.output_filename)
+                for d in file_downloads
+            ],
+            [
+                (d.url, d.downloader_type, d.output_path, d.output_filename)
+                for d in new_downloads
+            ],
+        )
 
     def tearDown(self):
         close_connection(conn)
@@ -183,7 +185,7 @@ if __name__ == "__main__":
         # TestDownload.test_list_downloads,
         # TestDownload.test_download_all,
         # TestDownload.test_get_extra_args,
-        TestDownload.test_parse_download_string,
-        # TestDownload.test_parse_download_from_file
+        # TestDownload.test_parse_download_string,
+        TestDownload.test_parse_download_from_file
     ]
     run_test_methods(test_methods)
