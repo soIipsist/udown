@@ -1,3 +1,4 @@
+from textual import work
 from textual.app import App
 from textual.widgets import Header, Footer
 from textual.containers import Container
@@ -75,22 +76,19 @@ class UDownApp(App):
     def action_clear_search(self):
         search = self.query_one("#search", Input)
         search.value = ""
-        search.add_class("hidden")
-        if self.active_table:
-            self.active_table.apply_filter("")
+        if search.visible:
+            search.add_class("hidden")
+
+    def action_refresh(self):
+        self.reload_items()
 
     def on_input_changed(self, event: Input.Changed):
         if event.input.id == "search" and hasattr(self, "active_table"):
             self.active_table.apply_filter(event.value)
 
-    # @work(thread=True)
-    # def run_download(self, download, downloader):
-    #     download.download(downloader)
-
     def on_download_requested(self, message):
         download = message.download
-        downloader = download.downloader  # resolve on main thread
-        download.download(downloader)
+        download.download()
 
     def on_delete_confirmed(self, message):
         item = message.item

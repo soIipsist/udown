@@ -47,6 +47,7 @@ class DownloadDetails(ModalScreen):
     def action_download(self) -> None:
 
         download = self.download
+        self.dismiss()
         self.app.post_message(DownloadRequested(download))
 
 
