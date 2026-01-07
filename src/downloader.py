@@ -365,10 +365,10 @@ def list_downloaders(d, downloader_type):
 def downloader_action(
     **args,
 ):
-    action = args.pop("action", "list")
-    filter_keys = args.pop("filter_keys", None)
+    action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
     ui = args.pop("ui", True)
-    conjunction_type = args.pop("conjunction_type", "AND")
+    filter_keys = args.pop("filter_keys", get_option("DOWNLOADER_KEYS", None))
+    conjunction_type = args.pop("conjunction_type", get_option("DOWNLOADER_OP", "AND"))
 
     downloaders = []
     d = Downloader(**args)
@@ -413,7 +413,7 @@ def downloader_command(subparsers):
         "--action",
         type=str,
         choices=["add", "insert", "delete", "list", "reset"],
-        default="list",
+        default=get_option("DOWNLOADER_ACTION", None),
     )
     downloader_cmd.add_argument("-t", "--downloader_type", type=str, default="")
     # type_arg.completer = complete_downloader_type

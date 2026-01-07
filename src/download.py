@@ -393,7 +393,7 @@ class Download(SQLiteItem):
 
 
 def download_action(**args):
-    action = args.pop("action", None)
+    action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
     url = args.get("url") or None
     ui = args.pop("ui", True)
     filter_keys = args.pop("filter_keys", get_option("DOWNLOAD_KEYS", None))
