@@ -14,7 +14,7 @@ from src.downloader import (
     get_downloader_names,
 )
 from src.options import get_option, str_to_bool
-from src.tui_downloads import UDownApp
+from src.tui_main import UDownApp
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
@@ -439,7 +439,7 @@ def download_action(**args):
         downloads = d.filter_by(filter_keys)
 
         if ui:
-            from src.tui_downloads import UDownApp
+            from src.tui_main import UDownApp
 
             UDownApp(downloads, action=download_action, args=args).run()
 

@@ -390,7 +390,7 @@ def downloader_action(
         filter_keys = filter_keys.split(",") if filter_keys else None
         downloaders = d.filter_by(filter_keys)
         if ui:
-            from src.tui_downloads import UDownApp
+            from src.tui_main import UDownApp
 
             UDownApp(downloaders, "downloaders", downloader_action, args).run()
     return downloaders

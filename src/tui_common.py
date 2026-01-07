@@ -4,6 +4,10 @@ from textual import events
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Header, Footer
 from textual.screen import ModalScreen
+from textual.screen import ModalScreen
+from textual.widgets import Static, Button
+from textual.containers import Vertical, Horizontal
+from textual.message import Message
 
 
 class DownloadRequested(Message):

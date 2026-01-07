@@ -2,7 +2,7 @@ import inspect
 from pathlib import Path
 import os
 import shlex
-from src.tui_downloads import UDownApp
+from src.tui_main import UDownApp
 from test_base import *
 
 current_file = Path(__file__).resolve()
