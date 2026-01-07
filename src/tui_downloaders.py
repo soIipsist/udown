@@ -3,21 +3,19 @@ from textual import events
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Header, Footer
 from textual.screen import ModalScreen
+from src.tui_common import ConfirmDelete
 
-from src.tui_common import ConfirmDelete, DownloadRequested
 
-
-class DownloadDetails(ModalScreen):
+class DownloaderDetails(ModalScreen):
     BINDINGS = [
         ("escape", "dismiss", "Close"),
         ("d", "delete", "Delete"),
-        ("r", "download", "Retry download"),
         ("q", "dismiss", "Close"),
     ]
 
-    def __init__(self, download):
+    def __init__(self, downloader):
         super().__init__()
-        self.download = download
+        self.downloader = downloader
 
     def compose(self):
         yield Header(show_clock=False)
@@ -28,7 +26,7 @@ class DownloadDetails(ModalScreen):
         table = self.query_one("#details", DataTable)
         table.add_columns("Field", "Value")
 
-        for key, value in self.download.as_dict().items():
+        for key, value in self.downloader.as_dict().items():
             table.add_row(
                 key,
                 "" if value is None else str(value),
@@ -40,50 +38,40 @@ class DownloadDetails(ModalScreen):
                 self.dismiss()
 
         self.app.push_screen(
-            ConfirmDelete(self.download),
+            ConfirmDelete(self.downloader),
             on_result,
         )
 
-    def action_download(self) -> None:
 
-        download = self.download
-        self.app.post_message(DownloadRequested(download))
-
-
-class DownloadsTable(DataTable):
-
-    def __init__(self, downloads):
+class DownloadersTable(DataTable):
+    def __init__(self, downloaders):
         super().__init__()
-        self.downloads = downloads
+        self.downloaders = downloaders
         self.row_map = {}
 
     def set_items(self, items):
-        self.downloads = items
+        self.downloaders = items
         self.load()
 
     def on_mount(self):
-
         self.add_columns(
-            "URL",
-            "Downloader",
-            "Status",
-            "Output",
-            "Progress",
+            "Type",
+            "Path",
+            "Arguments",
         )
+        self.cursor_type = "row"
         self.focus()
-        self.load()
 
     def load(self):
         self.clear()
         self.row_map.clear()
 
-        for idx, d in enumerate(self.downloads):
+        for idx, d in enumerate(self.downloaders):
             self.add_row(
-                d.url,
-                str(d.downloader),
-                d.download_status,
-                d.output_filename,
-                d.progress,
+                d.downloader_type,
+                d.downloader_path,
+                d.downloader_args,
+                key=str(d.downloader_type),
             )
             self.row_map[idx] = d
 
@@ -91,33 +79,31 @@ class DownloadsTable(DataTable):
         self.clear()
         self.row_map.clear()
         q = query.lower().strip()
-        table_row_index = 0  # real table row index
+        table_row_index = 0
 
-        for d in self.downloads:
+        for d in self.downloaders:
             haystack = " ".join(
                 str(x).lower()
                 for x in (
-                    d.url,
                     d.downloader_type,
-                    d.download_status,
-                    d.output_path,
-                    d.progress,
+                    d.downloader_path,
+                    d.downloader_args,
                 )
                 if x
             )
 
             if q in haystack:
                 self.add_row(
-                    d.url,
-                    str(d.downloader_type),
-                    d.download_status,
-                    d.output_path or "",
-                    d.progress,
+                    d.downloader_type,
+                    d.downloader_path,
+                    d.downloader_args,
+                    key=str(d.downloader_type),
                 )
                 self.row_map[table_row_index] = d
                 table_row_index += 1
 
     def on_key(self, event: events.Key) -> None:
+        """Open download details modal on Enter."""
         if event.key != "enter" or not self.has_focus:
             return
 
@@ -125,7 +111,7 @@ class DownloadsTable(DataTable):
         if row is None:
             return
 
-        download = self.row_map.get(row)
-        if download:
-            self.app.push_screen(DownloadDetails(download))
+        downloader = self.row_map.get(row)
+        if downloader:
+            self.app.push_screen(DownloaderDetails(downloader))
             event.stop()
