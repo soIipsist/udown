@@ -15,7 +15,6 @@ from utils.logger import setup_logger
 from utils.sqlite import is_valid_path
 from utils.sqlite_item import SQLiteItem, create_connection
 from utils.sqlite_conn import create_db, download_values, downloader_values
-import argparse
 import inspect
 
 
@@ -382,7 +381,9 @@ def downloader_action(
             d.func = "download"
         d.upsert()
     elif action == "delete":
-        d.delete()
+        result = d.delete()
+        if result:
+            print(f"Downloader {d.downloader_type} was successfully deleted.")
     elif action == "reset":
         Downloader.insert_all(default_downloaders)
         print("Successfully generated default downloaders.")
@@ -396,9 +397,15 @@ def downloader_action(
     return downloaders
 
 
-def downloader_command(subparsers):
-    choices = get_downloader_names()
+def complete_downloader_type(prefix, parsed_args, **kwargs):
+    # parsed_args contains already-typed args
+    if getattr(parsed_args, "action", None) == "insert":
+        return []
 
+    return get_downloader_names()
+
+
+def downloader_command(subparsers):
     # downloader cmd
     downloader_cmd = subparsers.add_parser("downloaders", help="List downloaders")
     downloader_cmd.add_argument(
@@ -408,13 +415,8 @@ def downloader_command(subparsers):
         choices=["add", "insert", "delete", "list", "reset"],
         default="list",
     )
-    downloader_cmd.add_argument(
-        "-t",
-        "--downloader_type",
-        type=str,
-        default="",
-        choices=choices,
-    )
+    downloader_cmd.add_argument("-t", "--downloader_type", type=str, default="")
+    # type_arg.completer = complete_downloader_type
     downloader_cmd.add_argument(
         "-d", "--downloader_path", type=is_valid_path, default=None
     )

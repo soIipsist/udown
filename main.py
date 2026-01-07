@@ -1,10 +1,23 @@
+#!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 import argparse
+import os
+import sys
 from src.download import download_command, download_action
-from src.downloader import downloader_command, downloader_action, pp
+from src.downloader import (
+    downloader_command,
+    downloader_action,
+    get_downloader_names,
+    pp,
+)
 from src.options import options_action, options_command, get_option
 
 
 def main():
+    # if "_ARGCOMPLETE" in os.environ:
+    #     print("ARGCOMPLETE ACTIVE", file=sys.stderr)
+    #     return
+
     parser = argparse.ArgumentParser(prog="udown")
     subparsers = parser.add_subparsers(dest="command")
 
@@ -19,12 +32,17 @@ def main():
     options_parser = options_command(subparsers)
     options_parser.set_defaults(func=options_action)
 
+    import argcomplete
+
+    argcomplete.autocomplete(parser)
+
     args = parser.parse_args()
 
     args_dict = vars(args)
     func = args_dict.pop("func")
     ui = args_dict.get("ui", True)
     args_dict.pop("command")
+
     output = func(**args_dict)
 
     # print(args_dict)
