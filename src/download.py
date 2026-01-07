@@ -447,7 +447,7 @@ def download_action(**args):
 
 
 def download_command(subparsers):
-    choices = get_downloader_names()
+    downloader_choices = get_downloader_names()
 
     download_cmd = subparsers.add_parser("download", help="Download a URL")
     download_cmd.add_argument("url", type=str, nargs="?")
@@ -461,7 +461,6 @@ def download_command(subparsers):
         "-t",
         "--downloader_type",
         default=get_option("DOWNLOADER_TYPE", ""),
-        choices=choices,
         type=str,
     )
 
