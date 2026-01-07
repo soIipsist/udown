@@ -1,11 +1,8 @@
 
 [project]
-name = "downloader"
+name = "udown"
 version="0.1"
 
 [project.scripts]
-name = "downloader"
-downloader = "downloader.main:main"
-mytool-download = "downloader.download:main"
-mytool-upload = "mytool.commands.upload:main"
-mytool-list = "mytool.commands.list:main"
+name = "udown"
+downloader = "udown.main:main"

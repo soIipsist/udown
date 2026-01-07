@@ -394,21 +394,17 @@ class Download(SQLiteItem):
 
 def download_action(**args):
     action = args.pop("action", None)
-    url = args.get("url")
+    url = args.get("url") or None
     ui = args.pop("ui", True)
-    filter_keys = args.pop("filter_keys", None)
-    conjunction_type = args.pop("conjunction_type", "AND")
+    filter_keys = args.pop("filter_keys", get_option("DOWNLOAD_KEYS", None))
+    conjunction_type = args.pop("conjunction_type", get_option("DOWNLOAD_OP", "AND"))
 
-    # print("ACTION", action)
     if action is None:
         action = "download" if url else "list"
 
-    if "url" in args and args["url"]:
+    if url:
         downloads = Download.parse_download_string(**args)
     else:
-        logger.info(f"ARGS: {args}")
-        logger.info(f"C_TYPE {conjunction_type}")
-
         downloads = [Download(**args)]
 
     if action in {"add", "insert"}:
@@ -439,6 +435,7 @@ def download_action(**args):
         args.pop("url", None)
 
         d = Download(**args)
+        logger.info(f"FILTER KEYS: {filter_keys}")
         d.conjunction_type = conjunction_type
         downloads = d.filter_by(filter_keys)
 

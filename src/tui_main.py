@@ -63,6 +63,7 @@ class UDownApp(App):
     def reload_items(self):
 
         self.args["ui"] = False
+        # self.args["filter_keys"] = ""
         self.items = self.action(**self.args)
         self.notify(str(self.args))
 
