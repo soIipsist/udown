@@ -8,7 +8,6 @@ import shlex
 import sqlite3
 from typing import Optional
 from urllib.parse import urlparse
-from venv import logger
 from src.downloader import (
     Downloader,
     get_downloader_names,
@@ -19,7 +18,7 @@ from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
 )
-from src.downloader import database_path, pp
+from src.downloader import database_path, pp, logger
 
 
 class DownloadAction(str, Enum):
@@ -333,6 +332,8 @@ class Download(SQLiteItem):
         base_output_directory = args.get("output_directory")
         base_output_filename = args.get("output_filename")
 
+        logger.info(f"Parsing download string: url={url}, args={args}")
+
         def parse_line(line: str):
             url = None
             downloader_type = base_downloader_type
@@ -405,6 +406,9 @@ def download_action(**args):
     if "url" in args and args["url"]:
         downloads = Download.parse_download_string(**args)
     else:
+        logger.info(f"ARGS: {args}")
+        logger.info(f"C_TYPE {conjunction_type}")
+
         downloads = [Download(**args)]
 
     if action in {"add", "insert"}:

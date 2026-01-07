@@ -61,9 +61,10 @@ class UDownApp(App):
                     self.active_table.update_cell_at((row_index, 4), download.progress)
 
     def reload_items(self):
-        args = dict(self.args)
-        args["ui"] = False
-        self.items = self.action(**args)
+
+        self.args["ui"] = False
+        self.items = self.action(**self.args)
+        self.notify(str(self.args))
 
         if hasattr(self, "active_table"):
             self.active_table.set_items(self.items)
