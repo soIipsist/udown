@@ -14,7 +14,9 @@ class UDownApp(App):
 
     BINDINGS = [
         ("q", "quit", "Quit"),
+        ("f", "filter", "Filter"),
         ("r", "refresh", "Refresh"),
+        ("p", "progress", "View progress"),
         ("tab", "focus_next", "Focus next"),
         ("/", "search", "Search"),
         ("escape", "clear_search", "Clear search"),
@@ -84,6 +86,9 @@ class UDownApp(App):
     def action_refresh(self):
         self.reload_items()
 
+    def action_filter(self):
+        pass
+
     def on_input_changed(self, event: Input.Changed):
         if event.input.id == "search" and hasattr(self, "active_table"):
             self.active_table.apply_filter(event.value)
@@ -96,7 +101,7 @@ class UDownApp(App):
         item = message.item
 
         filter_condition = (
-            f"url = {item.url} AND downloader_type = {item.downloader_type}"
+            f"url = {item.url} AND downloader_type = {item.downloader_type} AND output_path = {item.output_path}"
             if self.table_type == "download"
             else f"downloader_type = {item.downloader_type}"
         )
