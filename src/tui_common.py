@@ -10,12 +10,6 @@ from textual.containers import Vertical, Horizontal
 from textual.message import Message
 
 
-class DownloadRequested(Message):
-    def __init__(self, download):
-        self.download = download
-        super().__init__()
-
-
 class DeleteConfirmed(Message):
     def __init__(self, item):
         self.item = item

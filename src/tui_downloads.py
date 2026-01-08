@@ -3,8 +3,14 @@ from textual import events
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Header, Footer
 from textual.screen import ModalScreen
+from textual.message import Message
+from src.tui_common import ConfirmDelete
 
-from src.tui_common import ConfirmDelete, DownloadRequested
+
+class DownloadRequested(Message):
+    def __init__(self, download):
+        self.download = download
+        super().__init__()
 
 
 class DownloadDetails(ModalScreen):

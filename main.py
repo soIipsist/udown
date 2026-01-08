@@ -36,12 +36,15 @@ def main():
 
     argcomplete.autocomplete(parser)
 
+    if len(sys.argv) > 1 and sys.argv[1].startswith("-"):
+        sys.argv.insert(1, "download")
+
     args = parser.parse_args()
 
     args_dict = vars(args)
-    func = args_dict.pop("func")
+    func = args_dict.pop("func", download_action)
     ui = args_dict.get("ui", True)
-    args_dict.pop("command")
+    command = args_dict.pop("command")
 
     output = func(**args_dict)
 

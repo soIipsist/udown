@@ -41,7 +41,7 @@ create_db(database_path)
 
 
 logger = setup_logger(name="download", log_dir="/downloads/logs")
-logger.disabled = False
+logger.disabled = True
 
 
 class Downloader(SQLiteItem):
