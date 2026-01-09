@@ -6,6 +6,7 @@ from textual.widgets import Input
 from textual.widgets import Header, Footer
 from src.tui_downloaders import DownloadersTable
 from src.tui_downloads import DownloadsTable
+from src.tui_progress import ProgressScreen
 
 
 class UDownApp(App):
@@ -65,7 +66,6 @@ class UDownApp(App):
     def reload_items(self):
 
         self.args["ui"] = False
-        # self.args["filter_keys"] = ""
         self.items = self.action(**self.args)
         self.notify(str(self.args))
 
@@ -88,6 +88,16 @@ class UDownApp(App):
 
     def action_filter(self):
         pass
+
+    def action_progress(self) -> None:
+        if self.table_type != "download" or not hasattr(self, "active_table"):
+            self.notify(
+                "Progress view is only available in the Downloads table.",
+                severity="warning",
+            )
+            return
+
+        self.push_screen(ProgressScreen(self.items))
 
     def on_input_changed(self, event: Input.Changed):
         if event.input.id == "search" and hasattr(self, "active_table"):

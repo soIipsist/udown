@@ -125,6 +125,14 @@ class DownloadsTable(DataTable):
                 self.row_map[table_row_index] = d
                 table_row_index += 1
 
+    def get_download(self):
+        row = self.cursor_row
+        if row is None:
+            return
+
+        download = self.row_map.get(row)
+        return download
+
     def on_key(self, event: events.Key) -> None:
         if event.key != "enter" or not self.has_focus:
             return

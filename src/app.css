@@ -81,3 +81,33 @@ DownloadDetails > Header,
 DownloadDetails > Footer {
   background: #16161d;
 }
+
+/* Progress Screen */
+ProgressScreen {
+  background: #000000;
+}
+
+#progress-container {
+  width: 80%;
+  max-width: 100;
+  margin: auto;
+  padding: 2;
+  border: heavy #3b82f6;
+  background: #111111;
+}
+
+.title {
+  margin-bottom: 1;
+  color: cyan;
+}
+
+ProgressBar {
+  margin-top: 1;
+  margin-bottom: 1;
+  height: 1;
+}
+
+.progress-label {
+  margin-top: 1;
+  color: #22c55e;
+}
