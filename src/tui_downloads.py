@@ -53,9 +53,11 @@ class DownloadDetails(ModalScreen):
 
     def action_download(self) -> None:
 
-        download = self.download
         self.dismiss()
-        self.app.post_message(DownloadRequested(download))
+        self.app.post_message(DownloadRequested(self.download))
+
+    def action_progress(self) -> None:
+        self.app.show_progress(self.download)
 
 
 class DownloadsTable(DataTable):

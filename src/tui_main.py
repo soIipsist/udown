@@ -89,16 +89,19 @@ class UDownApp(App):
     def action_filter(self):
         pass
 
-    def action_progress(self) -> None:
+    def show_progress(self, download):
+
         if self.table_type != "download" or not hasattr(self, "active_table"):
             self.notify(
                 "Progress view is only available in the Downloads table.",
                 severity="warning",
             )
             return
-
-        download = self.active_table.get_download()
         self.push_screen(ProgressScreen(download))
+
+    def action_progress(self) -> None:
+        download = self.active_table.get_download()
+        self.show_progress(download)
 
     def on_input_changed(self, event: Input.Changed):
         if event.input.id == "search" and hasattr(self, "active_table"):
