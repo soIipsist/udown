@@ -137,11 +137,7 @@ class DownloadsTable(DataTable):
         if event.key != "enter" or not self.has_focus:
             return
 
-        row = self.cursor_row
-        if row is None:
-            return
-
-        download = self.row_map.get(row)
+        download = self.get_download()
         if download:
             self.app.push_screen(DownloadDetails(download))
             event.stop()

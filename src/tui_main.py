@@ -97,7 +97,8 @@ class UDownApp(App):
             )
             return
 
-        self.push_screen(ProgressScreen(self.items))
+        download = self.active_table.get_download()
+        self.push_screen(ProgressScreen(download))
 
     def on_input_changed(self, event: Input.Changed):
         if event.input.id == "search" and hasattr(self, "active_table"):
