@@ -47,7 +47,7 @@ class ProgressScreen(ModalScreen):
             url = url[:77] + "..."
 
         self.query_one("#download-title", Static).update(
-            f"[bold cyan]{d.downloader_type}[/] → {url}"
+            f"[bold #7c3aed]{d.downloader_type}[/] → {url}"
         )
 
         self.query_one("#download-output", Static).update(
