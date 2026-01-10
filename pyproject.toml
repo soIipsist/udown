@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.scripts]
-udown = "udown.__main__:main"
+udown = "__main__:main"
 
 [build-system]
 requires = ["setuptools>=61.0"]
