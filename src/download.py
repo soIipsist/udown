@@ -435,7 +435,9 @@ def download_action(**args):
 
         d = Download(**args)
         d.conjunction_type = conjunction_type
-        downloads = d.filter_by(filter_keys)
+        downloads = (
+            d.filter_by(filter_keys) if args.get("downloader_type") else d.select_all()
+        )
 
         if ui:
             from src.tui_main import UDownApp

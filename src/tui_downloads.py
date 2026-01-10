@@ -90,7 +90,7 @@ class DownloadsTable(DataTable):
         for idx, d in enumerate(self.downloads):
             self.add_row(
                 d.url,
-                str(d.downloader),
+                str(d.downloader_type),
                 d.download_status,
                 d.output_filename,
                 d.progress,
