@@ -15,7 +15,7 @@ class UDownApp(App):
 
     BINDINGS = [
         ("q", "quit", "Quit"),
-        ("f", "filter", "Filter"),
+        ("d", "select_downloader_type", "Next downloader type"),
         ("r", "refresh", "Refresh"),
         # ("p", "progress", "View progress"),
         ("tab", "focus_next", "Focus next"),
@@ -45,6 +45,7 @@ class UDownApp(App):
             self.downloader_type_index = self.downloader_types.index(
                 self.downloader_type
             )
+            # self.notify(f"Downloader: {self.downloader_type}", timeout=1)
         else:
             raise ValueError("downloader_type not found")
 
@@ -108,15 +109,13 @@ class UDownApp(App):
     def action_refresh(self):
         self.reload_items()
 
-    def action_filter(self):
-        # switch downloader type
-        self.notify(str(self.downloader_types))
+    def action_select_downloader_type(self):
         self.downloader_type_index = (self.downloader_type_index + 1) % len(
             self.downloader_types
         )
         downloader_type = self.downloader_types[self.downloader_type_index]
 
-        self.notify(f"Downloader: {downloader_type}")
+        self.notify(f"Downloader: {downloader_type}", timeout=1)
         self.set_downloader_type(downloader_type)
 
     def action_progress(self) -> None:
