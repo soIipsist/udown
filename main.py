@@ -7,7 +7,6 @@ from src.download import download_command, download_action
 from src.downloader import (
     downloader_command,
     downloader_action,
-    get_downloader_names,
     pp,
 )
 from src.options import options_action, options_command, get_option

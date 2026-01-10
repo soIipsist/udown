@@ -19,7 +19,6 @@ import inspect
 
 
 pp = PrettyPrinter(indent=2)
-
 database_path = get_option("DATABASE_PATH", os.path.join(PROJECT_PATH, "downloads.db"))
 
 # environment variables
@@ -339,13 +338,13 @@ if not db_exists:
     print("Successfully generated default downloaders.")
 
 
-def get_downloader_names():
-    downloader_names = [
+def get_downloader_types():
+    downloader_types = [
         downloader.downloader_type for downloader in Downloader().select_all()
     ]
-    downloader_names.append("")
-    downloader_names.append(None)
-    return downloader_names
+    downloader_types.append("")
+    downloader_types.append(None)
+    return downloader_types
 
 
 def list_downloaders(d, downloader_type):
@@ -393,7 +392,14 @@ def downloader_action(
         if ui:
             from src.tui_main import UDownApp
 
-            UDownApp(downloaders, "downloaders", downloader_action, args).run()
+            downloader_types = get_downloader_types()
+            UDownApp(
+                downloaders,
+                "downloaders",
+                downloader_action,
+                args,
+                downloader_types,
+            ).run()
     return downloaders
 
 
@@ -402,7 +408,7 @@ def complete_downloader_type(prefix, parsed_args, **kwargs):
     if getattr(parsed_args, "action", None) == "insert":
         return []
 
-    return get_downloader_names()
+    return get_downloader_types()
 
 
 def downloader_command(subparsers):

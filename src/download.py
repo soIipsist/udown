@@ -10,7 +10,7 @@ from typing import Optional
 from urllib.parse import urlparse
 from src.downloader import (
     Downloader,
-    get_downloader_names,
+    get_downloader_types,
 )
 from src.options import get_option, str_to_bool
 from src.tui_main import UDownApp
@@ -442,13 +442,19 @@ def download_action(**args):
         if ui:
             from src.tui_main import UDownApp
 
-            UDownApp(downloads, action=download_action, args=args).run()
+            downloader_types = get_downloader_types()
+            UDownApp(
+                downloads,
+                action=download_action,
+                args=args,
+                downloader_types=downloader_types,
+            ).run()
 
     return downloads
 
 
 def download_command(subparsers):
-    downloader_choices = get_downloader_names()
+    downloader_choices = get_downloader_types()
 
     download_cmd = subparsers.add_parser("download", help="Download a URL")
     download_cmd.add_argument("url", type=str, nargs="?")

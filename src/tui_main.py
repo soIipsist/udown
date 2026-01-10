@@ -23,12 +23,30 @@ class UDownApp(App):
         ("escape", "clear_search", "Clear search"),
     ]
 
-    def __init__(self, items=None, table_type="download", action=None, args=None):
+    def __init__(
+        self,
+        items=None,
+        table_type="download",
+        action=None,
+        args=None,
+        downloader_types: list = None,
+    ):
         super().__init__()
         self.items = items
         self.table_type = table_type
         self.action = action
         self.args = args
+        self.downloader_types = downloader_types
+
+        self.downloader_types.remove("")
+
+        self.downloader_type = self.args.get("downloader_type")
+        if self.downloader_type in self.downloader_types:
+            self.downloader_type_index = self.downloader_types.index(
+                self.downloader_type
+            )
+        else:
+            raise ValueError("downloader_type not found")
 
     def compose(self):
         yield Header()
@@ -67,10 +85,14 @@ class UDownApp(App):
 
         self.args["ui"] = False
         self.items = self.action(**self.args)
-        self.notify(str(self.args))
+        # self.notify(str(self.args))
 
         if hasattr(self, "active_table"):
             self.active_table.set_items(self.items)
+
+    def set_downloader_type(self, downloader_type):
+        self.args["downloader_type"] = downloader_type
+        self.reload_items()
 
     def action_search(self):
         search = self.query_one("#search", Input)
@@ -88,9 +110,14 @@ class UDownApp(App):
 
     def action_filter(self):
         # switch downloader type
-        if self.table_type == "download":
-            pass
-            # self.active_table.apply_filter()
+        self.notify(str(self.downloader_types))
+        self.downloader_type_index = (self.downloader_type_index + 1) % len(
+            self.downloader_types
+        )
+        downloader_type = self.downloader_types[self.downloader_type_index]
+
+        self.notify(f"Downloader: {downloader_type}")
+        self.set_downloader_type(downloader_type)
 
     def action_progress(self) -> None:
         download = self.active_table.get_download()

@@ -135,7 +135,9 @@ class TestDownload(TestBase):
                 self.assertEqual(download.output_filename, part)
 
     def test_parse_download_string(self):
-        download_str = "https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY ytdlp_audio"
+        download_str = (
+            "https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY wg.mp4 ytdlp_audio"
+        )
         downloads = Download.parse_download_string(url=download_str)
         self.assertTrue(len(downloads) == 1)
 

@@ -3,11 +3,11 @@ from downloaders.ytdlp import get_channel_info, download
 from argparse import ArgumentParser
 from pprint import PrettyPrinter
 from src.download import Download
-from src.downloader import Downloader, get_downloader_names
+from src.downloader import Downloader, get_downloader_types
 from src.options import get_option
 
 pp = PrettyPrinter(indent=2)
-downloader_names = get_downloader_names()
+downloader_types = get_downloader_types()
 
 
 def download(
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         "-d",
         "--downloader",
         default=get_option("DOWNLOADER_TYPE", "ytdlp_video"),
-        choices=downloader_names,
+        choices=downloader_types,
     )
     parser.add_argument("-i", "--sleep_interval", default="2")
     parser.add_argument("-m", "--max_sleep_interval", default="5")
