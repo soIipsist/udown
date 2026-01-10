@@ -49,7 +49,7 @@ def main():
 
     # print(args_dict)
 
-    if not ui:
+    if not ui or command == "options":
         pp.pprint(output)
 
 
