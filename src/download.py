@@ -8,12 +8,12 @@ import shlex
 import sqlite3
 from typing import Optional
 from urllib.parse import urlparse
-from src.downloader import (
+from .downloader import (
     Downloader,
     get_downloader_types,
 )
-from src.options import get_option, str_to_bool
-from src.tui_main import UDownApp
+from .options import get_option, str_to_bool
+from .tui_main import UDownApp
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,

@@ -10,7 +10,7 @@ from enum import Enum
 import sys
 from typing import List, Optional
 from urllib.parse import urlparse
-from src.options import get_option, PROJECT_PATH, DOWNLOADER_DIRECTORY, str_to_bool
+from .options import get_option, PROJECT_PATH, DOWNLOADER_DIRECTORY, str_to_bool
 from utils.logger import setup_logger
 from utils.sqlite import is_valid_path
 from utils.sqlite_item import SQLiteItem, create_connection
