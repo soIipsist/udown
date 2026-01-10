@@ -49,7 +49,7 @@ class UDownApp(App):
             )
             # self.notify(f"Downloader: {self.downloader_type}", timeout=1)
         else:
-            raise ValueError("downloader_type not found")
+            self.downloader_type_index = 0
 
     def compose(self):
         yield Input(placeholder="Search...", id="search", classes="hidden")
