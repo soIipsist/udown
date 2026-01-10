@@ -15,7 +15,8 @@ class UDownApp(App):
 
     BINDINGS = [
         ("q", "quit", "Quit"),
-        ("d", "select_downloader_type", "Next downloader type"),
+        ("n", "next_downloader_type", "Downloader →"),
+        ("p", "previous_downloader_type", "Downloader ←"),
         ("r", "refresh", "Refresh"),
         # ("p", "progress", "View progress"),
         ("tab", "focus_next", "Focus next"),
@@ -109,14 +110,24 @@ class UDownApp(App):
     def action_refresh(self):
         self.reload_items()
 
-    def action_select_downloader_type(self):
-        self.downloader_type_index = (self.downloader_type_index + 1) % len(
+    def _step_downloader_type(self, step: int) -> None:
+        if not self.downloader_types:
+            return
+
+        self.downloader_type_index = (self.downloader_type_index + step) % len(
             self.downloader_types
         )
+
         downloader_type = self.downloader_types[self.downloader_type_index]
 
         self.notify(f"Downloader: {downloader_type}", timeout=1)
         self.set_downloader_type(downloader_type)
+
+    def action_previous_downloader_type(self):
+        self._step_downloader_type(-1)
+
+    def action_next_downloader_type(self):
+        self._step_downloader_type(1)
 
     def action_progress(self) -> None:
         download = self.active_table.get_download()
