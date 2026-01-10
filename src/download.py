@@ -382,10 +382,9 @@ class Download(SQLiteItem):
 
     def download(self, downloader: Downloader = None):
         if not downloader:
-            downloader = self.downloader
-
-        if not downloader:
-            raise ValueError("No downloader available for this download.")
+            downloader = Downloader(
+                downloader_type=self._downloader_type
+            ).select_first()
 
         results = downloader.start_downloads([self])
         self.results = results
@@ -435,7 +434,6 @@ def download_action(**args):
         args.pop("url", None)
 
         d = Download(**args)
-        logger.info(f"FILTER KEYS: {filter_keys}")
         d.conjunction_type = conjunction_type
         downloads = d.filter_by(filter_keys)
 

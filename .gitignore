@@ -228,3 +228,4 @@ tests/*.bin
 *.jpeg
 *.png
 *.bin
+*.bin.*

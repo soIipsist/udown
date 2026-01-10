@@ -18,7 +18,7 @@ class DownloadDetails(ModalScreen):
         ("escape", "dismiss", "Close"),
         ("d", "delete", "Delete"),
         ("r", "download", "Retry download"),
-        ("p", "progress", "View progress"),
+        # ("p", "progress", "View progress"),
         ("q", "dismiss", "Close"),
     ]
 

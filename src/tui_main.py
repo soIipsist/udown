@@ -17,7 +17,7 @@ class UDownApp(App):
         ("q", "quit", "Quit"),
         ("f", "filter", "Filter"),
         ("r", "refresh", "Refresh"),
-        ("p", "progress", "View progress"),
+        # ("p", "progress", "View progress"),
         ("tab", "focus_next", "Focus next"),
         ("/", "search", "Search"),
         ("escape", "clear_search", "Clear search"),
@@ -87,7 +87,14 @@ class UDownApp(App):
         self.reload_items()
 
     def action_filter(self):
-        pass
+        # switch downloader type
+        if self.table_type == "download":
+            pass
+            # self.active_table.apply_filter()
+
+    def action_progress(self) -> None:
+        download = self.active_table.get_download()
+        self.show_progress(download)
 
     def show_progress(self, download):
 
@@ -99,17 +106,23 @@ class UDownApp(App):
             return
         self.push_screen(ProgressScreen(download))
 
-    def action_progress(self) -> None:
-        download = self.active_table.get_download()
-        self.show_progress(download)
-
     def on_input_changed(self, event: Input.Changed):
         if event.input.id == "search" and hasattr(self, "active_table"):
             self.active_table.apply_filter(event.value)
 
+    # @work(exclusive=True)
+    # async def run_download(self, download):
+    #     import asyncio
+
+    #     loop = asyncio.get_running_loop()
+    #     await loop.run_in_executor(None, download.download)
+
     def on_download_requested(self, message):
         download = message.download
-        download.download()
+        self.notify(f"DOWNLOAD {download.downloader_type}")
+        # import asyncio
+
+        # asyncio.create_task(self.run_download(download))
 
     def on_delete_confirmed(self, message):
         item = message.item
