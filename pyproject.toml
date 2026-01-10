@@ -29,6 +29,9 @@ udown = "udown.__main__:main"
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
 [tool.setuptools]
-packages = ["src"]
 package-dir = {"" = "src"}
