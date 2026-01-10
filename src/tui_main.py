@@ -12,6 +12,7 @@ from src.tui_progress import ProgressScreen
 class UDownApp(App):
 
     CSS_PATH = "app.css"
+    ENABLE_COMMAND_PALETTE = False
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -51,7 +52,6 @@ class UDownApp(App):
             raise ValueError("downloader_type not found")
 
     def compose(self):
-        yield Header()
         yield Input(placeholder="Search...", id="search", classes="hidden")
         yield Container(id="table-container")
         yield Footer()
