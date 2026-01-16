@@ -5,8 +5,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_PATH = os.path.dirname(SCRIPT_DIR)
 METADATA_DIR = os.path.join(PROJECT_PATH, "metadata")
 DOWNLOADER_DIRECTORY = os.path.join(PROJECT_PATH, "downloaders", "metadata")
-CONFIG_PATH = os.path.join(PROJECT_PATH, ".config")
-DEFAULT_CONFIG_PATH = os.path.join(PROJECT_PATH, ".default")
+CONFIG_PATH = os.path.join(PROJECT_PATH, "src", ".config")
+DEFAULT_CONFIG_PATH = os.path.join(PROJECT_PATH, "src", ".default")
 
 
 def str_to_bool(string: str):
