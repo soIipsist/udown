@@ -34,4 +34,4 @@ package-dir = {"udown" = "."}
 packages = ["udown", "src", "downloaders", "downloaders.metadata", "utils"]
 
 [tool.setuptools.package-data]
-"udown.src" = [".config", "app.css"]
+"src" = [".config", "app.css"]
