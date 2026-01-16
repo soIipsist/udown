@@ -3,7 +3,7 @@ from textual import events
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Header, Footer
 from textual.screen import ModalScreen
-from src.tui_common import ConfirmDelete
+from .tui_common import ConfirmDelete
 
 
 class DownloaderDetails(ModalScreen):

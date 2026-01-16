@@ -440,7 +440,7 @@ def download_action(**args):
         )
 
         if ui:
-            from src.tui_main import UDownApp
+            from .tui_main import UDownApp
 
             downloader_types = get_downloader_types()
             UDownApp(
