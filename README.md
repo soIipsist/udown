@@ -23,17 +23,25 @@ pip install -e .
 
 Running `udown` without arguments is the equivalent to `udown download`.
 
-```udown```
+```bash)
+udown
+```
 
 ### Download command
 
-```udown download```
+```bash)
+udown download
+```
 
 The main command for downloading files, videos, playlists, channels, or batches of URLs.
 
 #### Examples
 
 ```python)
+
+# List all downloads
+udown download 
+
 # Download a single URL (default action)
 udown "https://youtu.be/MvsAesQ-4zA"
 
@@ -54,7 +62,9 @@ udown download -s completed -sd 2025-01-01 -ed 2025-12-31 -c OR
 
 Manage and inspect available download backends/types.
 
-```udown downloaders```
+```bash)
+udown downloaders
+```
 
 #### Examples
 
