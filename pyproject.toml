@@ -32,3 +32,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 package-dir = {"udown" = "."}
 packages = ["udown", "udown.src", "downloaders", "utils"]
+
+[tool.setuptools.package-data]
+"udown.src" = [".config"]
