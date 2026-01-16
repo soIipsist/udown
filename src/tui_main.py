@@ -4,9 +4,9 @@ from textual.widgets import Header, Footer
 from textual.containers import Container
 from textual.widgets import Input
 from textual.widgets import Header, Footer
-from src.tui_downloaders import DownloadersTable
-from src.tui_downloads import DownloadsTable
-from src.tui_progress import ProgressScreen
+from .tui_downloaders import DownloadersTable
+from .tui_downloads import DownloadsTable
+from .tui_progress import ProgressScreen
 
 
 class UDownApp(App):

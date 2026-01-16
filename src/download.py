@@ -18,7 +18,7 @@ from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
 )
-from src.downloader import database_path, pp, logger
+from .downloader import database_path, pp, logger
 
 
 class DownloadAction(str, Enum):
