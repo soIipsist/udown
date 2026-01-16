@@ -182,7 +182,7 @@ class Downloader(SQLiteItem):
 
     @staticmethod
     def start_downloads(downloads):
-        from ..src.download import Download, DownloadStatus
+        from src.download import Download, DownloadStatus
 
         download_results = []
 
