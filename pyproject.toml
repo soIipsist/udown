@@ -35,3 +35,7 @@ packages = ["udown", "src", "downloaders", "downloaders.metadata", "utils"]
 
 [tool.setuptools.package-data]
 "src" = [".config", "app.css"]
+"downloaders" = [
+    "*.json",
+    "metadata/*.json"
+]
