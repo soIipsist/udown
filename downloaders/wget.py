@@ -2,7 +2,9 @@ import argparse
 import os
 import subprocess
 import re
+from utils.logger import setup_logger
 
+logger = setup_logger(name="wget", log_dir="/udown/wget")
 PROGRESS_RE = re.compile(r"(\d+)%")
 
 
@@ -24,93 +26,48 @@ def build_wget_cmd(url, output_directory=None, output_filename=None):
 
 
 def download(urls: list, output_directory: str = None, output_filename: str = None):
+
     if isinstance(urls, str):
         urls = [urls]
 
     for url in urls:
         cmd = build_wget_cmd(url, output_directory, output_filename)
 
-        # Very reliable cross-platform way
         proc = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            universal_newlines=True,
+            text=True,
             bufsize=1,
-            # Force unbuffered output
-            env=dict(os.environ, PYTHONUNBUFFERED="1"),
         )
 
-        yield {"url": url, "status": 0, "progress": "0%"}
+        try:
+            for line in proc.stdout:
+                line = line.strip()
+                match = PROGRESS_RE.search(line)
+                if match:
+                    percent = match.group(1)
+                    logger.info(percent)
+                    yield {"url": url, "status": 0, "progress": f"{percent}%"}
 
-        while True:
-            line = proc.stdout.readline()
-            if not line:
-                break
+            proc.wait()
 
-            line = line.rstrip("\r\n")
-            match = PROGRESS_RE.search(line)
-            if match:
-                percent = match.group(1)
-                yield {"url": url, "status": 0, "progress": f"{percent}%"}
+            if proc.returncode == 0:
+                yield {"url": url, "status": 0, "progress": "100%"}
+            else:
+                yield {"url": url, "status": 1, "error": "wget failed"}
 
-        returncode = proc.wait()
+        except KeyboardInterrupt:
+            proc.terminate()
+            proc.wait()
+            yield {"url": url, "status": 1, "error": "Interrupted"}
 
-        if returncode == 0:
-            yield {"url": url, "status": 0, "progress": "100%"}
-        else:
-            yield {"url": url, "status": 1, "error": f"wget failed (code {returncode})"}
-
-
-# def download(urls: list, output_directory: str = None, output_filename: str = None):
-#     results = []
-
-#     if isinstance(urls, str):
-#         urls = [urls]
-
-#     for url in urls:
-#         result = {
-#             "url": url,
-#             "status": 0,
-#             "progress": 0,
-#         }
-
-#         cmd = build_wget_cmd(url, output_directory, output_filename)
-
-#         proc = subprocess.Popen(
-#             cmd,
-#             stdout=subprocess.PIPE,
-#             stderr=subprocess.STDOUT,
-#             text=True,
-#             bufsize=1,
-#         )
-
-#         try:
-#             for line in proc.stdout:
-#                 line = line.strip()
-#                 match = PROGRESS_RE.search(line)
-#                 if match:
-#                     percent = match.group(1)
-#                     yield {"url": url, "status": 0, "progress": f"{percent}%"}
-
-#             proc.wait()
-
-#             if proc.returncode == 0:
-#                 yield {"url": url, "status": 0, "progress": "100%"}
-#             else:
-#                 yield {"url": url, "status": 1, "error": "wget failed"}
-
-#         except KeyboardInterrupt:
-#             proc.terminate()
-#             proc.wait()
-#             yield {"url": url, "status": 1, "error": "Interrupted"}
-
-#         finally:
-#             if proc.stdout:
-#                 proc.stdout.close()
-#             if proc.poll() is None:
-#                 proc.terminate()
-#                 proc.wait()
+        finally:
+            if proc.stdout:
+                proc.stdout.close()
+            if proc.poll() is None:
+                proc.terminate()
+                proc.wait()
 
 
 if __name__ == "__main__":

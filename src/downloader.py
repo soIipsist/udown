@@ -31,7 +31,7 @@ db = create_connection(database_path)
 create_db(database_path)
 
 
-logger = setup_logger(name="download", log_dir="/downloads/logs")
+logger = setup_logger(name="downloader", log_dir="/udown/downloader")
 logger.disabled = False
 
 
