@@ -192,7 +192,7 @@ class Downloader(SQLiteItem):
                     raise ValueError(f"Downloader not found at index {idx}!")
                 func = downloader.get_function()
                 downloader_args = downloader.get_downloader_args(download, func)
-                # logger.info(f"Downloader args: \n{downloader_args}")
+                logger.info(f"Downloader args: \n{downloader_args}")
 
                 result_iter = func(**downloader_args)
 

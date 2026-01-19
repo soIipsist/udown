@@ -1,10 +1,10 @@
 import argparse
 import os
 from pprint import PrettyPrinter
-import subprocess
 import urllib3
 from urllib.parse import urlparse
 from pathlib import Path
+from utils.logger import setup_logger
 
 DEFAULT_HEADERS = {
     "User-Agent": (
@@ -18,71 +18,93 @@ DEFAULT_HEADERS = {
 }
 
 pp = PrettyPrinter(indent=2)
+logger = setup_logger(name="url_lib", log_dir="/udown/url_lib")
 
 
 def download(
-    urls: list,
+    urls: list | str,
     output_directory: str = None,
     output_filename: str = None,
     user_agent: str = None,
-    headers: str = None,
-) -> int:
+    headers: dict = None,
+) -> list[dict]:
+    """
+    Download files using urllib3 with progress logging via logger.
+    Returns list of results.
+    """
+    if isinstance(urls, str):
+        urls = [urls]
 
-    headers = headers or DEFAULT_HEADERS
-
+    headers = (headers or DEFAULT_HEADERS).copy()
     if user_agent:
         headers["User-Agent"] = user_agent
-
-    # print("Using headers: ")
-    # pp.pprint(headers)
 
     http = urllib3.PoolManager(headers=headers)
     results = []
 
-    if isinstance(urls, str):
-        urls = [urls]
-
     for url in urls:
+        logger.info(f"Starting download: {url}")
         result = {"url": url, "status": 0}
+
         try:
-            path = urlparse(url).path
-
+            parsed = urlparse(url)
             filename = (
-                output_filename
-                if output_filename
-                else os.path.basename(path) or "filename"
+                output_filename or os.path.basename(parsed.path) or "downloaded_file"
             )
+            out_dir = Path(output_directory or ".")
+            out_dir.mkdir(parents=True, exist_ok=True)
+            output_path = out_dir / filename
 
-            # Determine output path
-            output_dir = Path(output_directory) if output_directory else Path(".")
-            output_dir.mkdir(parents=True, exist_ok=True)
-            output_path = output_dir / filename
+            logger.info(f"→ Saving to: {output_path}")
 
-            response = http.request("GET", url, preload_content=False)
+            response = http.request("GET", url, preload_content=False, retries=False)
 
             if response.status != 200:
-                error = f"Failed to download {url}: HTTP {response.status}"
-                print(error)
+                error = f"HTTP {response.status}"
+                logger.error(error)
                 result["error"] = error
+                results.append(result)
+                continue
+
+            total_size = int(response.headers.get("Content-Length", 0))
+            downloaded = 0
+            last_logged_percent = 0
+            last_logged_bytes = 0
+            chunk_size = 8192
 
             with open(output_path, "wb") as f:
-                for chunk in response.stream(1024):
-                    f.write(chunk)
+                for chunk in response.stream(chunk_size):
+                    if not chunk:
+                        continue
 
-            print(f"Downloaded: {url} → {output_path}")
+                    f.write(chunk)
+                    downloaded += len(chunk)
+
+                    if total_size > 0:
+                        percent = int((downloaded / total_size) * 100)
+                        if percent >= last_logged_percent + 5:
+                            logger.info(
+                                f"Progress: {percent}% ({downloaded:,} / {total_size:,} bytes)"
+                            )
+                            last_logged_percent = percent
+
+                    elif downloaded - last_logged_bytes > 1_000_000:
+                        logger.info(f"Progress: {downloaded:,} bytes downloaded...")
+                        last_logged_bytes = downloaded
+
+            logger.info(f"Completed: {downloaded:,} bytes → {output_path}")
+            result["path"] = str(output_path)
+            result["size"] = downloaded
             response.release_conn()
-        except KeyboardInterrupt as e:
-            print("User interrupted the download.")
+
+        except KeyboardInterrupt:
+            logger.warning("Download interrupted by user")
             result["status"] = 1
-            result["error"] = str(e)
-        except subprocess.CalledProcessError as e:
-            result["status"] = 1
-            result["error"] = str(e)
+            result["error"] = "Interrupted by user"
         except Exception as e:
-            error = f"Error downloading {url}: {e}"
-            print(error)
-            result["error"] = error
+            logger.error(f"Failed to download {url}: {e}")
             result["status"] = 1
+            result["error"] = str(e)
 
         results.append(result)
 
@@ -93,40 +115,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download files using urllib3")
     parser.add_argument("urls", nargs="+", type=str, help="URLs to download")
     parser.add_argument(
-        "-d",
-        "--output_directory",
-        type=str,
-        default=None,
-        help="Directory to save downloads",
-    )
-
-    parser.add_argument(
-        "-f",
-        "--output_filename",
-        type=str,
-        default=None,
-        help="Output filename",
+        "-d", "--output_directory", type=str, default=None, help="Save directory"
     )
     parser.add_argument(
-        "--user_agent",
-        type=str,
-        default=None,
-        help="Custom User-Agent header",
+        "-f", "--output_filename", type=str, default=None, help="Custom output filename"
+    )
+    parser.add_argument(
+        "--user_agent", type=str, default=None, help="Custom User-Agent"
     )
 
-    parser.add_argument("--headers", type=str, default=DEFAULT_HEADERS)
     args = parser.parse_args()
-
-    headers = DEFAULT_HEADERS.copy()
-    if args.header:
-        for h in args.header:
-            key, value = h.split(":", 1)
-            headers[key.strip()] = value.strip()
 
     download(
         args.urls,
         args.output_directory,
         args.output_filename,
         args.user_agent,
-        headers,
     )
