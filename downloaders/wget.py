@@ -31,6 +31,7 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
         urls = [urls]
 
     for url in urls:
+        logger.info(f"URL: {url}")
         cmd = build_wget_cmd(url, output_directory, output_filename)
 
         proc = subprocess.Popen(
@@ -47,7 +48,7 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
                 match = PROGRESS_RE.search(line)
                 if match:
                     percent = match.group(1)
-                    logger.info(percent)
+                    logger.info(f"Progress: {str(percent)}")
                     yield {"url": url, "status": 0, "progress": f"{percent}%"}
 
             proc.wait()
@@ -55,11 +56,20 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
             if proc.returncode == 0:
                 yield {"url": url, "status": 0, "progress": "100%"}
             else:
+                stderr_output = (
+                    proc.stderr.read().decode("utf-8", errors="replace").strip()
+                )
+                logger.error(f"Command failed with code {proc.returncode}")
+
+                if stderr_output:
+                    logger.error(f"Error:\n{stderr_output}")
+
                 yield {"url": url, "status": 1, "error": "wget failed"}
 
         except KeyboardInterrupt:
             proc.terminate()
             proc.wait()
+            logger.error("Error: KeyboardInterrupt")
             yield {"url": url, "status": 1, "error": "Interrupted"}
 
         finally:

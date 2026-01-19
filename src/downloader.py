@@ -182,7 +182,7 @@ class Downloader(SQLiteItem):
             if download.output_directory:
                 os.makedirs(download.output_directory, exist_ok=True)
 
-            # logger.info(f"Starting {download.downloader} download.")
+            logger.info(f"Starting {download.downloader} download.")
             downloader = download.downloader
             downloader: Downloader
             is_playlist = False
