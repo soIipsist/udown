@@ -40,7 +40,7 @@ def main():
 
     argcomplete.autocomplete(parser)
 
-    if len(sys.argv) > 1 and sys.argv[1].startswith("-"):
+    if len(sys.argv) == 1 or sys.argv[1].startswith("-"):
         sys.argv.insert(1, "download")
 
     args = parser.parse_args()
