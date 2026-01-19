@@ -1,20 +1,12 @@
-import ast
 from collections.abc import Iterable
 from importlib import import_module
 import os
 from pprint import PrettyPrinter
-import re
-import sqlite3
-from datetime import datetime
-from enum import Enum
-import sys
-from typing import List, Optional
-from urllib.parse import urlparse
 from .options import get_option, PROJECT_PATH, DOWNLOADER_DIRECTORY, str_to_bool
 from utils.logger import setup_logger
 from utils.sqlite import is_valid_path
 from utils.sqlite_item import SQLiteItem, create_connection
-from utils.sqlite_conn import create_db, download_values, downloader_values
+from utils.sqlite_conn import create_db, downloader_values
 import inspect
 
 
@@ -40,7 +32,7 @@ create_db(database_path)
 
 
 logger = setup_logger(name="download", log_dir="/downloads/logs")
-logger.disabled = True
+logger.disabled = False
 
 
 class Downloader(SQLiteItem):

@@ -8,14 +8,6 @@ from src.download import download_command, download_action
 from src.downloader import downloader_command, downloader_action, pp
 from src.options import options_action, options_command, get_option
 
-# from src.download import download_command, download_action
-# from src.downloader import (
-#     downloader_command,
-#     downloader_action,
-#     pp,
-# )
-# from src.options import options_action, options_command, get_option
-
 
 def main():
     # if "_ARGCOMPLETE" in os.environ:
@@ -75,12 +67,12 @@ if __name__ == "__main__":
 
 # downloads
 
-# python downloader.py downloads
-# python downloader.py "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg" -d "downloads.txt"
-# python downloader.py -d "downloads.txt" -o ~/temp
+# python download.py downloads
+# python download.py "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg" -d "downloads.txt"
+# python download.py "downloads.txt" -o ~/temp
 
-# python downloader.py -t ytdlp_audio -d "downloads.txt" (type should precede everything unless explicitly defined inside the .txt)
-# python downloader.py -t ytdlp_audio -d "downloads.txt" -o ~/temp
+# python download.py -t ytdlp_audio "downloads.txt"
+# python download.py -t ytdlp_audio "downloads.txt" -o ~/temp
 
 # downloaders
 

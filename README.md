@@ -40,7 +40,7 @@ The main command for downloading files, videos, playlists, channels, or batches 
 ```python)
 
 # List all downloads
-udown download 
+udown download  (same as running "udown")
 
 # Download a single URL (default action)
 udown "https://youtu.be/MvsAesQ-4zA"
@@ -72,7 +72,7 @@ udown downloaders
 # List all available downloader types
 udown downloaders
 
-# View detailed information about a specific type
+# List all types like ytdlp_video
 udown downloaders -t ytdlp_video
 
 # Add a new custom downloader

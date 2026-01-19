@@ -229,3 +229,4 @@ tests/*.bin
 *.png
 *.bin
 *.bin.*
+.DS_Store
