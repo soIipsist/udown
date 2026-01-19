@@ -32,7 +32,9 @@ def main():
 
     argcomplete.autocomplete(parser)
 
-    if len(sys.argv) == 1 or sys.argv[1].startswith("-"):
+    if len(sys.argv) == 1:
+        sys.argv.append("download")
+    elif sys.argv[1].startswith("-") or sys.argv[1] not in subparsers.choices:
         sys.argv.insert(1, "download")
 
     args = parser.parse_args()
