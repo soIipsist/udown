@@ -77,5 +77,4 @@ udown downloaders -t ytdlp_video
 
 # Add a new custom downloader
 udown downloaders add -n mycustom -t ytdlp_audio -d downloader_path.json
-
 ```
