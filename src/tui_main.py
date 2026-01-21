@@ -6,6 +6,7 @@ from textual.widgets import Input
 from textual.widgets import Header, Footer
 from .tui_downloaders import DownloadersTable
 from .tui_downloads import DownloadsTable
+from .tui_options import OptionsTable
 from .tui_progress import ProgressScreen
 
 
@@ -13,7 +14,6 @@ class UDownApp(App):
 
     CSS_PATH = "app.css"
     ENABLE_COMMAND_PALETTE = False
-
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("n", "next_downloader_type", "Downloader →"),
@@ -75,6 +75,8 @@ class UDownApp(App):
             table = DownloadsTable(self.items)
         elif self.table_type == "downloaders":
             table = DownloadersTable(self.items)
+        elif self.table_type == "options":
+            table = OptionsTable(self.items)
         else:
             return
 

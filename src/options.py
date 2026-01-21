@@ -110,7 +110,7 @@ def options_action(action: str, key: str = None, value: str = None, ui: bool = F
 
             UDownApp(options, table_type="options").run()
 
-        return all_options()
+        return options
 
 
 def options_command(subparsers):
