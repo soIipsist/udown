@@ -117,11 +117,11 @@ def options_command(subparsers):
     options_cmd = subparsers.add_parser("options", help="List options")
 
     options_cmd.add_argument(
-        "-a",
-        "--action",
+        "action",
         type=str,
         choices=["list", "get", "set", "reset"],
         default="list",
+        nargs="?",
     )
     options_cmd.add_argument("-k", "--key", type=str, default=None)
     options_cmd.add_argument("-v", "--value", type=str, default=None)
