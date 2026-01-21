@@ -102,5 +102,4 @@ udown options get --key "USE_TUI"
 
 # Reset all options
 udown options reset
-
 ```
