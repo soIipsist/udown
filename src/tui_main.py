@@ -40,16 +40,21 @@ class UDownApp(App):
         self.args = args
         self.downloader_types = downloader_types
 
-        self.downloader_types.remove("")
+        if self.table_type == "options":
+            self.BINDINGS = [
+                ("q", "quit", "Quit"),
+            ]
+        self.downloader_type = self.args.get("downloader_type") if self.args else None
 
-        self.downloader_type = self.args.get("downloader_type")
-        if self.downloader_type in self.downloader_types:
-            self.downloader_type_index = self.downloader_types.index(
-                self.downloader_type
-            )
-            # self.notify(f"Downloader: {self.downloader_type}", timeout=1)
-        else:
-            self.downloader_type_index = 0
+        if self.downloader_types:
+            self.downloader_types.remove("")
+            if self.downloader_type in self.downloader_types:
+                self.downloader_type_index = self.downloader_types.index(
+                    self.downloader_type
+                )
+                # self.notify(f"Downloader: {self.downloader_type}", timeout=1)
+            else:
+                self.downloader_type_index = 0
 
     def compose(self):
         yield Input(placeholder="Search...", id="search", classes="hidden")

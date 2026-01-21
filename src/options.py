@@ -104,6 +104,12 @@ def options_action(action: str, key: str = None, value: str = None, ui: bool = F
         reset_options()
         print("Successfully generated default downloaders.")
     else:
+        options = all_options()
+        if ui:
+            from .tui_main import UDownApp
+
+            UDownApp(options, table_type="options").run()
+
         return all_options()
 
 
