@@ -8,10 +8,13 @@ from pprint import PrettyPrinter
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 from queue import Queue
 from src.options import get_option
+from utils.logger import setup_logger
 
 bool_choices = ["0", "1", 0, 1, "true", "false", True, False, None]
 parent_directory = os.path.dirname(os.path.abspath(__file__))
 pp = PrettyPrinter(indent=2)
+
+logger = setup_logger(name="ytdlp", log_dir="/udown/ytdlp")
 
 
 class YTDLPProgressState:
@@ -30,8 +33,6 @@ class YTDLPProgressState:
             total = d.get("total_bytes") or d.get("total_bytes_estimate")
             downloaded = d.get("downloaded_bytes")
             self.queue.put(d.get("_percent_str"))
-
-            # print("HOOK:", d["status"], d.get("_percent_str"))
 
             if total and downloaded:
                 percent = downloaded / total * 100
@@ -81,7 +82,7 @@ def read_json_file(json_file, errors=None):
             json_object = json.load(file)
             return json_object
     except Exception as e:
-        print(e)
+        logger.error(str(e))
 
 
 def get_outtmpl(
@@ -205,7 +206,7 @@ def get_options(
         options_path = os.path.join(script_directory, options_file)
 
     if os.path.exists(options_path):  # read from metadata file, if it exists
-        print(f"Using ytdlp options from path: {options_path}.")
+        logger.info(f"Using ytdlp options from path: {options_path}.")
         options = read_json_file(options_path)
     else:
         options = {}
@@ -287,7 +288,7 @@ def get_entry_url(source_url: str, entry: dict, is_playlist: bool) -> str:
         new_path = parsed.path.rstrip("/") + "/" + id
         url = urlunparse(parsed._replace(path=new_path))
 
-    print(f"Entry url found from ID {id}: {url}.")
+    logger.info(f"Entry url found from ID {id}: {url}.")
     return url
 
 
@@ -312,7 +313,7 @@ def extract_ytdlp_info(url: str):
         with yt_dlp.YoutubeDL(options) as ytdl:
             results = ytdl.extract_info(url, download=False)
     except Exception as e:
-        print(e)
+        logger.error(str(e))
 
     return results
 
@@ -329,7 +330,7 @@ def get_channel_info(channel_id_or_url: str):
 
 def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
     entry_url = result.get("url")
-    print(f"Downloading: {entry.get('title', entry_url)}")
+    logger.info(f"Downloading: {entry.get('title', entry_url)}")
 
     download_thread = threading.Thread(
         target=ytdl.download,
@@ -375,7 +376,7 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 #     max_sleep_interval: str = None,
 #     proxy: str = None,
 # ):
-#     print("Downloading with yt-dlp...")
+#     logger.info("Downloading with yt-dlp...")
 #     options = get_options(
 #         options_path,
 #         ytdlp_format,
@@ -393,10 +394,10 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 
 #     urls = get_urls(urls, removed_args)
 
-#     pp.pprint(options)
+#     logger.info(pp.pformat(options))
 
 #     for url in urls:
-#         print(f"\nProcessing URL: {url}")
+#         logger.info(f"\nProcessing URL: {url}")
 #         try:
 #             with yt_dlp.YoutubeDL(options) as ytdl:
 #                 info = ytdl.extract_info(url, download=False)
@@ -406,7 +407,7 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 #                 entries = info.get("entries") if is_playlist else [info]
 
 #                 if is_playlist:
-#                     print(
+#                     logger.info(
 #                         f"Playlist: {info.get('title', 'Untitled')} ({len(entries)} videos)"
 #                     )
 
@@ -422,7 +423,7 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 #                     }
 
 #                     if not entry:
-#                         print(f"Skipping unavailable video at index {idx}.")
+#                         logger.info(f"Skipping unavailable video at index {idx}.")
 #                         result["error"] = "Unavailable entry"
 #                         yield result
 #                         continue
@@ -431,14 +432,15 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 #                     entry_filename = get_entry_filename(entry)
 
 #                     if not entry_url:
-#                         print(f"Missing URL at index {idx}. Skipping.")
-#                         result["error"] = "Missing entry URL"
+#                         error = f"Missing URL at index {idx}. Skipping."
+#                         logger.error(error)
+#                         result["error"] = error
 #                         yield result
 #                         continue
 
 #                     result["entry_url"] = entry_url
 #                     result["entry_filename"] = entry_filename
-#                     print(f"Downloading: {entry.get('title', entry_url)}")
+#                     logger.info(f"Downloading: {entry.get('title', entry_url)}")
 #                     status = ytdl.download([entry_url])
 
 #                     result.update(
@@ -454,7 +456,7 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 #                     yield result
 
 #         except KeyboardInterrupt as e:
-#             print("User interrupted the download.")
+#             logger.error("User interrupted the download.")
 #             result = {
 #                 "original_url": url,
 #                 "status": 1,
@@ -464,7 +466,7 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 #             yield result
 
 #         except yt_dlp.utils.DownloadError as e:
-#             print(f"Download error: {e}")
+#             logger.error(f"Download error: {e}")
 #             result = {
 #                 "original_url": url,
 #                 "status": 1,
@@ -474,7 +476,7 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 #             yield result
 
 #         except SystemExit as e:
-#             print(f"SystemExit: {e} — continuing...")
+#             logger.error(f"SystemExit: {e} — continuing...")
 #             result = {
 #                 "original_url": url,
 #                 "status": 1,
@@ -484,7 +486,7 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 #             yield result
 
 #         except Exception as e:
-#             print(f"Unexpected error: {e}")
+#             logger.error(f"Unexpected error: {e}")
 #             result = {
 #                 "original_url": url,
 #                 "status": 1,
@@ -510,7 +512,7 @@ def download(
     max_sleep_interval: str = None,
     proxy: str = None,
 ):
-    print("Downloading with yt-dlp...")
+    logger.info("Downloading with yt-dlp...")
     options = get_options(
         options_path,
         ytdlp_format,
@@ -527,10 +529,10 @@ def download(
     )
 
     urls = get_urls(urls, removed_args)
-    pp.pprint(options)
+    logger.info(pp.pformat(options))
 
     for url in urls:
-        print(f"\nProcessing URL: {url}")
+        logger.info(f"\nProcessing URL: {url}")
         progress_state = YTDLPProgressState()
         options["progress_hooks"] = [progress_state.hook]
         options["remote_components"] = ["ejs:github"]
@@ -545,7 +547,7 @@ def download(
                 entries = info.get("entries") if is_playlist else [info]
 
                 if is_playlist:
-                    print(
+                    logger.info(
                         f"Playlist: {info.get('title', 'Untitled')} ({len(entries)} videos)"
                     )
 
@@ -561,8 +563,9 @@ def download(
                     }
 
                     if not entry:
-                        print(f"Skipping unavailable video at index {idx}.")
-                        result["error"] = "Unavailable entry"
+                        error = f"Skipping unavailable video at index {idx}."
+                        logger.error(error)
+                        result["error"] = error
                         yield result
                         continue
 
@@ -570,8 +573,9 @@ def download(
                     entry_filename = get_entry_filename(entry)
 
                     if not entry_url:
-                        print(f"Missing URL at index {idx}. Skipping.")
-                        result["error"] = "Missing entry URL"
+                        error = f"Missing URL at index {idx}. Skipping."
+                        logger.error(error)
+                        result["error"] = error
                         yield result
                         continue
 
@@ -581,7 +585,7 @@ def download(
                     yield from download_entry(result, entry, progress_state, ytdl)
 
         except KeyboardInterrupt as e:
-            print("User interrupted the download.")
+            logger.error("User interrupted the download.")
             result = {
                 "url": result.get("url") or url,
                 "status": 1,
@@ -591,7 +595,7 @@ def download(
             yield result
 
         except yt_dlp.utils.DownloadError as e:
-            print(f"Download error: {e}")
+            logger.error(f"Download error: {e}")
             result = {
                 "url": result.get("url") or url,
                 "status": 1,
@@ -601,7 +605,7 @@ def download(
             yield result
 
         except SystemExit as e:
-            print(f"SystemExit: {e} — continuing...")
+            logger.error(f"SystemExit: {e} — continuing...")
             result = {
                 "url": result.get("url") or url,
                 "status": 1,
@@ -612,7 +616,7 @@ def download(
             yield result
 
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            logger.error(f"Unexpected error: {e}")
             result = {
                 "url": result.get("url") or url,
                 "status": 1,
@@ -682,7 +686,7 @@ if __name__ == "__main__":
     for result in results:
         if result.get("entry"):
             result.pop("entry")
-        pp.pprint(result)
+        logger.info(result)
 
 # playlist tests
 # python ytdlp.py "https://youtube.com/playlist?list=OLAK5uy_nTBnmorryZikTJrjY0Lj1lHG_DWy4IPvk" -f ytdlp_audio
