@@ -95,9 +95,7 @@ def all_options():
     return dict(load_config())
 
 
-def options_action(
-    action: str, key: str = None, value: str = None, config_path: str = None
-):
+def options_action(action: str, key: str = None, value: str = None, ui: bool = False):
     if action == "get":
         return get_option(key)
     elif action == "set":
@@ -113,13 +111,15 @@ def options_command(subparsers):
     options_cmd = subparsers.add_parser("options", help="List options")
 
     options_cmd.add_argument(
-        "action",
+        "-a",
+        "--action",
         type=str,
         choices=["list", "get", "set", "reset"],
         default="list",
-        nargs="?",
     )
-    options_cmd.add_argument("key", type=str, nargs="?", default=None)
-    options_cmd.add_argument("value", type=str, nargs="?", default=None)
-
+    options_cmd.add_argument("-k", "--key", type=str, default=None)
+    options_cmd.add_argument("-v", "--value", type=str, default=None)
+    options_cmd.add_argument(
+        "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+    )
     return options_cmd
