@@ -1,0 +1,4 @@
+https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg wget
+https://upload.wikimedia.org/wikipedia/commons/e/ea/Elegant_Background-13.jpg wget "Elegant.jpg"
+https://ash-speed.hetzner.com/100MB.bin "test.bin" wget
+https://youtu.be/j17yEgxPwkk?si=mV_z1hW6oZRkvzvh ytdlp_video "red.mp4"

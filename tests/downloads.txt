@@ -1,5 +1,6 @@
-https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY ytdlp_audio "some title"
-https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY wget "some sss"
-ytdlp_audio https://youtu.be/abc123 "title.mp3"
-https://youtu.be/abc123 "yolo.mp4"
-wget 'yolo' https://www.youtu.com
+https://www.youtube.com/playlist?list=PL4-sEuX-6HJV8C2TTbgguSByrLXKB_0WY ytdlp_video
+https://youtu.be/j17yEgxPwkk?si=mV_z1hW6oZRkvzvh ytdlp_video
+https://youtu.be/tPEE9ZwTmy0?si=CvPXvCucN4ST-fcN ytdlp_audio "some_test.mp3"
+https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg wget
+https://upload.wikimedia.org/wikipedia/commons/e/ea/Elegant_Background-13.jpg wget
+https://ash-speed.hetzner.com/100MB.bin "test.bin"
