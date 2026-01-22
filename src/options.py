@@ -61,8 +61,12 @@ def load_config():
     return _config_cache
 
 
-def get_option(key, default=None):
-    value = os.environ.get(key) or load_config().get(key) or default
+def get_option(key=None, default=None):
+    if not key:
+        return None
+
+    config_dict = load_config()
+    value = os.environ.get(key) or config_dict.get(key) or default
 
     if isinstance(value, str):
         value = value.strip() or default
@@ -86,6 +90,8 @@ def set_option(key, value):
 def reset_options():
     try:
         copy(DEFAULT_CONFIG_PATH, CONFIG_PATH)
+        print("Successfully reset all options.")
+
     except Exception as e:
         print(e)
 
@@ -96,15 +102,18 @@ def all_options():
 
 
 def options_action(action: str, key: str = None, value: str = None, ui: bool = False):
+    options = all_options()
+
     if action == "get":
-        return get_option(key)
+        value = get_option(key)
+        if key in options:
+            print(f"{key} : {value}")
+        return value
     elif action == "set":
         return set_option(key, value)
     elif action == "reset":
         reset_options()
-        print("Successfully generated default downloaders.")
     else:
-        options = all_options()
         if ui:
             from .tui_main import UDownApp
 
@@ -123,8 +132,8 @@ def options_command(subparsers):
         default="list",
         nargs="?",
     )
-    options_cmd.add_argument("-k", "--key", type=str, default=None)
-    options_cmd.add_argument("-v", "--value", type=str, default=None)
+    options_cmd.add_argument("key", type=str, default=None, nargs="?")
+    options_cmd.add_argument("value", type=str, default=None, nargs="?")
     options_cmd.add_argument(
         "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
     )

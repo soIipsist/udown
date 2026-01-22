@@ -38,7 +38,6 @@ The main command for downloading files, videos, playlists, channels, or batches 
 #### Examples
 
 ```python)
-
 # List all downloads
 udown download (same as running "udown")
 
@@ -90,7 +89,6 @@ udown options
 #### Examples
 
 ```python)
-
 # List all available options (no UI)
 udown options -ui 0
 

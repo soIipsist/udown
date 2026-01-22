@@ -6,7 +6,7 @@ import sys
 
 from src.download import download_command, download_action
 from src.downloader import downloader_command, downloader_action, pp
-from src.options import options_action, options_command, get_option
+from src.options import options_action, options_command
 
 
 def main():
@@ -48,7 +48,7 @@ def main():
 
     # print(args_dict)
 
-    if not ui or command == "options":
+    if not ui:
         pp.pprint(output)
 
 
