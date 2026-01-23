@@ -48,7 +48,7 @@ def main():
 
     # print(args_dict)
 
-    if not ui:
+    if not ui and output:
         pp.pprint(output)
 
 

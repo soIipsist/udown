@@ -407,11 +407,11 @@ def downloader_command(subparsers):
     # downloader cmd
     downloader_cmd = subparsers.add_parser("downloaders", help="List downloaders")
     downloader_cmd.add_argument(
-        "-a",
-        "--action",
+        "action",
         type=str,
         choices=["add", "insert", "delete", "list", "reset"],
         default=get_option("DOWNLOADER_ACTION", None),
+        nargs="?",
     )
     downloader_cmd.add_argument("-t", "--downloader_type", type=str, default="")
     # type_arg.completer = complete_downloader_type
