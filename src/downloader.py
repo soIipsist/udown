@@ -235,6 +235,9 @@ class Downloader(SQLiteItem):
 
                 result_iter = func(**downloader_args)
 
+                if result_iter is None:
+                    download_results.append({})
+                    continue
                 if isinstance(result_iter, (str, dict)):
                     result_iter = [result_iter]
                 elif isinstance(result_iter, Iterable):

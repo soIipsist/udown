@@ -6,7 +6,7 @@ import os
 import json
 from pprint import PrettyPrinter
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
-from queue import Queue
+from queue import Empty, Queue
 from src.options import get_option
 from utils.logger import setup_logger
 
@@ -344,9 +344,15 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
             progress = state.queue.get(timeout=0.2)
             result["progress"] = progress
             result["status"] = None
+
             yield dict(result)
-        except:
-            pass
+        except Empty:
+            download_thread.join()
+            break
+        except Exception as e:
+            logger.error(f"Unexpected queue error: {e}")
+            download_thread.join()
+            break
 
     download_thread.join()
 
