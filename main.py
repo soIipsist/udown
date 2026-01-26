@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
 import argparse
-import os
 import sys
 
 from src.download import download_command, download_action
@@ -80,4 +79,4 @@ if __name__ == "__main__":
 
 # python downloader.py downloaders
 # python downloader.py downloaders -t ytdlp_audio
-# python downloader.py downloaders add -n ytdlp_2 -t ytdlp_video -d downloader_path.json
+# python downloader.py downloaders add -t ytdlp_video -d downloader_path.json

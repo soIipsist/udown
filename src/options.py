@@ -2,11 +2,16 @@ import os
 from shutil import copy
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_PATH = os.path.dirname(SCRIPT_DIR)
-METADATA_DIR = os.path.join(PROJECT_PATH, "metadata")
-DOWNLOADER_DIRECTORY = os.path.join(PROJECT_PATH, "downloaders", "metadata")
-CONFIG_PATH = os.path.join(PROJECT_PATH, "src", ".config")
-DEFAULT_CONFIG_PATH = os.path.join(PROJECT_PATH, "src", ".default")
+PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
+DOWNLOADER_DIR = os.path.join(PROJECT_DIR, "downloaders")
+DOWNLOADER_METADATA_DIR = os.path.join(DOWNLOADER_DIR, "metadata")
+CONFIG_PATH = os.path.join(PROJECT_DIR, "src", ".config")
+DEFAULT_CONFIG_PATH = os.path.join(PROJECT_DIR, "src", ".default")
+ALLOWED_MODULES = [
+    f"downloaders.{module[:-3]}"
+    for module in os.listdir(DOWNLOADER_DIR)
+    if module.endswith(".py")
+]
 
 
 def str_to_bool(string: str):

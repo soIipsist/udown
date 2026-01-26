@@ -2,7 +2,13 @@ from collections.abc import Iterable
 from importlib import import_module
 import os
 from pprint import PrettyPrinter
-from .options import get_option, PROJECT_PATH, DOWNLOADER_DIRECTORY, str_to_bool
+from .options import (
+    get_option,
+    PROJECT_DIR,
+    DOWNLOADER_METADATA_DIR,
+    str_to_bool,
+    ALLOWED_MODULES,
+)
 from utils.logger import setup_logger
 from utils.sqlite import is_valid_path
 from utils.sqlite_item import SQLiteItem, create_connection
@@ -11,7 +17,7 @@ import inspect
 
 
 pp = PrettyPrinter(indent=2)
-database_path = get_option("DATABASE_PATH", os.path.join(PROJECT_PATH, "downloads.db"))
+database_path = get_option("DATABASE_PATH", os.path.join(PROJECT_DIR, "downloads.db"))
 
 # environment variables
 # DOWNLOADER="ytdlp"
@@ -118,10 +124,43 @@ class Downloader(SQLiteItem):
         return f"{self.downloader_type}"
 
     def get_function(self):
-        # determine what function to run for each download
-        module = import_module(self.module)
-        func = getattr(module, self.func)
-        return func
+        module_name = self.module.strip()
+        func_name = self.func.strip()
+
+        if module_name not in ALLOWED_MODULES:
+            logger.warning(
+                "Using custom module: %s\n"
+                "This can execute arbitrary code. Proceed only if you trust it.",
+                module_name,
+            )
+            response = (
+                input("Proceed with this custom downloader? [y/N]: ").strip().lower()
+            )
+            if response not in ("y", "yes"):
+                logger.info("User cancelled loading custom module.")
+                raise ValueError("Loading of custom module cancelled by user")
+
+            logger.info("User confirmed proceeding with custom module.")
+
+        try:
+            module = import_module(module_name)
+            func = getattr(module, func_name)
+            if not callable(func):
+                raise ValueError(
+                    f"'{func_name}' is not callable in module '{module_name}'"
+                )
+            return func
+
+        except ImportError as e:
+            raise ValueError(f"Failed to import module '{module_name}': {e}")
+        except AttributeError:
+            raise ValueError(
+                f"Function '{func_name}' not found in module '{module_name}'"
+            )
+        except Exception as e:
+            raise ValueError(
+                f"Unexpected error loading '{module_name}.{func_name}': {e}"
+            )
 
     def get_downloader_args(self, download, func):
         """Passes all Download values to the appropriate download func."""
@@ -276,28 +315,28 @@ default_downloaders = [
     ),
     Downloader(
         "ytdlp_video",
-        os.path.join(DOWNLOADER_DIRECTORY, "video_mp4_best.json"),
+        os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_best.json"),
         "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_video_subs",
-        os.path.join(DOWNLOADER_DIRECTORY, "video_mp4_subs.json"),
+        os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_subs.json"),
         "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_video_avc1",
-        os.path.join(DOWNLOADER_DIRECTORY, "video_avc1.json"),
+        os.path.join(DOWNLOADER_METADATA_DIR, "video_avc1.json"),
         "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_audio",
-        os.path.join(DOWNLOADER_DIRECTORY, "audio_mp3_best.json"),
+        os.path.join(DOWNLOADER_METADATA_DIR, "audio_mp3_best.json"),
         "downloaders.ytdlp",
         "download",
         "url, downloader_path, output_directory=output_directory, output_filename=output_filename, proxy=proxy",
@@ -366,9 +405,9 @@ def downloader_action(
     d.conjunction_type = conjunction_type
 
     if action == "add" or action == "insert":
-        if d.module is None:
-            d.module = "ytdlp"
-        if d.func is None:
+        if not d.module:
+            d.module = "downloaders.ytdlp"
+        if not d.func:
             d.func = "download"
         d.upsert()
     elif action == "delete":

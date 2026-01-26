@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 import shlex
 import shutil
-from src.options import METADATA_DIR
+from src.options import DOWNLOADER_METADATA_DIR
 from test_base import *
 
 current_file = Path(__file__).resolve()
@@ -51,10 +51,10 @@ channel_urls = [
 downloader = default_downloaders[0]
 
 
-video_options_1 = os.path.join(METADATA_DIR, "video_mp4_best.json")
-video_options_2 = os.path.join(METADATA_DIR, "video_mp4_subs.json")
-video_options_3 = os.path.join(METADATA_DIR, "video_avc1.json")
-wget_options = os.path.join(METADATA_DIR, "wget_options.json")
+video_options_1 = os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_best.json")
+video_options_2 = os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_subs.json")
+video_options_3 = os.path.join(DOWNLOADER_METADATA_DIR, "video_avc1.json")
+wget_options = os.path.join(DOWNLOADER_METADATA_DIR, "wget_options.json")
 
 pp = PrettyPrinter(indent=2)
 
