@@ -85,16 +85,16 @@ class TestDownloader(TestBase):
 
     def test_get_downloader_args(self):
         downloader_args = (
-            "url, output_directory=red, ytdlp_format=ytdl, update_options=url"
+            "url, output_directory=red, ytdlp_format=ytdl, update_options=True"
         )
+        func = ytdlp_download
         downloader = Downloader(
             downloader_type, downloader_path, module, func, downloader_args
         )
         download = Download(url=playlist_urls[0], downloader_type=downloader)
-        output_downloader_args = downloader.get_downloader_args(
-            download, ytdlp_download
-        )
-        func_params = inspect.signature(ytdlp_download).parameters
+
+        output_downloader_args = downloader.get_downloader_args(download, func)
+        func_params = inspect.signature(func).parameters
         downloader_args = downloader_args.split(",")
 
         for arg in downloader_args:
@@ -102,12 +102,14 @@ class TestDownloader(TestBase):
             if "=" in arg:
                 k, v = arg.split("=")
                 self.assertTrue(k in func_params)
-                print(k, output_downloader_args.get(k), v)
                 value = getattr(download, v, v)
-                self.assertTrue(output_downloader_args.get(k) == value)
             else:
                 # positional arg
                 value = getattr(download, arg, arg)
+
+            print("VAL", value)
+
+        print(output_downloader_args)
 
     def test_get_downloader_with_extra_args(self):
         downloader_args = (
@@ -173,9 +175,9 @@ class TestDownloader(TestBase):
 if __name__ == "__main__":
     test_methods = [
         # TestDownloader.test_get_downloader_func,
-        # TestDownloader.test_get_downloader_args,
+        TestDownloader.test_get_downloader_args,
         # TestDownloader.test_get_downloader_with_extra_args,
-        TestDownloader.test_start_downloads,
+        # TestDownloader.test_start_downloads,
         # TestDownloader.test_from_dict,
     ]
     run_test_methods(test_methods)

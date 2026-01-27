@@ -342,7 +342,7 @@ class Download(SQLiteItem):
             parts = shlex.split(line)
 
             for part in parts:
-                if part.startswith(("http://", "https://")):
+                if part.startswith(("http://", "https://", "magnet:")):
                     url = part
                     continue
 
