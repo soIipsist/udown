@@ -36,9 +36,11 @@ class EditOption(ModalScreen):
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "save":
             value = self.query_one("#editor").value
-            from src.options import set_option
+            from src.options import set_option, all_options
 
             set_option(self.key, value)
+            self.app.items = all_options()
+            self.app.reload_items()
 
         self.dismiss()
 

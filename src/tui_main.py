@@ -92,8 +92,10 @@ class UDownApp(App):
 
     def reload_items(self):
 
-        self.args["ui"] = False
-        self.items = self.action(**self.args)
+        if self.args:
+            self.args["ui"] = False
+
+        self.items = self.action(**self.args) if self.action else self.items
         # self.notify(str(self.args))
 
         if hasattr(self, "active_table"):
