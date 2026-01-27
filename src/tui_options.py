@@ -5,24 +5,37 @@ from textual.widgets import Input, Button
 from textual.containers import Vertical
 from textual.coordinate import Coordinate
 
+from textual.screen import ModalScreen
+from textual.widgets import Input, Select, Button, Static
+
 
 class EditOption(ModalScreen):
 
-    def __init__(self, key: str, value: str):
+    def __init__(
+        self,
+        key: str,
+        value: str,
+        choices: list[tuple[str, str]] | None = None,
+    ):
         super().__init__()
         self.key = key
-        self.value = value
+        self.value = str(value)
+        self.choices = choices
+        self.use_select = choices is not None
 
     def compose(self):
-        yield Vertical(
-            Input(value=str(self.value), id="value_input"),
-            Button("Save", id="save", variant="primary"),
-            Button("Cancel", id="cancel"),
-        )
+        yield Static(f"Edit {self.key}")
+
+        if self.use_select:
+            yield Select(options=self.choices, value=self.value, id="editor")
+        else:
+            yield Input(value=self.value, id="editor")
+
+        yield Button("Save", id="save")
 
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "save":
-            value = self.query_one(Input).value
+            value = self.query_one("#editor").value
             from src.options import set_option
 
             set_option(self.key, value)
@@ -51,7 +64,6 @@ class OptionsTable(DataTable):
         query = query.strip().lower()
 
         if not query:
-            # Reset filter
             self.options = dict(self._all_options)
         else:
             self.options = {
@@ -77,4 +89,15 @@ class OptionsTable(DataTable):
 
         key = str(self.get_cell_at(Coordinate(row, 0)))
         value = str(self.get_cell_at(Coordinate(row, 1)))
-        self.app.push_screen(EditOption(key, value))
+
+        bool_vals = ["YTDLP_UPDATE_OPTIONS", "USE_TUI"]
+        op_vals = ["DOWNLOAD_OP", "DOWNLOADER_OP"]
+
+        if key in bool_vals:
+            choices = [("1", "1"), ("0", "0")]
+        elif key in op_vals:
+            choices = [("AND", "AND"), ("OR", "OR")]
+        else:
+            choices = None
+
+        self.app.push_screen(EditOption(key, value, choices))
