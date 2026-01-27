@@ -107,6 +107,32 @@ ProgressBar {
   height: 1;
 }
 
+Input:focus {
+  border: heavy #7c3aed;
+}
+
+Select {
+  border: heavy #7c3aed;
+  background: black;
+  color: white;
+}
+
+Select:focus {
+  border: heavy #7c3aed;
+}
+Select > .option {
+  background: #7c3aed;
+}
+
+OptionList > .option-list--option {
+  color: white;
+}
+
+OptionList > .option-list--option-highlighted {
+  background: #7c3aed;
+  color: white;
+}
+
 .progress-label {
   margin-top: 1;
   color: #22c55e;

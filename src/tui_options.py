@@ -11,6 +11,10 @@ from textual.widgets import Input, Select, Button, Static
 
 class EditOption(ModalScreen):
 
+    BINDINGS = [
+        ("q", "dismiss", "Close"),
+    ]
+
     def __init__(
         self,
         key: str,
@@ -36,7 +40,11 @@ class EditOption(ModalScreen):
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "save":
             value = self.query_one("#editor").value
+
             from src.options import set_option, all_options
+
+            if value is Select.BLANK:
+                value = self.choices[0][1]
 
             set_option(self.key, value)
             self.app.items = all_options()
