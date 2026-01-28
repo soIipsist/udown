@@ -309,6 +309,7 @@ class Downloader(SQLiteItem):
 
 
 default_downloaders = [
+    Downloader("auto", None, "downloaders.auto", "detect_downloader", None),
     Downloader(
         "ytdlp",
         None,
@@ -364,6 +365,13 @@ default_downloaders = [
         "downloaders.ytdlp_channel",
         "download",
         "url",
+    ),
+    Downloader(
+        "transmission",
+        None,
+        "downloaders.transmission",
+        "download",
+        "url, output_directory",
     ),
 ]
 
