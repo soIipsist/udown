@@ -16,8 +16,6 @@ def main():
     parser = argparse.ArgumentParser(prog="udown")
     subparsers = parser.add_subparsers(dest="command")
 
-    # udown download [some_url] -t downloader_type
-    # udown downloaders
     download_parser = download_command(subparsers)
     download_parser.set_defaults(func=download_action)
 

@@ -27,7 +27,18 @@ downloader_values = [
     "PRIMARY KEY (downloader_type)",
 ]
 
+extractor_values = [
+    "extractor_type text NOT NULL",
+    "module text NOT NULL",
+    "func text NOT NULL",
+    "extractor_args text",
+    "PRIMARY KEY (extractor_type)",
+]
+
+# tables = ["downloads", "downloaders", "extractors"]
 tables = ["downloads", "downloaders"]
+
+# values = [download_values, downloader_values, extractor_values]
 values = [download_values, downloader_values]
 
 

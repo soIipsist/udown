@@ -112,11 +112,7 @@ class TestDownload(TestBase):
             results = download.download()
 
     def test_get_extra_args(self):
-        keys = ["output_directory", "hello"]
-        values = ["hi", "[1,2,3]"]
-        extra_args_str = ""
-        for k, v in zip(keys, values):
-            extra_args_str += f"{k}={v},"
+        extra_args_str = "output_directory=hi, hello=[1,2,3]"
 
         download = Download(url=wget_urls[0], extra_args=extra_args_str)
         self.assertTrue(isinstance(download.extra_args, dict))
@@ -186,8 +182,8 @@ if __name__ == "__main__":
     test_methods = [
         # TestDownload.test_list_downloads,
         # TestDownload.test_download_all,
-        # TestDownload.test_get_extra_args,
+        TestDownload.test_get_extra_args,
         # TestDownload.test_parse_download_string,
-        TestDownload.test_parse_download_from_file
+        # TestDownload.test_parse_download_from_file,
     ]
     run_test_methods(test_methods)
