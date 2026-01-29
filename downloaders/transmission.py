@@ -3,12 +3,15 @@ import os
 import subprocess
 
 
-def download(urls: list | str, output_directory: str = None):
+def download(urls: list, output_directory: str = None):
     results = []
 
     if output_directory:
         output_directory = os.path.abspath(output_directory)
         os.makedirs(output_directory, exist_ok=True)
+
+    if isinstance(urls, str):
+        urls = [urls]
 
     for url in urls:
         cmd = ["transmission-cli", url]

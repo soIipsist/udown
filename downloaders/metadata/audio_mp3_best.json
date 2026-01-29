@@ -6,5 +6,6 @@
       "preferredcodec": "mp3"
     }
   ],
-  "ignoreerrors": true
+  "ignoreerrors": true,
+  "progress": true
 }
