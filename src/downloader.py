@@ -41,6 +41,21 @@ logger = setup_logger(name="downloader", log_dir="/udown/downloader")
 logger.disabled = False
 
 
+def detect_downloader(url: str) -> str:
+    url = url.strip()
+
+    if url.startswith("magnet:"):
+        return "transmission"
+
+    if "music.youtube" in url:
+        return "ytdlp_audio"
+
+    if "youtube.com" in url or "youtu.be" in url:
+        return "ytdlp_video"
+
+    return "wget"
+
+
 class Downloader(SQLiteItem):
 
     _downloader_type: str = None
@@ -309,7 +324,6 @@ class Downloader(SQLiteItem):
 
 
 default_downloaders = [
-    Downloader("auto", None, "downloaders.auto", "detect_downloader", None),
     Downloader(
         "ytdlp",
         None,
