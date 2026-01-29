@@ -21,9 +21,9 @@ database_path = get_option("DATABASE_PATH", os.path.join(PROJECT_DIR, "downloads
 
 # environment variables
 # DOWNLOADER="ytdlp"
-# DOWNLOADS_FILENAME="$HOME/videos/downloads.txt"
-# DOWNLOADS_DB_PATH="$HOME/scripts/downloads.db"
-# DOWNLOADS_DIRECTORY="$HOME/videos"
+# DOWNLOAD_FILENAME="$HOME/videos/downloads.txt"
+# DATABASE_PATH="$HOME/scripts/downloads.db"
+# DOWNLOAD_DIRECTORY="$HOME/videos"
 # YTDLP_FORMAT="ytdlp_audio"
 # YTDLP_OPTIONS_PATH="$HOME/scripts/video_options.json"
 # FFMPEG_OPTS="-protocol_whitelist file,http,https,tcp,tls"
@@ -41,19 +41,24 @@ logger = setup_logger(name="downloader", log_dir="/udown/downloader")
 logger.disabled = False
 
 
-def detect_downloader(url: str) -> str:
+def detect_downloader_type(url: str) -> str:
     url = url.strip()
 
     if url.startswith("magnet:"):
-        return "transmission"
+        downloader_type = "transmission"
 
-    if "music.youtube" in url:
-        return "ytdlp_audio"
+    elif "music.youtube" in url:
+        downloader_type = "ytdlp_audio"
 
-    if "youtube.com" in url or "youtu.be" in url:
-        return "ytdlp_video"
+    elif "youtube.com" in url or "youtu.be" in url:
+        downloader_type = "ytdlp_video"
 
-    return "wget"
+    else:
+        downloader_type = "wget"
+
+    logger.info(f"Downloader detected for url '{url}': {downloader_type}.")
+
+    return downloader_type
 
 
 class Downloader(SQLiteItem):

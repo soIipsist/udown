@@ -8,10 +8,7 @@ import shlex
 import sqlite3
 from typing import Optional
 from urllib.parse import urlparse
-from .downloader import (
-    Downloader,
-    get_downloader_types,
-)
+from .downloader import Downloader, get_downloader_types, detect_downloader_type
 from .options import get_option, str_to_bool
 from .tui_main import UDownApp
 from utils.sqlite_item import SQLiteItem
@@ -250,6 +247,9 @@ class Download(SQLiteItem):
 
     @property
     def downloader(self):
+        if self._downloader_type == "auto":
+            self._downloader_type = detect_downloader_type(self._url)
+
         if isinstance(self._downloader_type, str):
             return Downloader(downloader_type=self._downloader_type).select_first()
 
@@ -283,7 +283,7 @@ class Download(SQLiteItem):
                 f"An unexpected error has occured: {error_message}! \n{pp.pformat(data)} "
             )
 
-        filter_condition = f"url = {self.url} AND downloader_type = {self.downloader.downloader_type} AND output_path = {self.output_path}"
+        filter_condition = f"url = {self.url} AND downloader_type = {self.downloader_type} AND output_path = {self.output_path}"
         self.update(filter_condition)
 
     def get_output_path(self, output_path: str | bytes = None):
@@ -346,7 +346,7 @@ class Download(SQLiteItem):
                     url = part
                     continue
 
-                if Downloader(part).select_first():
+                if Downloader(part).select_first() or part == "auto":
                     downloader_type = part
                     continue
 
@@ -355,6 +355,8 @@ class Download(SQLiteItem):
             if downloader_type is None:
                 downloader_type = "ytdlp_video"
 
+            if downloader_type == "auto":
+                downloader_type = detect_downloader_type(url)
             downloader = Downloader(downloader_type).select_first()
             if not downloader:
                 raise ValueError(
@@ -421,7 +423,7 @@ def download_action(**args):
     elif action == "delete":
         for d in downloads:
             filter_condition = (
-                f"url = {d.url} AND downloader_type = {d.downloader.downloader_type}"
+                f"url = {d.url} AND downloader_type = {d.downloader_type}"
             )
             result = d.delete(filter_condition)
 
