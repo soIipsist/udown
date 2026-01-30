@@ -1,6 +1,6 @@
 DATABASE_PATH=""
 DOWNLOADER_TYPE=""
-DOWNLOADER_KEYS="downloader_type,downloader_path,downloader_args"
+DOWNLOADER_KEYS="downloader_type,downloader_path,downloader_args,module,func"
 DOWNLOADER_OP="OR"
 DOWNLOADER_ACTION=""
 DOWNLOAD_DIRECTORY=""

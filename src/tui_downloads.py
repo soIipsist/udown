@@ -1,8 +1,6 @@
 from textual.widgets import DataTable, Header, Footer
 from textual import events
 from textual.screen import ModalScreen
-from textual.widgets import DataTable, Header, Footer
-from textual.screen import ModalScreen
 from .tui_common import ConfirmDelete
 
 

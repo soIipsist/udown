@@ -1,7 +1,7 @@
-import argparse
 import ast
 from datetime import datetime
 from enum import Enum
+import json
 import os
 import re
 import shlex
@@ -10,19 +10,11 @@ from typing import Optional
 from urllib.parse import urlparse
 from .downloader import Downloader, get_downloader_types, detect_downloader_type
 from .options import get_option, str_to_bool
-from .tui_main import UDownApp
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
 )
 from .downloader import database_path, pp, logger
-
-
-class DownloadAction(str, Enum):
-    INSERT = "insert"
-    ADD = "add"
-    DELETE = "delete"
-    LIST = "list"
 
 
 class DownloadStatus(str, Enum):
@@ -321,10 +313,18 @@ class Download(SQLiteItem):
         return os.path.join(output_directory, filename)
 
     def __repr__(self):
-        return f"{self.downloader_type}, {self.url}"
+        return json.dumps(
+            self.as_dict(),
+            indent=1,
+            ensure_ascii=False,
+        )
 
     def __str__(self):
-        return f"{self.downloader_type}, {self.url}"
+        return json.dumps(
+            self.as_dict(),
+            indent=1,
+            ensure_ascii=False,
+        )
 
     def insert(self):
         if not self.downloader_type:
@@ -447,9 +447,7 @@ def download_action(**args):
 
         d = Download(**args)
         d.conjunction_type = conjunction_type
-        downloads = (
-            d.filter_by(filter_keys) if args.get("downloader_type") else d.select_all()
-        )
+        downloads = d.filter_by(filter_keys)
 
         if ui:
             from .tui_main import UDownApp
@@ -466,7 +464,6 @@ def download_action(**args):
 
 
 def download_command(subparsers):
-    downloader_choices = get_downloader_types()
 
     download_cmd = subparsers.add_parser("download", help="Download a URL")
     download_cmd.add_argument("url", type=str, nargs="?")

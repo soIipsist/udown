@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from importlib import import_module
+import json
 import os
 from pprint import PrettyPrinter
 from .options import (
@@ -138,10 +139,18 @@ class Downloader(SQLiteItem):
         self.filter_condition = f"downloader_type = {self.downloader_type}"
 
     def __repr__(self):
-        return f"{self.downloader_type}"
+        return json.dumps(
+            self.as_dict(),
+            indent=1,
+            ensure_ascii=False,
+        )
 
     def __str__(self):
-        return f"{self.downloader_type}"
+        return json.dumps(
+            self.as_dict(),
+            indent=1,
+            ensure_ascii=False,
+        )
 
     def get_function(self):
         module_name = self.module.strip()
