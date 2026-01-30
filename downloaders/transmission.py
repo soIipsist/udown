@@ -41,7 +41,7 @@ def download(
             "status": 0,
             "path": None,
             "stdout": "",
-            "stderr": None,
+            "error": None,
         }
 
         cmd = ["transmission-cli", url, "-w", str(out_dir)]

@@ -282,6 +282,9 @@ class Downloader(SQLiteItem):
 
                 for result in result_iter:
                     source_url = None
+                    if not isinstance(result, dict):
+                        result = {"url": download.url, "stdout": result, "status": 0}
+
                     url = result.get("url", download.url)
                     status_code = result.get("status", 1)
                     error_message = result.get("error")
@@ -404,6 +407,9 @@ default_downloaders = [
         "downloaders.transmission",
         "download",
         "url, output_directory",
+    ),
+    Downloader(
+        "bs4", None, "downloaders.bs4", "extract", "url, selector=a, attribute=href"
     ),
 ]
 
