@@ -1,13 +1,10 @@
-from textual import work
 from textual.app import App
-from textual.widgets import Header, Footer
 from textual.containers import Container
 from textual.widgets import Input
 from textual.widgets import Header, Footer
 from .tui_downloaders import DownloadersTable
 from .tui_downloads import DownloadsTable
 from .tui_options import OptionsTable
-from .tui_progress import ProgressScreen
 
 
 class UDownApp(App):
@@ -19,7 +16,6 @@ class UDownApp(App):
         ("n", "next_downloader_type", "Downloader →"),
         ("p", "previous_downloader_type", "Downloader ←"),
         ("r", "refresh", "Refresh"),
-        # ("p", "progress", "View progress"),
         ("tab", "focus_next", "Focus next"),
         ("/", "search", "Search"),
         ("escape", "clear_search", "Clear search"),
@@ -64,9 +60,6 @@ class UDownApp(App):
     def on_mount(self):
         self.render_table()  # default view
 
-        if self.table_type == "download":
-            self.set_interval(0.2, self.refresh_progress)
-
     def render_table(self):
         """Render a specific table based on type."""
         container = self.query_one("#table-container")
@@ -83,12 +76,6 @@ class UDownApp(App):
         container.mount(table)
         self.active_table = table
         self.active_table.load()  # initial load
-
-    def refresh_progress(self):
-        if hasattr(self, "active_table"):
-            for row_index, download in self.active_table.row_map.items():
-                if download.progress:
-                    self.active_table.update_cell_at((row_index, 4), download.progress)
 
     def reload_items(self):
 
@@ -138,37 +125,9 @@ class UDownApp(App):
     def action_next_downloader_type(self):
         self._step_downloader_type(1)
 
-    def action_progress(self) -> None:
-        download = self.active_table.get_download()
-        self.show_progress(download)
-
-    def show_progress(self, download):
-
-        if self.table_type != "download" or not hasattr(self, "active_table"):
-            self.notify(
-                "Progress view is only available in the Downloads table.",
-                severity="warning",
-            )
-            return
-        self.push_screen(ProgressScreen(download))
-
     def on_input_changed(self, event: Input.Changed):
         if event.input.id == "search" and hasattr(self, "active_table"):
             self.active_table.apply_filter(event.value)
-
-    # @work(exclusive=True)
-    # async def run_download(self, download):
-    #     import asyncio
-
-    #     loop = asyncio.get_running_loop()
-    #     await loop.run_in_executor(None, download.download)
-
-    def on_download_requested(self, message):
-        download = message.download
-        self.notify(f"DOWNLOAD {download.downloader_type}")
-        # import asyncio
-
-        # asyncio.create_task(self.run_download(download))
 
     def on_delete_confirmed(self, message):
         item = message.item

@@ -3,22 +3,13 @@ from textual import events
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Header, Footer
 from textual.screen import ModalScreen
-from textual.message import Message
 from .tui_common import ConfirmDelete
-
-
-class DownloadRequested(Message):
-    def __init__(self, download):
-        self.download = download
-        super().__init__()
 
 
 class DownloadDetails(ModalScreen):
     BINDINGS = [
         ("escape", "dismiss", "Close"),
         ("d", "delete", "Delete"),
-        ("r", "download", "Retry download"),
-        # ("p", "progress", "View progress"),
         ("q", "dismiss", "Close"),
     ]
 
@@ -51,14 +42,6 @@ class DownloadDetails(ModalScreen):
             on_result,
         )
 
-    def action_download(self) -> None:
-
-        self.dismiss()
-        self.app.post_message(DownloadRequested(self.download))
-
-    def action_progress(self) -> None:
-        self.app.show_progress(self.download)
-
 
 class DownloadsTable(DataTable):
 
@@ -78,7 +61,6 @@ class DownloadsTable(DataTable):
             "Downloader",
             "Status",
             "Output",
-            "Progress",
         )
         self.focus()
         self.load()
@@ -93,7 +75,6 @@ class DownloadsTable(DataTable):
                 str(d.downloader_type),
                 d.download_status,
                 d.output_filename,
-                d.progress,
             )
             self.row_map[idx] = d
 
@@ -111,7 +92,6 @@ class DownloadsTable(DataTable):
                     d.downloader_type,
                     d.download_status,
                     d.output_path,
-                    d.progress,
                 )
                 if x
             )
@@ -122,7 +102,6 @@ class DownloadsTable(DataTable):
                     str(d.downloader_type),
                     d.download_status,
                     d.output_path or "",
-                    d.progress,
                 )
                 self.row_map[table_row_index] = d
                 table_row_index += 1
