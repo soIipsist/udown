@@ -409,7 +409,11 @@ default_downloaders = [
         "url, output_directory",
     ),
     Downloader(
-        "bs4", None, "downloaders.bs4", "extract", "url, selector=a, attribute=href"
+        "bs4",
+        None,
+        "downloaders.bs4",
+        "extract",
+        "url, selector=a, attribute=href, output_directory=output_directory, output_filename=output_filename",
     ),
 ]
 

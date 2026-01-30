@@ -1,74 +1,86 @@
-import argparse
-from pprint import PrettyPrinter
+import os
+import re
+import json
 import requests
 from bs4 import BeautifulSoup
-import re
 
 from utils.logger import setup_logger
 
-pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="bs4", log_dir="/udown/bs4")
 
 
+def _write_output(path: str, result):
+    ext = os.path.splitext(path)[1].lower()
+
+    if ext == ".json":
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+    else:
+        # default: text
+        with open(path, "w", encoding="utf-8") as f:
+            if isinstance(result, (list, tuple)):
+                for item in result:
+                    f.write(f"{item}\n")
+            else:
+                f.write(str(result))
+
+
 def extract(
-    url,
-    selector,
-    attribute=None,
+    url: str,
+    selector: str,
+    attribute: str = None,
     output_directory: str = None,
     output_filename: str = None,
 ):
-    results = []
+    """
+    Extract values from HTML using BeautifulSoup.
+    """
 
     if not selector:
-        raise ValueError("CSS selector is required.")
+        return {"status": 1, "result": [], "output_path": None}
 
-    if re.match(r"^https?://", url):
-        response = requests.get(url)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-    else:
-        soup = BeautifulSoup(url, "html.parser")
-
-    elements = soup.select(selector)
-
-    if not elements:
-        return []
-
-    for elem in elements:
-        value = elem.get(attribute) if attribute else elem.get_text(strip=True)
-        results.append(value)
-
-    return results
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generic BeautifulSoup extractor")
-    parser.add_argument("url", help="URL (http/https) or raw HTML string/file path")
-    parser.add_argument(
-        "-s", "--selector", required=True, help="CSS selector to extract"
-    )
-    parser.add_argument(
-        "-a", "--attribute", help="Attribute to extract (e.g., href, src)"
-    )
-    parser.add_argument(
-        "-d", "--output_directory", type=str, default=None, help="Save directory"
-    )
-    parser.add_argument(
-        "-f", "--output_filename", type=str, default=None, help="Custom output filename"
-    )
-
-    args = parser.parse_args()
+    logger.info(f"Extracting selector='{selector}' attribute='{attribute}'")
 
     try:
-        results = extract(
-            url=args.url,
-            selector=args.selector,
-            attribute=args.attribute,
-        )
-        if isinstance(results, list):
-            for r in results:
-                print(r)
+        if re.match(r"^https?://", url):
+            response = requests.get(url)
+            response.raise_for_status()
+            html = response.text
         else:
-            print(results)
-    except Exception as e:
-        print("Error:", e)
+            html = url
+    except Exception:
+        logger.exception("Failed to load HTML")
+        return {"status": 1, "result": [], "output_path": None}
+
+    soup = BeautifulSoup(html, "html.parser")
+    elements = soup.select(selector)
+
+    result = [
+        elem.get(attribute) if attribute else elem.get_text(strip=True)
+        for elem in elements
+    ]
+
+    path = None
+
+    if output_directory:
+        try:
+            os.makedirs(output_directory, exist_ok=True)
+
+            if not output_filename:
+                output_filename = "bs4_extract.txt"
+
+            path = os.path.join(output_directory, output_filename)
+            _write_output(path, result)
+
+            logger.info(f"Saved extraction results to {path}")
+        except Exception:
+            logger.exception("Failed to write output file")
+            return {"status": 1, "result": result, "output_path": None}
+
+    return {
+        "status": 0,
+        "result": result,
+        "output_path": path,
+        "output_directory": output_directory,
+        "output_filename": output_filename,
+    }
