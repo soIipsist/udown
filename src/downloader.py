@@ -186,16 +186,16 @@ class Downloader(SQLiteItem):
         """Passes all Download values to the appropriate download func."""
 
         func_signature = inspect.signature(func)
-        func_params = func_signature.parameters
+        func_params = list(func_signature.parameters.values())
 
         args_dict = {}
 
         if not self.downloader_args:
-            for name, param in func_params.items():
+            for param in func_params:
                 if param.default is not inspect.Parameter.empty:
-                    args_dict[name] = param.default
+                    args_dict[param.name] = param.default
                 else:
-                    args_dict[name] = getattr(download, name, None)
+                    args_dict[param.name] = getattr(download, param.name, None)
             return args_dict
 
         keys = [key.strip() for key in self.downloader_args.split(",")]
@@ -204,30 +204,43 @@ class Downloader(SQLiteItem):
             for k, v in (key.split("=", 1) for key in keys if "=" in key)
         }
 
+        extra_kwargs, extra_positionals = download.get_extra_args()
+        pos_iter = iter(extra_positionals)
+
         for idx, param in enumerate(func_params):
-            key = None
-            if idx < len(keys):
-                key = keys[idx]
+            if param.name in extra_kwargs:
+                args_dict[param.name] = extra_kwargs[param.name]
+                continue
+
+            key = keys[idx] if idx < len(keys) else None
 
             if key and "=" not in key:
-                args_val = getattr(download, key, key)
-                args_dict[param] = args_val
-            else:
-                if param in func_keys:
-                    val = func_keys[param]
-                    args_val = getattr(download, val, val)
+                args_dict[param.name] = getattr(download, key, key)
+                continue
 
-                    if args_val and args_val.lower() == "false":
+            if param.name in func_keys:
+                val = func_keys[param.name]
+                args_val = getattr(download, val, val)
+
+                if isinstance(args_val, str):
+                    if args_val.lower() == "false":
                         args_val = False
-                    elif args_val and args_val.lower() == "true":
+                    elif args_val.lower() == "true":
                         args_val = True
-                    args_dict[param] = args_val
 
-            extra_args = download.extra_args
+                args_dict[param.name] = args_val
+                continue
 
-            if extra_args and param in extra_args:
-                logger.info(f"Extra arguments: \n{extra_args}")
-                args_dict[param] = extra_args.get(param)
+            try:
+                args_dict[param.name] = next(pos_iter)
+                continue
+            except StopIteration:
+                pass
+
+            if param.default is not inspect.Parameter.empty:
+                args_dict[param.name] = param.default
+            else:
+                args_dict[param.name] = getattr(download, param.name, None)
 
         return args_dict
 

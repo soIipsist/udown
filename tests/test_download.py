@@ -112,11 +112,11 @@ class TestDownload(TestBase):
             results = download.download()
 
     def test_get_extra_args(self):
-        extra_args_str = "output_directory=hi, hello=[1,2,3]"
+        extra_args_str = "output_directory=hi, hello=[1,2,3], red, h=23, lol"
 
         download = Download(url=wget_urls[0], extra_args=extra_args_str)
-        self.assertTrue(isinstance(download.extra_args, dict))
-        print(download.extra_args)
+        extra_args = download.get_extra_args()
+        print(extra_args)
 
     def check_download_parts(self, parts, download: Download):
         print(parts)

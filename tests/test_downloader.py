@@ -84,11 +84,11 @@ class TestDownloader(TestBase):
         print(func, ytdlp_download)
 
     def test_get_downloader_args(self):
-        # downloader_args = (
-        #     "url, output_directory=red, ytdlp_format=ytdl, update_options=True"
-        # )
-        downloader_args = None
-        func = ytdlp_download
+        downloader_args = (
+            "url, output_directory=red, ytdlp_format=ytdl, update_options=True"
+        )
+        extra_args = "prefix=monkey, moo"
+        # downloader_args = None
         func = ytdlp_download
         downloader_type = "auto"
 
@@ -96,12 +96,14 @@ class TestDownloader(TestBase):
             downloader_type, downloader_path, module, func, downloader_args
         )
 
-        download = Download(url=playlist_urls[0], downloader_type=downloader)
-        print(downloader.get_downloader_args(download, func), str(download.as_dict()))
+        download = Download(
+            url=playlist_urls[0], downloader_type=downloader, extra_args=extra_args
+        )
 
         output_downloader_args = downloader.get_downloader_args(download, func)
         func_params = inspect.signature(func).parameters
         downloader_args = downloader_args.split(",") if downloader_args else []
+        # print(downloader_args)
 
         for arg in downloader_args:
             arg = arg.strip()
@@ -109,13 +111,13 @@ class TestDownloader(TestBase):
                 k, v = arg.split("=")
                 self.assertTrue(k in func_params)
                 value = getattr(download, v, v)
+                print(value)
             else:
                 # positional arg
                 value = getattr(download, arg, arg)
+                print(value)
 
-            # print("VAL", value)
-
-        # print(output_downloader_args)
+        print(output_downloader_args)
 
     def test_get_downloader_with_extra_args(self):
         downloader_args = (

@@ -134,17 +134,20 @@ class Download(SQLiteItem):
 
     @extra_args.setter
     def extra_args(self, extra_args: str):
-        self._extra_args = self.get_extra_args(extra_args)
+        self._extra_args = extra_args
 
-    def get_extra_args(self, extra_args: str = None):
-        args = {}
+    def get_extra_args(self):
+        positional = []
+        kwargs = {}
 
-        if isinstance(extra_args, dict) or not extra_args:
-            return extra_args
+        if not self.extra_args:
+            return kwargs, positional
 
-        parts = re.split(r",(?![^\[]*\])", extra_args)
+        parts = re.split(r",(?![^\[]*\])", self.extra_args)
 
         for part in parts:
+            part = part.strip()
+
             if "=" in part:
                 key, value = part.split("=", 1)
                 key, value = key.strip(), value.strip()
@@ -152,8 +155,15 @@ class Download(SQLiteItem):
                     parsed_value = ast.literal_eval(value)
                 except Exception:
                     parsed_value = value
-                args[key] = parsed_value
-        return args
+                kwargs.update({key: parsed_value})
+            else:
+                try:
+                    parsed_value = ast.literal_eval(part)
+                except Exception:
+                    parsed_value = part
+                positional.append(parsed_value)
+
+        return kwargs, positional
 
     @property
     def source_url(self):
