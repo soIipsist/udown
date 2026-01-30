@@ -205,6 +205,7 @@ class Downloader(SQLiteItem):
         }
 
         extra_kwargs, extra_positionals = download.get_extra_args()
+        logger.info(f"Extra args: {extra_kwargs}")
         pos_iter = iter(extra_positionals)
 
         for idx, param in enumerate(func_params):

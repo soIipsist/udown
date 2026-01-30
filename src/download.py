@@ -388,7 +388,7 @@ class Download(SQLiteItem):
                         continue
                     downloads.append(parse_line(line))
         else:
-            downloads.append(parse_line(url))
+            downloads.append(Download(**args))
 
         return downloads
 
