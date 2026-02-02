@@ -342,7 +342,7 @@ class Downloader(SQLiteItem):
                         child_download.set_download_status_query(
                             DownloadStatus.INTERRUPTED, error_message
                         )
-                    else:
+                    elif status_code == 0:
                         child_download.set_download_status_query(
                             DownloadStatus.COMPLETED, error_message
                         )

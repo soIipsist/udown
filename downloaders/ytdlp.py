@@ -429,7 +429,7 @@ def download(
                         "index": idx,
                         "is_playlist": is_playlist,
                         "progress": progress_state.progress,
-                        "status": 1,
+                        "status": None,
                     }
 
                     if not entry:

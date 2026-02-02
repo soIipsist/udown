@@ -1,5 +1,4 @@
 import argparse
-import os
 import re
 import subprocess
 import sys
@@ -38,7 +37,7 @@ def download(
 
         result = {
             "url": url,
-            "status": 0,
+            "status": None,
             "path": None,
             "stdout": "",
             "error": None,
@@ -85,6 +84,7 @@ def download(
             else:
                 logger.info("Download completed successfully")
                 result["path"] = str(out_dir)
+                result["status"] = 0
 
         except KeyboardInterrupt:
             logger.warning("Download interrupted by user")

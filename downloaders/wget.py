@@ -49,7 +49,7 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
                 if match:
                     percent = match.group(1)
                     logger.info(f"Progress: {str(percent)}")
-                    yield {"url": url, "status": 0, "progress": f"{percent}%"}
+                    yield {"url": url, "status": None, "progress": f"{percent}%"}
 
             proc.wait()
 

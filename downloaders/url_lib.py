@@ -44,7 +44,7 @@ def download(
 
     for url in urls:
         logger.info(f"Starting download: {url}")
-        result = {"url": url, "status": 0}
+        result = {"url": url, "status": None}
 
         try:
             parsed = urlparse(url)
@@ -95,6 +95,7 @@ def download(
             logger.info(f"Completed: {downloaded:,} bytes → {output_path}")
             result["path"] = str(output_path)
             result["size"] = downloaded
+            result["status"] = 0
             response.release_conn()
 
         except KeyboardInterrupt:
