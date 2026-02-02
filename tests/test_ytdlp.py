@@ -40,7 +40,10 @@ pp = PrettyPrinter(indent=2)
 
 
 # global vars
-options_path = os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_best.json")
+# options_path = os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_best.json")
+options_path = os.path.join(DOWNLOADER_METADATA_DIR, "audio_mp3_best.json")
+# options_path = os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_subs.json")
+
 update_options = False
 output_directory = os.path.join(os.getcwd(), "videos")
 ytdlp_format = "ytdlp_video"
@@ -187,6 +190,7 @@ class TestYtdlp(TestBase):
                 filename = get_entry_filename(info)
                 title = info.get("title")
                 ext = info.get("ext", "mp4")
+
                 if title:
                     self.assertIsNotNone(filename)
                     self.assertTrue(f"{title}.{ext}" == filename)
@@ -216,6 +220,8 @@ class TestYtdlp(TestBase):
                     else:
                         print("PLAYLIST")
 
+                    print("Entry url: ", entry_url)
+
         except Exception as e:
             print(e)
 
@@ -229,7 +235,7 @@ if __name__ == "__main__":
         # TestYtdlp.test_get_video_format,
         # TestYtdlp.test_get_ytdlp_format,
         # TestYtdlp.test_get_outtmpl,
-        # TestYtdlp.test_get_entry_filename,
-        TestYtdlp.test_get_entry_url,
+        TestYtdlp.test_get_entry_filename,
+        # TestYtdlp.test_get_entry_url,
     ]
     run_test_methods(test_methods)
