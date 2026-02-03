@@ -100,7 +100,7 @@ class OptionsTable(DataTable):
         key = str(self.get_cell_at(Coordinate(row, 0)))
         value = str(self.get_cell_at(Coordinate(row, 1)))
 
-        bool_vals = ["YTDLP_UPDATE_OPTIONS", "USE_TUI"]
+        bool_vals = ["USE_TUI"]
         op_vals = ["DOWNLOAD_OP", "DOWNLOADER_OP"]
 
         if key in bool_vals:

@@ -64,7 +64,7 @@ downloader_path = video_options_1
 downloader_type = "ytdlp_audio"
 module = "ytdlp"
 func = "download"
-downloader_args = "url, downloader_path, update_options=False"
+downloader_args = "url, downloader_path"
 output_directory = os.path.join(os.getcwd(), "videos")
 # output_directory = None
 # output_filename = "yolo.jpg"
@@ -84,9 +84,7 @@ class TestDownloader(TestBase):
         print(func, ytdlp_download)
 
     def test_get_downloader_args(self):
-        downloader_args = (
-            "url, output_directory=red, ytdlp_format=ytdl, update_options=True"
-        )
+        downloader_args = "url, output_directory=red, ytdlp_format=ytdl"
         extra_args = "prefix=monkey, moo"
         # downloader_args = None
         func = ytdlp_download
@@ -120,16 +118,14 @@ class TestDownloader(TestBase):
         print(output_downloader_args)
 
     def test_get_downloader_with_extra_args(self):
-        downloader_args = (
-            "url, output_directory=red, ytdlp_format=ytdl, update_options=url"
-        )
+        downloader_args = "url, output_directory=red, ytdlp_format=ytdl"
         downloader = Downloader(
             downloader_type, downloader_path, module, func, downloader_args
         )
         download = Download(
             url=playlist_urls[0],
             downloader_type=downloader,
-            extra_args="update_options=True, some_arg='hell', some_arg2='hh'",
+            extra_args="some_arg='hell', some_arg2='hh'",
         )
         output_downloader_args = downloader.get_downloader_args(
             download, ytdlp_download_channel

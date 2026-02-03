@@ -1,5 +1,4 @@
 import threading
-import time
 import yt_dlp
 import argparse
 import os
@@ -183,7 +182,6 @@ def get_options(
     options_path="",
     ytdlp_format: str = "ytdlp_video",
     custom_format: str = None,
-    update_options: bool = False,
     prefix: str = None,
     extension: str = None,
     postprocessor_args: list = None,
@@ -195,15 +193,6 @@ def get_options(
 ):
 
     ytdlp_format = get_ytdlp_format(ytdlp_format)
-
-    if not options_path and not update_options:
-        options_file = (
-            "audio_options.json"
-            if ytdlp_format == "ytdlp_audio"
-            else "video_options.json"
-        )
-        script_directory = os.path.dirname(__file__)
-        options_path = os.path.join(script_directory, options_file)
 
     if os.path.exists(options_path):  # read from metadata file, if it exists
         logger.info(f"Using ytdlp options from path: {options_path}.")
@@ -225,20 +214,7 @@ def get_options(
     if max_sleep_interval:
         options["max_sleep_interval"] = max_sleep_interval
 
-    if not update_options:
-        return options
-
-    options: dict
-
     if ytdlp_format == "ytdlp_video":  # default ytdlp_video options
-        options.update(
-            {
-                "progress": True,
-                "writesubtitles": True,
-                "writeautomaticsub": True,
-                "subtitleslangs": ["en"],
-            }
-        )
 
         if not extension:
             extension = "mp4"
@@ -246,13 +222,6 @@ def get_options(
     elif ytdlp_format == "ytdlp_audio":
         if not extension:
             extension = "mp3"
-
-        options.update(
-            {
-                "progress": True,
-                "ignoreerrors": True,
-            }
-        )
 
     video_format = get_video_format(options, ytdlp_format, custom_format)
     postprocessors = get_postprocessors(options, ytdlp_format, extension)
@@ -371,7 +340,6 @@ def download(
     options_path="",
     ytdlp_format: str = "ytdlp_video",
     custom_format: str = None,
-    update_options: bool = False,
     prefix: str = None,
     extension: str = None,
     postprocessor_args: list = None,
@@ -387,7 +355,6 @@ def download(
         options_path,
         ytdlp_format,
         custom_format,
-        update_options,
         prefix,
         extension,
         postprocessor_args,
@@ -451,6 +418,7 @@ def download(
 
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
+                    logger.info(f"Filename: {entry_filename}")
 
                     yield from download_entry(result, entry, progress_state, ytdl)
 
@@ -521,13 +489,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-o", "--options_path", default=get_option("YTDLP_OPTIONS_PATH", "")
     )
-    parser.add_argument(
-        "-u",
-        "--update_options",
-        default=get_option("YTDLP_UPDATE_OPTIONS", False),
-        type=str_to_bool,
-        choices=bool_choices,
-    )
+
     parser.add_argument("-P", "--proxy", default=None)
     parser.add_argument("-F", "--output_filename", default=None)
     parser.add_argument("-si", "--sleep_interval", default=None)
@@ -540,7 +502,6 @@ if __name__ == "__main__":
             args.options_path,
             args.ytdlp_format,
             args.custom_format,
-            args.update_options,
             args.prefix,
             args.extension,
             args.postprocessor_args,

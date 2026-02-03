@@ -28,7 +28,6 @@ database_path = get_option("DATABASE_PATH", os.path.join(PROJECT_DIR, "downloads
 # YTDLP_FORMAT="ytdlp_audio"
 # YTDLP_OPTIONS_PATH="$HOME/scripts/video_options.json"
 # FFMPEG_OPTS="-protocol_whitelist file,http,https,tcp,tls"
-# YTDLP_UPDATE_OPTIONS="1"
 # YTDLP_VIDEO_DIRECTORY="$HOME/mnt/"
 # YTDLP_AUDIO_DIRECTORY="$HOME/mnt/ssd/Music"
 
@@ -269,7 +268,7 @@ class Downloader(SQLiteItem):
             if download.output_directory:
                 os.makedirs(download.output_directory, exist_ok=True)
 
-            logger.info(f"Starting {download.downloader} download.")
+            logger.info(f"Starting {download.downloader_type} download.")
             downloader = download.downloader
             downloader: Downloader
             is_playlist = False
