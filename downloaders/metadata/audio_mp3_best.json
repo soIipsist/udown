@@ -1,5 +1,6 @@
 {
   "format": "bestaudio/best",
+  "outtmpl": "%(title)s.%(ext)s",
   "postprocessors": [
     {
       "key": "FFmpegExtractAudio",

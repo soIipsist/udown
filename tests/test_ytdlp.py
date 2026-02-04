@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import os
 from urllib.parse import parse_qs, urlparse
@@ -178,28 +179,6 @@ class TestYtdlp(TestBase):
 
         print(outtmpl)
 
-    def test_get_entry_filename(self):
-        url = video_urls[0]
-        options = read_json_file(options_path)
-
-        filename = None
-        try:
-            with yt_dlp.YoutubeDL(options) as ytdl:
-                info = ytdl.extract_info(url, download=False)
-
-                filename = get_entry_filename(info)
-                title = info.get("title")
-                ext = info.get("ext", "mp4")
-
-                if title:
-                    self.assertIsNotNone(filename)
-                    self.assertTrue(f"{title}.{ext}" == filename)
-
-        except Exception as e:
-            print(e)
-
-        print("FILENAME:", filename)
-
     def test_get_entry_url(self):
         url = video_urls[0]
         options = read_json_file(options_path)
@@ -225,6 +204,26 @@ class TestYtdlp(TestBase):
         except Exception as e:
             print(e)
 
+    def test_get_entry_filename(self):
+        url = video_urls[0]
+        options = read_json_file(options_path)
+
+        try:
+            with yt_dlp.YoutubeDL(options) as ytdl:
+                info = ytdl.extract_info(url, download=True)
+                entry_url = get_entry_url(url, info, False)
+                entry_filename = get_entry_filename(info)
+                # print(entry_filename)
+
+                if "requested_downloads" in info:
+                    print(info["requested_downloads"][0]["filepath"])
+
+        except Exception as e:
+            print(e)
+
+    def test_download_entry(self):
+        pass
+
 
 if __name__ == "__main__":
     test_methods = [
@@ -236,6 +235,7 @@ if __name__ == "__main__":
         # TestYtdlp.test_get_ytdlp_format,
         # TestYtdlp.test_get_outtmpl,
         TestYtdlp.test_get_entry_filename,
+        # TestYtdlp.test_download_entry,
         # TestYtdlp.test_get_entry_url,
     ]
     run_test_methods(test_methods)

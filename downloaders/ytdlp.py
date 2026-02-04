@@ -227,7 +227,6 @@ def get_options(
     postprocessors = get_postprocessors(options, ytdlp_format, extension)
     options_postprocessor_args = get_postprocessor_args(options, postprocessor_args)
 
-    options["merge_output_format"] = extension
     options["postprocessors"] = postprocessors
     options["postprocessor_args"] = options_postprocessor_args
     options["format"] = video_format
