@@ -260,13 +260,24 @@ def get_entry_url(source_url: str, entry: dict, is_playlist: bool) -> str:
     return url
 
 
-def get_entry_filename(entry: dict):
+def get_entry_filename(entry: dict, uses_ffmpeg: bool = False):
     title = entry.get("title")
 
     if not title:
         return None
 
     ext = entry.get("ext", "mp4")
+
+    downloads = entry.get("requested_downloads")
+
+    if downloads and uses_ffmpeg:
+        logger.info(f"RE: {downloads}")
+        filepath = downloads[0].get("filepath")
+        if filepath:
+            new_ext = os.path.splitext(filepath)[1].lstrip(".")
+            if new_ext != ext:
+                ext = new_ext
+
     filename = f"{title}.{ext}"
 
     return filename
@@ -334,6 +345,14 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
     yield dict(result)
 
 
+def check_ffmpeg(options: dict) -> bool:
+    for pp in options.get("postprocessors", []):
+        key = pp.get("key", "")
+        if key.startswith("FFmpeg"):
+            return True
+    return False
+
+
 def download(
     urls: list,
     options_path="",
@@ -381,6 +400,7 @@ def download(
                 # Determine if it's a playlist or a single video
                 is_playlist = info.get("entries") is not None
                 entries = info.get("entries") if is_playlist else [info]
+                uses_ffmpeg = check_ffmpeg(options)
 
                 if is_playlist:
                     logger.info(
@@ -406,7 +426,7 @@ def download(
                         continue
 
                     entry_url = get_entry_url(url, entry, is_playlist)
-                    entry_filename = get_entry_filename(entry)
+                    entry_filename = get_entry_filename(entry, uses_ffmpeg)
 
                     if not entry_url:
                         error = f"Missing URL at index {idx}. Skipping."

@@ -19,6 +19,7 @@ from downloaders.ytdlp import (
     get_outtmpl,
     get_entry_filename,
     get_entry_url,
+    check_ffmpeg,
 )
 
 from src.options import DOWNLOADER_METADATA_DIR
@@ -38,13 +39,21 @@ video_urls = [
 ]
 
 pp = PrettyPrinter(indent=2)
+option_paths = [
+    path for path in os.listdir(DOWNLOADER_METADATA_DIR) if not path.startswith("__")
+]
 
 
-# global vars
-# options_path = os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_best.json")
-options_path = os.path.join(DOWNLOADER_METADATA_DIR, "audio_mp3_best.json")
-# options_path = os.path.join(DOWNLOADER_METADATA_DIR, "video_mp4_subs.json")
+def get_options_path(index_or_str=None):
+    path_idx = (
+        option_paths.index(index_or_str)
+        if isinstance(index_or_str, str)
+        else index_or_str
+    )
+    return os.path.join(DOWNLOADER_METADATA_DIR, option_paths[path_idx])
 
+
+options_path = get_options_path(0)
 update_options = False
 output_directory = os.path.join(os.getcwd(), "videos")
 ytdlp_format = "ytdlp_video"
@@ -221,6 +230,19 @@ class TestYtdlp(TestBase):
         except Exception as e:
             print(e)
 
+    def test_check_ffmpeg(self):
+
+        for path in option_paths:
+            path = get_options_path(path)
+            print(path)
+            # options = read_json_file(options_path)
+            # uses_ffmpeg = check_ffmpeg(options)
+            # print(options)
+            # if os.path.basename(options_path) == option_path:
+            #     self.assertTrue(uses_ffmpeg)
+            # else:
+            #     self.assertFalse(uses_ffmpeg)
+
     def test_download_entry(self):
         pass
 
@@ -234,8 +256,9 @@ if __name__ == "__main__":
         # TestYtdlp.test_get_video_format,
         # TestYtdlp.test_get_ytdlp_format,
         # TestYtdlp.test_get_outtmpl,
-        TestYtdlp.test_get_entry_filename,
-        # TestYtdlp.test_download_entry,
         # TestYtdlp.test_get_entry_url,
+        # TestYtdlp.test_get_entry_filename,
+        # TestYtdlp.test_download_entry,
+        TestYtdlp.test_check_ffmpeg,
     ]
     run_test_methods(test_methods)
