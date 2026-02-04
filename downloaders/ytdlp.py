@@ -348,7 +348,7 @@ def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
 def check_ffmpeg(options: dict) -> bool:
     for pp in options.get("postprocessors", []):
         key = pp.get("key", "")
-        if key.startswith("FFmpeg"):
+        if key.startswith("FFmpegExtractAudio"):
             return True
     return False
 

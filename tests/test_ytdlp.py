@@ -234,14 +234,17 @@ class TestYtdlp(TestBase):
 
         for path in option_paths:
             path = get_options_path(path)
-            print(path)
-            # options = read_json_file(options_path)
-            # uses_ffmpeg = check_ffmpeg(options)
-            # print(options)
-            # if os.path.basename(options_path) == option_path:
-            #     self.assertTrue(uses_ffmpeg)
-            # else:
-            #     self.assertFalse(uses_ffmpeg)
+            options = read_json_file(path)
+            uses_ffmpeg = check_ffmpeg(options)
+
+            audio_options = ["audio_mp3_best.json"]
+
+            if os.path.basename(path) in audio_options:
+                print("in", path, uses_ffmpeg)
+                self.assertTrue(uses_ffmpeg)
+            else:
+                print("out", path, uses_ffmpeg)
+                self.assertFalse(uses_ffmpeg, msg=str(options))
 
     def test_download_entry(self):
         pass
