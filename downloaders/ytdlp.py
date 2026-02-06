@@ -302,6 +302,8 @@ class YTDLPProgressState:
             else:
                 self.progress = d.get("_percent_str", self.progress)
 
+            logger.info(f"Progress: {self.progress}")
+
             self.speed = d.get("_speed_str") or d.get("speed")
             self.eta = d.get("_eta_str") or d.get("eta")
 
@@ -398,6 +400,7 @@ def download(
 
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
+                    result["progress"] = progress_state.progress
                     logger.info(f"Filename: {entry_filename}")
                     logger.info(f"Downloading: {entry.get('title', entry_url)}")
                     logger.info(f"Progress: {progress_state.progress}")

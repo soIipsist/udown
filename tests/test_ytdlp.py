@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 import os
+import threading
+import time
 from urllib.parse import parse_qs, urlparse
 import yt_dlp
 from test_base import *
@@ -10,6 +12,7 @@ parent_directory = current_file.parents[2]
 os.sys.path.insert(0, str(parent_directory))
 
 from downloaders.ytdlp import (
+    YTDLPProgressState,
     download,
     get_options,
     get_urls,
@@ -250,10 +253,24 @@ class TestYtdlp(TestBase):
                 print("out", path, uses_ffmpeg)
                 self.assertFalse(uses_ffmpeg, msg=str(options))
 
-    def test_download_entry(self):
+    def test_download_entries(self):
+        def worker(urls, options, result_holder, state):
+            try:
+                with yt_dlp.YoutubeDL(options) as ytdl:
+                    result_holder["info"] = ytdl.extract_info(urls[0], download=True)
+            except Exception as e:
+                result_holder["error"] = e
+            finally:
+                state.done = True
 
         urls = ["https://youtu.be/SRXH9AbT280"]
-        options_path = get_options_path(0)
+        options_path = get_options_path(1)
+        options = get_options(options_path, output_directory=output_directory)
+
+        result_holder = {
+            "info": None,
+            "error": None,
+        }
         # results = download(
         #     urls,
         #     options_path=options_path,
@@ -261,8 +278,25 @@ class TestYtdlp(TestBase):
         # )
         # logger.info(results)
 
-    def test_download_multiple_entries(self):
-        pass
+        state = YTDLPProgressState()
+        options["progress_hooks"] = [state.hook]
+
+        t = threading.Thread(
+            target=worker,
+            args=(
+                urls,
+                options,
+                result_holder,
+                state,
+            ),
+            daemon=True,
+        )
+        t.start()
+
+        while not state.done:
+            if state.progress:
+                print(state.progress)
+            time.sleep(0.2)
 
 
 if __name__ == "__main__":
@@ -276,7 +310,7 @@ if __name__ == "__main__":
         # TestYtdlp.test_get_outtmpl,
         # TestYtdlp.test_get_entry_url,
         # TestYtdlp.test_get_entry_filename,
-        TestYtdlp.test_download_entry,
+        TestYtdlp.test_download_entries,
         # TestYtdlp.test_check_ffmpeg,
     ]
     run_test_methods(test_methods)
