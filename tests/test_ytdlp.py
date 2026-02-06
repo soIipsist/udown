@@ -254,49 +254,16 @@ class TestYtdlp(TestBase):
                 self.assertFalse(uses_ffmpeg, msg=str(options))
 
     def test_download_entries(self):
-        def worker(urls, options, result_holder, state):
-            try:
-                with yt_dlp.YoutubeDL(options) as ytdl:
-                    result_holder["info"] = ytdl.extract_info(urls[0], download=True)
-            except Exception as e:
-                result_holder["error"] = e
-            finally:
-                state.done = True
 
-        urls = ["https://youtu.be/SRXH9AbT280"]
+        urls = ["https://youtu.be/SRXH9AbT280", playlist_urls[0]]
         options_path = get_options_path(1)
-        options = get_options(options_path, output_directory=output_directory)
 
-        result_holder = {
-            "info": None,
-            "error": None,
-        }
-        # results = download(
-        #     urls,
-        #     options_path=options_path,
-        #     output_directory=output_directory,
-        # )
-        # logger.info(results)
-
-        state = YTDLPProgressState()
-        options["progress_hooks"] = [state.hook]
-
-        t = threading.Thread(
-            target=worker,
-            args=(
-                urls,
-                options,
-                result_holder,
-                state,
-            ),
-            daemon=True,
+        results = download(
+            urls,
+            options_path=options_path,
+            output_directory=output_directory,
         )
-        t.start()
-
-        while not state.done:
-            if state.progress:
-                print(state.progress)
-            time.sleep(0.2)
+        logger.info(results)
 
 
 if __name__ == "__main__":

@@ -333,6 +333,7 @@ def download(
     max_sleep_interval: str = None,
     proxy: str = None,
 ):
+    results = []
     logger.info("Downloading with yt-dlp...")
     options = get_options(
         options_path,
@@ -357,6 +358,7 @@ def download(
         options["progress_hooks"] = [progress_state.hook]
         options["remote_components"] = ["ejs:github"]
         result = {"url": url}
+        is_playlist = False
 
         try:
             with yt_dlp.YoutubeDL(options) as ytdl:
@@ -373,7 +375,6 @@ def download(
                     )
 
                 for idx, entry in enumerate(entries):
-                    entry_url = None
 
                     result = {
                         "url": url,
@@ -387,7 +388,8 @@ def download(
                         error = f"Skipping unavailable video at index {idx}."
                         logger.error(error)
                         result["error"] = error
-                        return result
+                        results.append(result)
+                        continue
 
                     entry_url = get_entry_url(url, entry, is_playlist)
                     entry_filename = get_entry_filename(entry, uses_ffmpeg)
@@ -396,7 +398,8 @@ def download(
                         error = f"Missing URL at index {idx}. Skipping."
                         logger.error(error)
                         result["error"] = error
-                        return result
+                        results.append(result)
+                        continue
 
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
@@ -406,7 +409,7 @@ def download(
                     logger.info(f"Progress: {progress_state.progress}")
                     result["status"] = 0
 
-                    return result
+                    results.append(result)
 
         except KeyboardInterrupt as e:
             logger.error("User interrupted the download.")
@@ -414,9 +417,11 @@ def download(
                 "url": result.get("url") or url,
                 "status": 1,
                 "error": str(e),
+                "progress": progress_state.progress,
                 "is_playlist": is_playlist,
             }
-            return result
+            results.append(result)
+            continue
 
         except yt_dlp.utils.DownloadError as e:
             logger.error(f"Download error: {e}")
@@ -424,9 +429,11 @@ def download(
                 "url": result.get("url") or url,
                 "status": 1,
                 "error": str(e),
+                "progress": progress_state.progress,
                 "is_playlist": is_playlist,
             }
-            return result
+            results.append(result)
+            continue
 
         except SystemExit as e:
             logger.error(f"SystemExit: {e} — continuing...")
@@ -437,7 +444,8 @@ def download(
                 "is_playlist": is_playlist,
                 "progress": progress_state.progress,
             }
-            return result
+            results.append(result)
+            continue
 
         except Exception as e:
             logger.error(f"Unexpected error: {e}")
@@ -448,7 +456,10 @@ def download(
                 "is_playlist": is_playlist,
                 "progress": progress_state.progress,
             }
-            return result
+            results.append(result)
+            continue
+
+    return results
 
 
 if __name__ == "__main__":
