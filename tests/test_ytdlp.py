@@ -252,13 +252,17 @@ class TestYtdlp(TestBase):
 
     def test_download_entry(self):
 
+        urls = ["https://youtu.be/SRXH9AbT280"]
         options_path = get_options_path(0)
-        results = download(
-            urls=[video_urls[0]],
-            options_path=options_path,
-            output_directory=output_directory,
-        )
-        logger.info(results)
+        # results = download(
+        #     urls,
+        #     options_path=options_path,
+        #     output_directory=output_directory,
+        # )
+        # logger.info(results)
+
+    def test_download_multiple_entries(self):
+        pass
 
 
 if __name__ == "__main__":

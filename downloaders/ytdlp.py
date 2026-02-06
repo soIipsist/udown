@@ -282,36 +282,37 @@ def check_ffmpeg(options: dict) -> bool:
 
 class YTDLPProgressState:
     def __init__(self):
-        self.queue = Queue()
-        self.progress = None
-        self.status = None
+        self.progress = "0.0%"
         self.speed = None
         self.eta = None
+        self.status = None
         self.done = False
         self.error = None
 
     def hook(self, d):
         status = d.get("status")
+
         if status == "downloading":
             total = d.get("total_bytes") or d.get("total_bytes_estimate")
             downloaded = d.get("downloaded_bytes")
-            self.queue.put(d.get("_percent_str"))
 
             if total and downloaded:
-                percent = downloaded / total * 100
+                percent = (downloaded / total) * 100
                 self.progress = f"{percent:.1f}%"
-                logger.info(f"Progress: {self.progress}")
-                self.speed = d.get("speed")
-                self.eta = d.get("eta")
+            else:
+                self.progress = d.get("_percent_str", self.progress)
+
+            self.speed = d.get("_speed_str") or d.get("speed")
+            self.eta = d.get("_eta_str") or d.get("eta")
 
         elif status == "finished":
-            self.queue.put("100%")
             self.progress = "100%"
             self.status = 0
             self.done = True
 
-        elif status == "error":
-            self.error = "Download failed"
+        elif status in ("error", "aborted"):
+            self.status = 1
+            self.error = d.get("error", "Download failed")
             self.done = True
 
 

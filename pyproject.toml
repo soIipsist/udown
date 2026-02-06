@@ -19,7 +19,7 @@ dependencies = [
     "typing_extensions==4.15.0",
     "uc-micro-py==1.0.3",
     "urllib3==2.6.1",
-    "yt-dlp==2025.12.8",
+    "yt-dlp==2026.2.4",
 ]
 
 [project.scripts]
