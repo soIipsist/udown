@@ -16,40 +16,6 @@ pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="ytdlp", log_dir="/udown/ytdlp")
 
 
-class YTDLPProgressState:
-    def __init__(self):
-        self.queue = Queue()
-        self.progress = None
-        self.status = None
-        self.speed = None
-        self.eta = None
-        self.done = False
-        self.error = None
-
-    def hook(self, d):
-        status = d.get("status")
-        if status == "downloading":
-            total = d.get("total_bytes") or d.get("total_bytes_estimate")
-            downloaded = d.get("downloaded_bytes")
-            self.queue.put(d.get("_percent_str"))
-
-            if total and downloaded:
-                percent = downloaded / total * 100
-                self.progress = f"{percent:.1f}%"
-                self.speed = d.get("speed")
-                self.eta = d.get("eta")
-
-        elif status == "finished":
-            self.queue.put("100%")
-            self.progress = "100%"
-            self.status = 0
-            self.done = True
-
-        elif status == "error":
-            self.error = "Download failed"
-            self.done = True
-
-
 def get_urls(urls: list, removed_args: list = None):
     if isinstance(urls, str):
         urls = [urls]
@@ -306,50 +272,47 @@ def get_channel_info(channel_id_or_url: str):
     return results
 
 
-def download_entry(result: dict, entry: dict, state: YTDLPProgressState, ytdl):
-    entry_url = result.get("url")
-    logger.info(f"Downloading: {entry.get('title', entry_url)}")
-
-    download_thread = threading.Thread(
-        target=ytdl.download,
-        args=([entry_url],),
-        daemon=True,
-    )
-    download_thread.start()
-
-    while not state.done or not state.queue.empty():
-        try:
-            progress = state.queue.get(timeout=0.2)
-            result["progress"] = progress
-            result["status"] = None
-
-            yield dict(result)
-        except Empty:
-            download_thread.join()
-            break
-        except Exception as e:
-            logger.error(f"Unexpected queue error: {e}")
-            download_thread.join()
-            break
-
-    download_thread.join()
-
-    if state.error:
-        result["status"] = 1
-        result["error"] = state.error
-    else:
-        result["status"] = 0
-        result["progress"] = "100%"
-
-    yield dict(result)
-
-
 def check_ffmpeg(options: dict) -> bool:
     for pp in options.get("postprocessors", []):
         key = pp.get("key", "")
         if key.startswith("FFmpegExtractAudio"):
             return True
     return False
+
+
+class YTDLPProgressState:
+    def __init__(self):
+        self.queue = Queue()
+        self.progress = None
+        self.status = None
+        self.speed = None
+        self.eta = None
+        self.done = False
+        self.error = None
+
+    def hook(self, d):
+        status = d.get("status")
+        if status == "downloading":
+            total = d.get("total_bytes") or d.get("total_bytes_estimate")
+            downloaded = d.get("downloaded_bytes")
+            self.queue.put(d.get("_percent_str"))
+
+            if total and downloaded:
+                percent = downloaded / total * 100
+                self.progress = f"{percent:.1f}%"
+                logger.info(f"Progress: {self.progress}")
+                self.speed = d.get("speed")
+                self.eta = d.get("eta")
+
+        elif status == "finished":
+            self.queue.put("100%")
+            self.progress = "100%"
+            self.status = 0
+            self.done = True
+
+        elif status == "error":
+            self.error = "Download failed"
+            self.done = True
 
 
 def download(
@@ -394,7 +357,7 @@ def download(
 
         try:
             with yt_dlp.YoutubeDL(options) as ytdl:
-                info = ytdl.extract_info(url, download=False)
+                info = ytdl.extract_info(url, download=True)
 
                 # Determine if it's a playlist or a single video
                 is_playlist = info.get("entries") is not None
@@ -421,8 +384,7 @@ def download(
                         error = f"Skipping unavailable video at index {idx}."
                         logger.error(error)
                         result["error"] = error
-                        yield result
-                        continue
+                        return result
 
                     entry_url = get_entry_url(url, entry, is_playlist)
                     entry_filename = get_entry_filename(entry, uses_ffmpeg)
@@ -431,14 +393,16 @@ def download(
                         error = f"Missing URL at index {idx}. Skipping."
                         logger.error(error)
                         result["error"] = error
-                        yield result
-                        continue
+                        return result
 
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
                     logger.info(f"Filename: {entry_filename}")
+                    logger.info(f"Downloading: {entry.get('title', entry_url)}")
+                    logger.info(f"Progress: {progress_state.progress}")
+                    result["status"] = 0
 
-                    yield from download_entry(result, entry, progress_state, ytdl)
+                    return result
 
         except KeyboardInterrupt as e:
             logger.error("User interrupted the download.")
@@ -448,7 +412,7 @@ def download(
                 "error": str(e),
                 "is_playlist": is_playlist,
             }
-            yield result
+            return result
 
         except yt_dlp.utils.DownloadError as e:
             logger.error(f"Download error: {e}")
@@ -458,7 +422,7 @@ def download(
                 "error": str(e),
                 "is_playlist": is_playlist,
             }
-            yield result
+            return result
 
         except SystemExit as e:
             logger.error(f"SystemExit: {e} — continuing...")
@@ -469,7 +433,7 @@ def download(
                 "is_playlist": is_playlist,
                 "progress": progress_state.progress,
             }
-            yield result
+            return result
 
         except Exception as e:
             logger.error(f"Unexpected error: {e}")
@@ -480,7 +444,7 @@ def download(
                 "is_playlist": is_playlist,
                 "progress": progress_state.progress,
             }
-            yield result
+            return result
 
 
 if __name__ == "__main__":

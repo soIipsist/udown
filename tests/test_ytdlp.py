@@ -56,7 +56,6 @@ def get_options_path(index_or_str=None):
     return path
 
 
-update_options = False
 output_directory = os.path.join(os.getcwd(), "videos")
 ytdlp_format = "ytdlp_video"
 
@@ -92,7 +91,6 @@ class TestYtdlp(TestBase):
         results = download(
             urls=urls,
             options_path=options_path,
-            update_options=update_options,
             output_directory=output_directory,
         )
         self.print_results(results)
@@ -105,7 +103,6 @@ class TestYtdlp(TestBase):
         results = download(
             urls=urls,
             options_path=options_path,
-            update_options=update_options,
             output_directory=output_directory,
         )
         self.print_results(results)
@@ -254,7 +251,14 @@ class TestYtdlp(TestBase):
                 self.assertFalse(uses_ffmpeg, msg=str(options))
 
     def test_download_entry(self):
-        pass
+
+        options_path = get_options_path(0)
+        results = download(
+            urls=[video_urls[0]],
+            options_path=options_path,
+            output_directory=output_directory,
+        )
+        logger.info(results)
 
 
 if __name__ == "__main__":
@@ -267,8 +271,8 @@ if __name__ == "__main__":
         # TestYtdlp.test_get_ytdlp_format,
         # TestYtdlp.test_get_outtmpl,
         # TestYtdlp.test_get_entry_url,
-        TestYtdlp.test_get_entry_filename,
-        # TestYtdlp.test_download_entry,
+        # TestYtdlp.test_get_entry_filename,
+        TestYtdlp.test_download_entry,
         # TestYtdlp.test_check_ffmpeg,
     ]
     run_test_methods(test_methods)
