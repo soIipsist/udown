@@ -271,7 +271,6 @@ def get_entry_filename(entry: dict, uses_ffmpeg: bool = False):
     downloads = entry.get("requested_downloads")
 
     if downloads and uses_ffmpeg:
-        logger.info(f"RE: {downloads}")
         filepath = downloads[0].get("filepath")
         if filepath:
             new_ext = os.path.splitext(filepath)[1].lstrip(".")

@@ -20,6 +20,7 @@ from downloaders.ytdlp import (
     get_entry_filename,
     get_entry_url,
     check_ffmpeg,
+    logger,
 )
 
 from src.options import DOWNLOADER_METADATA_DIR
@@ -50,10 +51,11 @@ def get_options_path(index_or_str=None):
         if isinstance(index_or_str, str)
         else index_or_str
     )
-    return os.path.join(DOWNLOADER_METADATA_DIR, option_paths[path_idx])
+    path = os.path.join(DOWNLOADER_METADATA_DIR, option_paths[path_idx])
+    print("Using options path: ", path)
+    return path
 
 
-options_path = get_options_path(0)
 update_options = False
 output_directory = os.path.join(os.getcwd(), "videos")
 ytdlp_format = "ytdlp_video"
@@ -78,6 +80,7 @@ class TestYtdlp(TestBase):
 
     def test_get_options(self):
         # update options is false
+        options_path = get_options_path(0)
         options = get_options(options_path)
         options_data = read_json_file(options_path)
         self.assertTrue(options == options_data)
@@ -85,7 +88,7 @@ class TestYtdlp(TestBase):
     def test_download_playlist_urls(self):
         # urls = playlist_urls[0]
         urls = playlist_urls
-
+        options_path = get_options_path(0)
         results = download(
             urls=urls,
             options_path=options_path,
@@ -97,6 +100,8 @@ class TestYtdlp(TestBase):
     def test_download_regular_urls(self):
         output_directory = os.path.join(os.getcwd(), "videos")
         urls = video_urls
+        options_path = get_options_path(0)
+
         results = download(
             urls=urls,
             options_path=options_path,
@@ -124,6 +129,7 @@ class TestYtdlp(TestBase):
                 self.assertNotIn(arg, query_params, f"{arg} was found in {url}")
 
     def test_get_video_format(self):
+        options_path = get_options_path(0)
         options = get_options(options_path)  # "format" may or may not be in here
         ytdlp_format = "ytdlp_audio"
         custom_format = None
@@ -166,6 +172,7 @@ class TestYtdlp(TestBase):
         print("YTDLP FORMAT", output)
 
     def test_get_outtmpl(self):
+        options_path = get_options_path(0)
         options = get_options(options_path)
         prefix = "yolo - "
         output_directory = os.getcwd()
@@ -190,6 +197,7 @@ class TestYtdlp(TestBase):
 
     def test_get_entry_url(self):
         url = video_urls[0]
+        options_path = get_options_path(0)
         options = read_json_file(options_path)
 
         pp.pprint(options)
@@ -215,17 +223,16 @@ class TestYtdlp(TestBase):
 
     def test_get_entry_filename(self):
         url = video_urls[0]
+        options_path = get_options_path("audio_mp3_best.json")
         options = read_json_file(options_path)
 
         try:
             with yt_dlp.YoutubeDL(options) as ytdl:
                 info = ytdl.extract_info(url, download=True)
-                entry_url = get_entry_url(url, info, False)
-                entry_filename = get_entry_filename(info)
-                # print(entry_filename)
+                uses_ffmpeg = check_ffmpeg(options)
+                entry_filename = get_entry_filename(info, uses_ffmpeg)
 
-                if "requested_downloads" in info:
-                    print(info["requested_downloads"][0]["filepath"])
+                logger.info(f"ENTRY FILENAME: {entry_filename}")
 
         except Exception as e:
             print(e)
@@ -260,8 +267,8 @@ if __name__ == "__main__":
         # TestYtdlp.test_get_ytdlp_format,
         # TestYtdlp.test_get_outtmpl,
         # TestYtdlp.test_get_entry_url,
-        # TestYtdlp.test_get_entry_filename,
+        TestYtdlp.test_get_entry_filename,
         # TestYtdlp.test_download_entry,
-        TestYtdlp.test_check_ffmpeg,
+        # TestYtdlp.test_check_ffmpeg,
     ]
     run_test_methods(test_methods)
