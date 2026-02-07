@@ -9,7 +9,12 @@ from utils.logger import setup_logger
 logger = setup_logger(name="bs4", log_dir="/udown/bs4")
 
 
-def _write_output(path: str, result):
+def _write_output(result, path: str = None):
+    
+    if path is None:
+        logger.info(f"Result: {result}")
+        return
+    
     ext = os.path.splitext(path)[1].lower()
 
     if ext == ".json":
@@ -23,6 +28,8 @@ def _write_output(path: str, result):
                     f.write(f"{item}\n")
             else:
                 f.write(str(result))
+                
+    logger.info(f"Saved extraction results to {path}")
 
 
 def extract(
@@ -62,20 +69,17 @@ def extract(
 
     path = None
 
-    if output_directory:
-        try:
-            os.makedirs(output_directory, exist_ok=True)
+    if not output_directory:
+        output_directory = os.getcwd()
+    
+    try:
+        os.makedirs(output_directory, exist_ok=True)
+        path = os.path.join(output_directory, output_filename) if output_filename else None
+        _write_output(result, path)
 
-            if not output_filename:
-                output_filename = "bs4_extract.txt"
-
-            path = os.path.join(output_directory, output_filename)
-            _write_output(path, result)
-
-            logger.info(f"Saved extraction results to {path}")
-        except Exception:
-            logger.exception("Failed to write output file")
-            return {"status": 1, "result": result, "output_path": None}
+    except Exception as e:
+        logger.error(f"Exception: {e}")
+        return {"status": 1, "result": result, "output_path": None}
 
     return {
         "status": 0,

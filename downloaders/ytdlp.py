@@ -405,8 +405,6 @@ def download(
                     result["output_filename"] = entry_filename
                     result["progress"] = progress_state.progress
                     logger.info(f"Filename: {entry_filename}")
-                    logger.info(f"Downloading: {entry.get('title', entry_url)}")
-                    logger.info(f"Progress: {progress_state.progress}")
                     result["status"] = 0
 
                     results.append(result)
