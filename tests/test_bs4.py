@@ -17,7 +17,11 @@ class TestBS4(TestBase):
         super().setUp()
 
     def test_extract(self):
-        extract()
+        url = "https://quotes.toscrape.com"
+        selector = "a"
+        attribute = "href"
+        result = extract(url, selector, attribute)
+        print(result)
 
 
 if __name__ == "__main__":
