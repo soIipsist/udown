@@ -7,7 +7,7 @@ A versatile, command-line utility responsible for handling downloads of any type
 ### Pip (Linux, Windows)
 
 ```bash
-pip install git+https://github.com/soIipsist/udown.git
+pip install "udown[all] @ git+https://github.com/soIipsist/udown.git"
 ```
 
 ### Manual installation
@@ -16,7 +16,7 @@ pip install git+https://github.com/soIipsist/udown.git
 git clone https://github.com/soIipsist/udown.git
 python3 -m venv venv
 source venv/bin/activate
-pip install -e .
+pip install -e ".[all]"
 ```
 
 ## Usage
