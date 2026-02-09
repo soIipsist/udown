@@ -4,13 +4,17 @@ import subprocess
 import sys
 from pathlib import Path
 from pprint import PrettyPrinter
-
 from utils.logger import setup_logger
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="transmission", log_dir="/udown/transmission")
 
 PERCENT_RE = re.compile(r"(\d{1,3}(?:\.\d+)?)%")
+SPEED_RE = re.compile(r"Down:\s*([\d.]+\s*[KMG]?B/s)", re.I)
+UPLOAD_RE = re.compile(r"Up:\s*([\d.]+\s*[KMG]?B/s)", re.I)
+PEERS_RE = re.compile(r"Peers:\s*(\d+)", re.I)
+ETA_RE = re.compile(r"ETA\s*([^\s|]+)", re.I)
+RATIO_RE = re.compile(r"Ratio:\s*([\d.]+)", re.I)
 
 
 def _render_progress(percent: float, width: int = 30) -> str:
@@ -60,16 +64,42 @@ def download(
             for line in process.stdout:
                 stdout_lines.append(line)
 
-                match = PERCENT_RE.search(line)
-                if not match:
+                percent_match = PERCENT_RE.search(line)
+                if not percent_match:
                     continue
 
-                percent = float(match.group(1))
-                if percent != last_percent:
-                    bar = _render_progress(percent)
-                    sys.stdout.write("\r" + bar)
-                    sys.stdout.flush()
-                    last_percent = percent
+                percent = float(percent_match.group(1))
+                if percent == last_percent:
+                    continue
+
+                parts = []
+
+                speed_match = SPEED_RE.search(line)
+                if speed_match:
+                    parts.append(f"↓ {speed_match.group(1)}")
+
+                upload_match = UPLOAD_RE.search(line)
+                if upload_match:
+                    parts.append(f"↑ {upload_match.group(1)}")
+
+                peers_match = PEERS_RE.search(line)
+                if peers_match:
+                    parts.append(f"Peers {peers_match.group(1)}")
+
+                eta_match = ETA_RE.search(line)
+                if eta_match:
+                    parts.append(f"ETA {eta_match.group(1)}")
+
+                bar = _render_progress(percent)
+                line_out = bar
+
+                if parts:
+                    line_out += " | " + " | ".join(parts)
+
+                sys.stdout.write("\r" + line_out)
+                sys.stdout.flush()
+
+                last_percent = percent
 
             process.wait()
             sys.stdout.write("\n")

@@ -249,7 +249,7 @@ class Download(SQLiteItem):
 
     @property
     def downloader(self):
-        if self._downloader_type == "auto":
+        if self._downloader_type == "auto" or not self._downloader_type:
             self._downloader_type = detect_downloader_type(self._url)
 
         if isinstance(self._downloader_type, str):
@@ -362,11 +362,9 @@ class Download(SQLiteItem):
 
                 output_filename = part
 
-            if downloader_type is None:
-                downloader_type = "ytdlp_video"
-
             if downloader_type == "auto":
                 downloader_type = detect_downloader_type(url)
+
             downloader = Downloader(downloader_type).select_first()
             if not downloader:
                 raise ValueError(
@@ -380,7 +378,7 @@ class Download(SQLiteItem):
                 output_directory=base_output_directory,
             )
 
-        if os.path.exists(url):
+        if os.path.exists(url) and not url.endswith(".torrent"):
             with open(url, "r") as file:
                 for line in file:
                     line = line.strip()
@@ -394,6 +392,9 @@ class Download(SQLiteItem):
 
     def download(self, downloader: Downloader = None):
         if not downloader:
+            if not self._downloader_type:
+                self._downloader_type = detect_downloader_type(self._url)
+
             downloader = Downloader(
                 downloader_type=self._downloader_type
             ).select_first()
@@ -476,7 +477,7 @@ def download_command(subparsers):
     download_cmd.add_argument(
         "-t",
         "--downloader_type",
-        default=get_option("DOWNLOADER_TYPE", ""),
+        default=get_option("DOWNLOADER_TYPE", None),
         type=str,
     )
 
