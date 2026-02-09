@@ -1,6 +1,7 @@
 import os
 import re
 import json
+from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
@@ -31,13 +32,45 @@ def _write_output(result, path: str = None):
                 
     logger.info(f"Saved extraction results to {path}")
 
+def make_absolute_urls(base_url: str, value:str):
+    return urljoin(base_url, value)
 
-def extract(
+def strip_whitespace(value: str):
+    return value.strip() if isinstance(value, str) else value
+
+def drop_empty(value: str):
+    return value if value else None
+
+def get_rule(base_url: str, rule: str, value: str):
+    callables = [strip_whitespace, drop_empty, make_absolute_urls]
+    
+    if not rule or not isinstance(rule, str):
+        return value
+    
+    for func in callables:
+        if func.__name__ == rule:
+            return func(base_url,value)  if func.__name__ == "make_absolute_urls" else func(value)
+
+    return value
+
+def apply_rules(base_url:str ,values: list, rules: list = None):
+    out = []
+    for value in values:
+        for rule in rules:
+            value = get_rule(base_url,rule, value)
+            if value is None:
+                break
+        if value is not None:
+            out.append(value)
+    return out
+
+def extract_selector(
     url: str,
     selector: str,
     attribute: str = None,
     output_directory: str = None,
     output_filename: str = None,
+    rules:list = None
 ):
     """
     Extract values from HTML using BeautifulSoup.
@@ -66,6 +99,8 @@ def extract(
         elem.get(attribute) if attribute else elem.get_text(strip=True)
         for elem in elements
     ]
+    
+    result = apply_rules(url,result, rules)
 
     path = None
 

@@ -20,7 +20,7 @@ class TestBS4(TestBase):
         url = "https://quotes.toscrape.com"
         selector = "a"
         attribute = "href"
-        result = extract(url, selector, attribute)
+        result = extract_selector(url, selector, attribute)
         print(result)
 
 
