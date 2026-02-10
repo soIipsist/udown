@@ -44,7 +44,7 @@ logger.disabled = False
 def detect_downloader_type(url: str) -> str:
     url = url.strip()
 
-    if url.startswith("magnet:"):
+    if url.startswith("magnet:") or url.endswith(".torrent"):
         downloader_type = "transmission"
 
     elif "music.youtube" in url:
