@@ -423,11 +423,18 @@ default_downloaders = [
         "url, output_directory",
     ),
     Downloader(
-        "bs4_selector",
+        "bs4",
         None,
         "downloaders.bs4",
         "extract_selector",
         "url, selector=a, attribute=href, output_directory=output_directory, output_filename=output_filename, rules=make_absolute_urls",
+    ),
+    Downloader(
+        "lxml",
+        None,
+        "downloaders.lxml",
+        "extract_xpath",
+        "url, xpath=//a, output_directory=output_directory, output_filename=output_filename, rules=make_absolute_urls",
     ),
 ]
 

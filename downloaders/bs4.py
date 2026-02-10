@@ -126,3 +126,6 @@ def extract_selector(
         "output_directory": output_directory,
         "output_filename": output_filename,
     }
+
+# if __name__ == "__main__":
+#     pass
