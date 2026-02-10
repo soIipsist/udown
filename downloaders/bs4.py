@@ -1,4 +1,6 @@
+import argparse
 import os
+from pprint import pp
 import re
 import json
 from urllib.parse import urljoin
@@ -53,10 +55,13 @@ def get_rule(base_url: str, rule: str, value: str):
 
     return value
 
-def apply_rules(base_url:str ,values: list, rules: list = None):
+def apply_rules(base_url:str, values: list, rules: list = None):
     out = []
     if isinstance(rules, str):
         rules = rules.split(",")
+
+    if not rules:
+        rules = []
     
     for value in values:
         for rule in rules:
@@ -127,5 +132,28 @@ def extract_selector(
         "output_filename": output_filename,
     }
 
-# if __name__ == "__main__":
-#     pass
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Extract values from HTML using BeautifulSoup."
+    )
+    parser.add_argument("url", type=str, help="Target URL")
+    parser.add_argument("-s","--selector", type=str, help="Selector", default="a")
+    parser.add_argument("-a","--attribute", type=str, help="Attribute", default="href")
+
+    parser.add_argument(
+        "-d", "--output_directory", type=str, default=None, help="Save directory"
+    )
+    parser.add_argument("-f", "--output_filename", type=str, default=None, help="Save filename")
+    parser.add_argument("-r", "--rules", type=str, default=None)
+    args = parser.parse_args()
+
+    results = extract_selector(
+        args.url,
+        args.selector,
+        args.attribute,
+        args.output_directory,
+        args.output_filename,
+        args.rules
+    )
+
+    pp.pprint(results)

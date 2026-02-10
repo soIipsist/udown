@@ -1,4 +1,6 @@
+import argparse
 import os
+from pprint import pp
 import re
 import requests
 from downloaders.bs4 import _write_output, apply_rules
@@ -74,3 +76,26 @@ def extract_xpath(
         "output_directory": output_directory,
         "output_filename": output_filename,
     }
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Extract values from HTML using BeautifulSoup."
+    )
+    parser.add_argument("url", type=str, help="Target URL")
+    parser.add_argument("-x","--xpath", type=str, help="XPath", default="//a/@href")
+    parser.add_argument(
+        "-d", "--output_directory", type=str, default=None, help="Save directory"
+    )
+    parser.add_argument("-f", "--output_filename", type=str, default=None, help="Save filename")
+    parser.add_argument("-r", "--rules", type=str, default=None)
+    args = parser.parse_args()
+
+    results = extract_xpath(
+        args.url,
+        args.xpath,
+        args.output_directory,
+        args.output_filename,
+        args.rules
+    )
+
+    pp.pprint(results)

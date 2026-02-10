@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from downloaders.lxml import extract_xpath
 from test_base import *
 
 current_file = Path(__file__).resolve()
@@ -14,18 +15,17 @@ pp = PrettyPrinter(indent=2)
 url = "https://quotes.toscrape.com"
 
 
-class TestBS4(TestBase):
+class TestLxml(TestBase):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_extract_selector(self):
-        selector = "a"
-        attribute = "href"
-        result = extract_selector(url, selector, attribute, rules="make_absolute_urls")
+    def test_extract_xpath(self):
+        xpath = "//a/@href"
+        result = extract_xpath(url, xpath=xpath, rules=None, output_filename="extracted2.txt")
         print(result)
 
 if __name__ == "__main__":
     test_methods = [
-        TestBS4.test_extract_selector,
+        TestLxml.test_extract_xpath,
     ]
     run_test_methods(test_methods)
