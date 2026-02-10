@@ -21,8 +21,13 @@ class TestSelector(TestBase):
     def test_extract_selector(self):
         selector = "a"
         attribute = "href"
-        result = extract_selector(url, selector, attribute, rules="make_absolute_urls")
-        print(result)
+        rules = "make_absolute_urls, strip_whitespace, drop_empty, some_rule"
+        output_filename = "extract.txt"
+        result = extract_selector(
+            url, selector, attribute, output_filename=output_filename, rules=rules
+        )
+        # print(result)
+
 
 if __name__ == "__main__":
     test_methods = [

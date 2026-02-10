@@ -8,16 +8,15 @@ import requests
 from bs4 import BeautifulSoup
 from utils.logger import setup_logger
 
-
 logger = setup_logger(name="selector", log_dir="/udown/selector")
 
 
 def _write_output(result, path: str = None):
-    
+
     if path is None:
         logger.info(f"Result: {result}")
         return
-    
+
     ext = os.path.splitext(path)[1].lower()
 
     if ext == ".json":
@@ -31,46 +30,58 @@ def _write_output(result, path: str = None):
                     f.write(f"{item}\n")
             else:
                 f.write(str(result))
-                
+
     logger.info(f"Saved extraction results to {path}")
 
-def make_absolute_urls(base_url: str, value:str):
+
+def make_absolute_urls(base_url: str, value: str):
     return urljoin(base_url, value)
+
 
 def strip_whitespace(value: str):
     return value.strip() if isinstance(value, str) else value
 
+
 def drop_empty(value: str):
     return value if value else None
 
+
 def get_rule(base_url: str, rule: str, value: str):
     callables = [strip_whitespace, drop_empty, make_absolute_urls]
-    
+
     if not rule or not isinstance(rule, str):
         return value
-    
+
     for func in callables:
         if func.__name__ == rule:
-            return make_absolute_urls(base_url,value)  if func.__name__ == "make_absolute_urls" else func(value)
+            return (
+                make_absolute_urls(base_url, value)
+                if func.__name__ == "make_absolute_urls"
+                else func(value)
+            )
 
     return value
 
-def apply_rules(base_url:str, values: list, rules: list = None):
-    out = []
-    if isinstance(rules, str):
-        rules = rules.split(",")
 
-    if not rules:
+def apply_rules(base_url: str, values: list, rules: list = None):
+    out = []
+
+    if isinstance(rules, str):
+        rules = [r.strip() for r in rules.split(",") if r.strip()]
+    elif rules is None:
         rules = []
-    
+    elif not isinstance(rules, (list, tuple)):
+        rules = [rules]
+
     for value in values:
         for rule in rules:
-            value = get_rule(base_url,rule, value)
+            value = get_rule(base_url, rule, value)
             if value is None:
                 break
         if value is not None:
             out.append(value)
     return out
+
 
 def extract_selector(
     url: str,
@@ -78,7 +89,7 @@ def extract_selector(
     attribute: str = None,
     output_directory: str = None,
     output_filename: str = None,
-    rules:list = None
+    rules: list = None,
 ):
     """
     Extract values from HTML using BeautifulSoup.
@@ -107,17 +118,19 @@ def extract_selector(
         elem.get(attribute) if attribute else elem.get_text(strip=True)
         for elem in elements
     ]
-    
-    result = apply_rules(url,result, rules)
+
+    result = apply_rules(url, result, rules)
 
     path = None
 
     if not output_directory:
         output_directory = os.getcwd()
-    
+
     try:
         os.makedirs(output_directory, exist_ok=True)
-        path = os.path.join(output_directory, output_filename) if output_filename else None
+        path = (
+            os.path.join(output_directory, output_filename) if output_filename else None
+        )
         _write_output(result, path)
 
     except Exception as e:
@@ -130,20 +143,24 @@ def extract_selector(
         "output_path": path,
         "output_directory": output_directory,
         "output_filename": output_filename,
+        "progress": "100%",
     }
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Extract values from HTML using BeautifulSoup."
     )
     parser.add_argument("url", type=str, help="Target URL")
-    parser.add_argument("-s","--selector", type=str, help="Selector", default="a")
-    parser.add_argument("-a","--attribute", type=str, help="Attribute", default="href")
+    parser.add_argument("-s", "--selector", type=str, help="Selector", default="a")
+    parser.add_argument("-a", "--attribute", type=str, help="Attribute", default="href")
 
     parser.add_argument(
         "-d", "--output_directory", type=str, default=None, help="Save directory"
     )
-    parser.add_argument("-f", "--output_filename", type=str, default=None, help="Save filename")
+    parser.add_argument(
+        "-f", "--output_filename", type=str, default=None, help="Save filename"
+    )
     parser.add_argument("-r", "--rules", type=str, default=None)
     args = parser.parse_args()
 
@@ -153,7 +170,7 @@ if __name__ == "__main__":
         args.attribute,
         args.output_directory,
         args.output_filename,
-        args.rules
+        args.rules,
     )
 
     pp.pprint(results)

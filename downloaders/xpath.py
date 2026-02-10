@@ -74,6 +74,7 @@ def extract_xpath(
         "output_path": path,
         "output_directory": output_directory,
         "output_filename": output_filename,
+        "progress": "100%",
     }
 
 
