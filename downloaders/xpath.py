@@ -3,11 +3,12 @@ import os
 from pprint import pp
 import re
 import requests
-from downloaders.bs4 import _write_output, apply_rules
-from lxml import html as lxml_html
+from selector import _write_output, apply_rules
 from utils.logger import setup_logger
+from lxml import html as lxml_html
 
-logger = setup_logger(name="lxml", log_dir="/udown/lxml")
+logger = setup_logger(name="xpath", log_dir="/udown/xpath")
+
 
 def extract_xpath(
     url: str,
@@ -60,9 +61,7 @@ def extract_xpath(
     try:
         os.makedirs(output_directory, exist_ok=True)
         path = (
-            os.path.join(output_directory, output_filename)
-            if output_filename
-            else None
+            os.path.join(output_directory, output_filename) if output_filename else None
         )
         _write_output(result, path)
     except Exception as e:
@@ -77,25 +76,24 @@ def extract_xpath(
         "output_filename": output_filename,
     }
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Extract values from HTML using BeautifulSoup."
     )
     parser.add_argument("url", type=str, help="Target URL")
-    parser.add_argument("-x","--xpath", type=str, help="XPath", default="//a/@href")
+    parser.add_argument("-x", "--xpath", type=str, help="XPath", default="//a/@href")
     parser.add_argument(
         "-d", "--output_directory", type=str, default=None, help="Save directory"
     )
-    parser.add_argument("-f", "--output_filename", type=str, default=None, help="Save filename")
+    parser.add_argument(
+        "-f", "--output_filename", type=str, default=None, help="Save filename"
+    )
     parser.add_argument("-r", "--rules", type=str, default=None)
     args = parser.parse_args()
 
     results = extract_xpath(
-        args.url,
-        args.xpath,
-        args.output_directory,
-        args.output_filename,
-        args.rules
+        args.url, args.xpath, args.output_directory, args.output_filename, args.rules
     )
 
     pp.pprint(results)

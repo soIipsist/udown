@@ -6,10 +6,10 @@ import json
 from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
-
 from utils.logger import setup_logger
 
-logger = setup_logger(name="bs4", log_dir="/udown/bs4")
+
+logger = setup_logger(name="selector", log_dir="/udown/selector")
 
 
 def _write_output(result, path: str = None):
