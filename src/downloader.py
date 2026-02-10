@@ -66,7 +66,7 @@ class Downloader(SQLiteItem):
     _downloader_type: str = None
     _downloader_path: str = None
     _downloader_args: list = None
-    _func = None
+    _downloader_func = None
     _module = None
 
     @property
@@ -78,12 +78,12 @@ class Downloader(SQLiteItem):
         self._module = module
 
     @property
-    def func(self):
-        return self._func
+    def downloader_func(self):
+        return self._downloader_func
 
-    @func.setter
-    def func(self, func: str):
-        self._func = func
+    @downloader_func.setter
+    def downloader_func(self, downloader_func: str):
+        self._downloader_func = downloader_func
 
     @property
     def downloader_args(self):
@@ -116,14 +116,14 @@ class Downloader(SQLiteItem):
         downloader_type: str = None,
         downloader_path: str = None,
         module: str = None,
-        func: str = None,
+        downloader_func: str = None,
         downloader_args: str = None,
     ):
         column_names = [
             "downloader_type",
             "downloader_path",
             "module",
-            "func",
+            "downloader_func",
             "downloader_args",
         ]
 
@@ -131,7 +131,7 @@ class Downloader(SQLiteItem):
         self.downloader_type = downloader_type
         self.downloader_path = downloader_path
         self.module = module
-        self.func = func
+        self.downloader_func = downloader_func
         self.downloader_args = downloader_args
         self.table_name = "downloaders"
         self.conjunction_type = "OR"
@@ -153,7 +153,7 @@ class Downloader(SQLiteItem):
 
     def get_function(self):
         module_name = self.module.strip()
-        func_name = self.func.strip()
+        func_name = self.downloader_func.strip()
 
         if module_name not in ALLOWED_MODULES:
             logger.warning(
@@ -427,7 +427,7 @@ default_downloaders = [
         None,
         "downloaders.bs4",
         "extract_selector",
-        "url, selector=a, attribute=href, output_directory=output_directory, output_filename=output_filename",
+        "url, selector=a, attribute=href, output_directory=output_directory, output_filename=output_filename, rules=make_absolute_urls",
     ),
 ]
 
@@ -451,7 +451,7 @@ def list_downloaders(d, downloader_type):
     if downloader_type:
 
         downloaders = d.filter_by(
-            ["downloader_type", "downloader_path", "module", "func"]
+            ["downloader_type", "downloader_path", "module", "downloader_func"]
         )
     else:
         downloaders = d.select_all()
@@ -474,8 +474,8 @@ def downloader_action(
     if action == "add" or action == "insert":
         if not d.module:
             d.module = "downloaders.ytdlp"
-        if not d.func:
-            d.func = "download"
+        if not d.downloader_func:
+            d.downloader_func = "download"
         d.upsert()
     elif action == "delete":
         result = d.delete()
@@ -524,7 +524,7 @@ def downloader_command(subparsers):
     downloader_cmd.add_argument(
         "-d", "--downloader_path", type=is_valid_path, default=None
     )
-    downloader_cmd.add_argument("-f", "--func", type=str, default=None)
+    downloader_cmd.add_argument("-f", "--downloader_func", type=str, default=None)
     downloader_cmd.add_argument("-m", "--module", type=str, default=None)
     downloader_cmd.add_argument("-args", "--downloader_args", type=str, default=None)
     downloader_cmd.add_argument(

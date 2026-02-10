@@ -63,7 +63,7 @@ downloader_path = video_options_1
 # downloads_path = "downloads.txt"
 downloader_type = "ytdlp_audio"
 module = "ytdlp"
-func = "download"
+downloader_func = "download"
 downloader_args = "url, downloader_path"
 output_directory = os.path.join(os.getcwd(), "videos")
 # output_directory = None
@@ -120,7 +120,7 @@ class TestDownloader(TestBase):
     def test_get_downloader_with_extra_args(self):
         downloader_args = "url, output_directory=red, ytdlp_format=ytdl"
         downloader = Downloader(
-            downloader_type, downloader_path, module, func, downloader_args
+            downloader_type, downloader_path, module, downloader_func, downloader_args
         )
         download = Download(
             url=playlist_urls[0],

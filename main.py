@@ -26,7 +26,6 @@ def main():
     options_parser.set_defaults(func=options_action)
 
     import argcomplete
-
     argcomplete.autocomplete(parser)
 
     if len(sys.argv) == 1:
@@ -35,15 +34,13 @@ def main():
         sys.argv.insert(1, "download")
 
     args = parser.parse_args()
-
     args_dict = vars(args)
+    
     func = args_dict.pop("func", download_action)
     ui = args_dict.get("ui", True)
     command = args_dict.pop("command")
 
     output = func(**args_dict)
-
-    # print(args_dict)
 
     if not ui and output:
         pp.pprint(output)

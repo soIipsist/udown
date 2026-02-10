@@ -49,12 +49,15 @@ def get_rule(base_url: str, rule: str, value: str):
     
     for func in callables:
         if func.__name__ == rule:
-            return func(base_url,value)  if func.__name__ == "make_absolute_urls" else func(value)
+            return make_absolute_urls(base_url,value)  if func.__name__ == "make_absolute_urls" else func(value)
 
     return value
 
 def apply_rules(base_url:str ,values: list, rules: list = None):
     out = []
+    if isinstance(rules, str):
+        rules = rules.split(",")
+    
     for value in values:
         for rule in rules:
             value = get_rule(base_url,rule, value)
