@@ -1,6 +1,6 @@
 import argparse
 import os
-from pprint import pp
+from pprint import PrettyPrinter
 import re
 import requests
 from selector import _write_output, apply_rules
@@ -8,6 +8,7 @@ from utils.logger import setup_logger
 from lxml import html as lxml_html
 
 logger = setup_logger(name="xpath", log_dir="/udown/xpath")
+pp = PrettyPrinter(indent=2)
 
 
 def extract_xpath(

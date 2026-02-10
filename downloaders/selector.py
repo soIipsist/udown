@@ -1,6 +1,6 @@
 import argparse
 import os
-from pprint import pp
+from pprint import PrettyPrinter
 import re
 import json
 from urllib.parse import urljoin
@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from utils.logger import setup_logger
 
 logger = setup_logger(name="selector", log_dir="/udown/selector")
+pp = PrettyPrinter(indent=2)
 
 
 def _write_output(result, path: str = None):
