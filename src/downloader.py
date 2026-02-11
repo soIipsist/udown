@@ -436,6 +436,13 @@ default_downloaders = [
         "extract_xpath",
         "url, xpath=//a, output_directory=output_directory, output_filename=output_filename, rules=make_absolute_urls",
     ),
+    Downloader(
+        "selenium",
+        os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json"),
+        "downloaders.selenium_downloader",
+        "download",
+        "url, downloader_path",
+    ),
 ]
 
 if not db_exists:

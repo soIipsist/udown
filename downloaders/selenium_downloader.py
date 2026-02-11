@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 from pprint import PrettyPrinter
-from ytdlp import read_json_file
+from downloaders.ytdlp import read_json_file
 from utils.logger import setup_logger
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
