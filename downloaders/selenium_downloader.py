@@ -10,10 +10,149 @@ from utils.logger import setup_logger
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException
-
+import time
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="selenium_downloader", log_dir="/udown/selenium")
+
+
+BY_MAP = {
+    "css": By.CSS_SELECTOR,
+    "xpath": By.XPATH,
+    "id": By.ID,
+    "name": By.NAME,
+    "class": By.CLASS_NAME,
+    "tag": By.TAG_NAME,
+    "link_text": By.LINK_TEXT,
+    "partial_link_text": By.PARTIAL_LINK_TEXT,
+}
+
+
+def run_events(driver, events: list):
+    results = {}
+
+    def get_by(event):
+        return BY_MAP.get(event.get("by", "css"), By.CSS_SELECTOR)
+
+    def handle_get(event):
+        driver.get(event["url"])
+
+    def handle_quit(event):
+        driver.quit()
+
+    def handle_wait(event):
+        WebDriverWait(driver, event.get("timeout", 10)).until(
+            EC.presence_of_element_located((get_by(event), event["value"]))
+        )
+
+    def handle_click(event):
+        driver.find_element(get_by(event), event["value"]).click()
+
+    def handle_type(event):
+        el = driver.find_element(get_by(event), event["value"])
+        el.clear()
+        el.send_keys(event.get("text", ""))
+
+    def handle_submit(event):
+        driver.find_element(get_by(event), event["value"]).submit()
+
+    def handle_sleep(event):
+        time.sleep(event.get("seconds", 1))
+
+    def handle_execute_js(event):
+        driver.execute_script(event.get("script", ""))
+
+    def handle_extract(event):
+        if event.get("value"):
+            el = driver.find_element(get_by(event), event["value"])
+            data = (
+                el.get_attribute(event["attribute"])
+                if event.get("attribute")
+                else el.text
+            )
+        else:
+            data = driver.page_source
+
+        name = event.get("name", "extract")
+        results.setdefault(name, []).append(data)
+
+    def handle_extract_all(event):
+        elements = driver.find_elements(get_by(event), event["value"])
+
+        if event.get("attribute"):
+            data = [el.get_attribute(event["attribute"]) for el in elements]
+        else:
+            data = [el.text for el in elements]
+
+        name = event.get("name", "extract_all")
+        results[name] = data
+
+    def handle_extract_structured(event):
+        parent_cfg = event["parent"]
+        fields = event.get("fields", {})
+
+        parent_by = BY_MAP.get(parent_cfg.get("by", "css"))
+        parents = driver.find_elements(parent_by, parent_cfg["value"])
+
+        structured_data = []
+
+        for parent in parents:
+            item = {}
+            for field_name, field_cfg in fields.items():
+                field_by = BY_MAP.get(field_cfg.get("by", "css"))
+                try:
+                    el = parent.find_element(field_by, field_cfg["value"])
+                    item[field_name] = (
+                        el.get_attribute(field_cfg["attribute"])
+                        if field_cfg.get("attribute")
+                        else el.text
+                    )
+                except Exception:
+                    item[field_name] = None
+            structured_data.append(item)
+
+        name = event.get("name", "extract_structured")
+        results[name] = structured_data
+
+    def handle_save_html(event):
+        filename = event.get("filename", "page.html")
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(driver.page_source)
+
+    def handle_screenshot(event):
+        driver.save_screenshot(event.get("path", "screenshot.png"))
+
+    ACTIONS = {
+        "get": handle_get,
+        "quit": handle_quit,
+        "wait": handle_wait,
+        "click": handle_click,
+        "type": handle_type,
+        "submit": handle_submit,
+        "sleep": handle_sleep,
+        "execute_js": handle_execute_js,
+        "extract": handle_extract,
+        "extract_all": handle_extract_all,
+        "extract_structured": handle_extract_structured,
+        "save_html": handle_save_html,
+        "screenshot": handle_screenshot,
+    }
+
+    for index, event in enumerate(events):
+        action = event.get("action")
+
+        if action not in ACTIONS:
+            raise ValueError(f"[Event #{index}] Unknown action: {action}")
+
+        try:
+            ACTIONS[action](event)
+        except Exception as e:
+            raise RuntimeError(f"[Event #{index}] Failed → {event}\nError: {str(e)}")
+
+    return results
 
 
 def get_chrome_options(options: dict, output_directory: Path | None = None) -> Options:
@@ -84,6 +223,7 @@ def download(
 
     options = get_selenium_options(options_path, out_dir)
     chrome_options = options.get("chrome_options")
+    events = options.get("events")
 
     result = {
         "url": url,
@@ -98,13 +238,16 @@ def download(
         logger.info(f"Loading URL: {url}")
         driver.get(url)
 
-        html = driver.page_source
+        if events:
+            event_results = run_events(driver, events)
+        else:
+            event_results = [driver.page_source]
 
         path = (
             os.path.join(output_directory, output_filename) if output_filename else None
         )
-        _write_output(html, path)
-        result["html"] = html
+        _write_output(event_results, path)
+        result["data"] = event_results
         result["status"] = 0
         result["progress"] = "100%"
 

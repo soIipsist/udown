@@ -1,3 +1,64 @@
 {
-  "events": []
+  "events": [
+    {
+      "action": "get",
+      "url": "https://quotes.toscrape.com"
+    },
+
+    {
+      "action": "wait",
+      "by": "css",
+      "value": ".quote",
+      "timeout": 10
+    },
+
+    {
+      "action": "extract_structured",
+      "name": "quotes",
+      "parent": {
+        "by": "css",
+        "value": ".quote"
+      },
+      "fields": {
+        "text": {
+          "by": "css",
+          "value": ".text"
+        },
+        "author": {
+          "by": "css",
+          "value": ".author"
+        }
+      }
+    },
+
+    {
+      "action": "click",
+      "by": "xpath",
+      "value": "//li[@class='next']/a"
+    },
+
+    {
+      "action": "wait",
+      "by": "css",
+      "value": ".quote",
+      "timeout": 10
+    },
+
+    {
+      "action": "extract_all",
+      "name": "quotes_page_2",
+      "by": "css",
+      "value": ".quote",
+      "attribute": "text"
+    },
+
+    {
+      "action": "save_html",
+      "filename": "quotes_page_2.html"
+    },
+
+    {
+      "action": "quit"
+    }
+  ]
 }
