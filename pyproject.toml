@@ -20,7 +20,7 @@ dependencies = [
     "uc-micro-py==1.0.3",
 ]
 
-optional-dependencies = { all = ["beautifulsoup4","requests", "urllib3", "yt-dlp", "lxml"] }
+optional-dependencies = { all = ["beautifulsoup4","requests", "urllib3", "yt-dlp", "lxml", "selenium"] }
 
 [project.scripts]
 udown = "udown.main:main"

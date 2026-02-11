@@ -1,11 +1,9 @@
-import threading
 import yt_dlp
 import argparse
 import os
 import json
 from pprint import PrettyPrinter
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
-from queue import Empty, Queue
 from src.options import get_option
 from utils.logger import setup_logger
 

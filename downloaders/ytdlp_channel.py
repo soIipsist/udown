@@ -1,5 +1,5 @@
 import os
-from downloaders.ytdlp import get_channel_info, download
+from ytdlp import get_channel_info, download
 from argparse import ArgumentParser
 from pprint import PrettyPrinter
 from src.download import Download
