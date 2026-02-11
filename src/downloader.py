@@ -441,7 +441,7 @@ default_downloaders = [
         os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json"),
         "downloaders.selenium_downloader",
         "download",
-        "url, downloader_path",
+        "url, downloader_path, output_directory, output_filename",
     ),
 ]
 

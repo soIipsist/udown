@@ -3,7 +3,7 @@ import os
 from pprint import PrettyPrinter
 import re
 import requests
-from selector import _write_output, apply_rules
+from downloaders.selector import _write_output, apply_rules
 from utils.logger import setup_logger
 from lxml import html as lxml_html
 

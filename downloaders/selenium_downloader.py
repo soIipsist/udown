@@ -4,6 +4,7 @@ from pathlib import Path
 from pprint import PrettyPrinter
 
 from downloaders.ytdlp import read_json_file
+from downloaders.selector import _write_output
 from utils.logger import setup_logger
 
 from selenium import webdriver
@@ -78,10 +79,8 @@ def download(
 
     results = []
 
-    out_dir = None
-    if output_directory:
-        out_dir = Path(output_directory)
-        out_dir.mkdir(parents=True, exist_ok=True)
+    out_dir = Path(output_directory or ".")
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     options = get_selenium_options(options_path, out_dir)
     chrome_options = options.get("chrome_options")
@@ -100,8 +99,14 @@ def download(
         driver.get(url)
 
         html = driver.page_source
+
+        path = (
+            os.path.join(output_directory, output_filename) if output_filename else None
+        )
+        _write_output(html, path)
         result["html"] = html
         result["status"] = 0
+        result["progress"] = "100%"
 
         driver.quit()
 
@@ -126,13 +131,20 @@ if __name__ == "__main__":
     parser.add_argument(
         "-d", "--output_directory", type=str, default=None, help="Download directory"
     )
-
+    parser.add_argument(
+        "-f",
+        "--output_filename",
+        type=str,
+        default=None,
+        help="Download filename",
+    )
     args = parser.parse_args()
 
     results = download(
         url=args.url,
         options_path=args.options_path,
         output_directory=args.output_directory,
+        output_filename=args.output_filename,
     )
 
     pp.pprint(results)
