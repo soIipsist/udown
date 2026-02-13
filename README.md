@@ -1,6 +1,9 @@
 # udown
 
-A versatile, command-line utility responsible for handling downloads of any type. Supports multiple backends (e.g yt-dlp, wget, urllib), with the additional capability of creating your own custom downloaders.
+A versatile, command-line utility responsible for handling downloads of any type.
+
+`udown` can download videos, playlists, files, and batches of URLs using multiple interchangeable backends (yt-dlp, wget, urllib, Selenium, custom handlers, etc.).  
+It also allows you to register your own downloaders and manage them dynamically.
 
 ## Installation
 
@@ -18,6 +21,24 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -e ".[all]"
 ```
+
+### Enabling command-line completion (optional)
+
+`udown` supports tab-completion via `argcomplete`. To enable it, paste this in your `.bashrc` or `.zshrc` and restart your shell:
+
+```bash)
+eval "$(register-python-argcomplete udown)"
+```
+
+Verify it works:
+
+```bash)
+udown <TAB>
+udown download -t <TAB>
+udown downloaders -t <TAB>
+```
+
+If configured correctly, available subcommands and downloader types will autocomplete.
 
 ## Usage
 
