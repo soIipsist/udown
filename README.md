@@ -2,8 +2,7 @@
 
 A versatile, command-line utility responsible for handling downloads of any type.
 
-`udown` can download videos, playlists, files, and batches of URLs using multiple interchangeable backends (yt-dlp, wget, urllib, Selenium, custom handlers, etc.).  
-It also allows you to register your own downloaders and manage them dynamically.
+`udown` can download videos, playlists, files, and batches of URLs using multiple interchangeable backends (yt-dlp, wget, urllib, Selenium, custom handlers, etc.). Any of the default downloaders can be used to download content from a specified URL, or you can create your own.
 
 ## Installation
 
