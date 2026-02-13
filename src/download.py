@@ -8,7 +8,12 @@ import shlex
 import sqlite3
 from typing import Optional
 from urllib.parse import urlparse
-from .downloader import Downloader, get_downloader_types, detect_downloader_type
+from .downloader import (
+    Downloader,
+    get_downloader_types,
+    detect_downloader_type,
+    complete_downloader_type,
+)
 from .options import get_option, str_to_bool
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
@@ -474,12 +479,13 @@ def download_command(subparsers):
         default=get_option("DOWNLOAD_ACTION", None),
         choices=["download", "add", "insert", "delete", "list"],
     )
-    download_cmd.add_argument(
+    type_arg = download_cmd.add_argument(
         "-t",
         "--downloader_type",
         default=get_option("DOWNLOADER_TYPE", None),
         type=str,
     )
+    type_arg.completer = complete_downloader_type
 
     download_cmd.add_argument(
         "-s",

@@ -20,17 +20,6 @@ import inspect
 pp = PrettyPrinter(indent=2)
 database_path = get_option("DATABASE_PATH", os.path.join(PROJECT_DIR, "downloads.db"))
 
-# environment variables
-# DOWNLOADER="ytdlp"
-# DOWNLOAD_FILENAME="$HOME/videos/downloads.txt"
-# DATABASE_PATH="$HOME/scripts/downloads.db"
-# DOWNLOAD_DIRECTORY="$HOME/videos"
-# YTDLP_FORMAT="ytdlp_audio"
-# YTDLP_OPTIONS_PATH="$HOME/scripts/video_options.json"
-# FFMPEG_OPTS="-protocol_whitelist file,http,https,tcp,tls"
-# YTDLP_VIDEO_DIRECTORY="$HOME/mnt/"
-# YTDLP_AUDIO_DIRECTORY="$HOME/mnt/ssd/Music"
-
 # create connection and tables
 db_exists = os.path.exists(database_path)
 db = create_connection(database_path)
@@ -516,15 +505,10 @@ def downloader_action(
 
 
 def complete_downloader_type(prefix, parsed_args, **kwargs):
-    # parsed_args contains already-typed args
-    if getattr(parsed_args, "action", None) == "insert":
-        return []
-
-    return get_downloader_types()
+    return [t for t in get_downloader_types() if t and t.startswith(prefix)]
 
 
 def downloader_command(subparsers):
-    # downloader cmd
     downloader_cmd = subparsers.add_parser("downloaders", help="List downloaders")
     downloader_cmd.add_argument(
         "action",
@@ -533,8 +517,10 @@ def downloader_command(subparsers):
         default=get_option("DOWNLOADER_ACTION", None),
         nargs="?",
     )
-    downloader_cmd.add_argument("-t", "--downloader_type", type=str, default="")
-    # type_arg.completer = complete_downloader_type
+
+    type_arg = downloader_cmd.add_argument("-t", "--downloader_type", type=str)
+    type_arg.completer = complete_downloader_type
+
     downloader_cmd.add_argument(
         "-d", "--downloader_path", type=is_valid_path, default=None
     )
