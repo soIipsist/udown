@@ -2,7 +2,7 @@
 
 A versatile, command-line utility responsible for handling downloads of any type.
 
-`udown` can download videos, playlists, files, and batches of URLs using multiple interchangeable backends (yt-dlp, wget, urllib, Selenium, custom handlers, etc.). Any of the default downloaders can be used to download content from a specified URL, or you can create your own.
+`udown` can download videos, playlists, files, and batches of URLs using multiple interchangeable backends. Any of the [default downloaders](#supported-downloaders) can be used to download content from a specified URL, or you can [create your own](#supported-downloaders).
 
 ## Installation
 
@@ -121,3 +121,27 @@ udown options get --key "USE_TUI"
 # Reset all options
 udown options reset
 ```
+
+## Supported downloaders
+
+By default, `udown` automatically detects the downloader type from the specified URL. Override with `--downloader_type <type>`.
+
+**Default downloaders**:
+
+- **yt-dlp family** (`ytdlp`, `ytdlp_video`, `ytdlp_audio`, `ytdlp_video_subs`, …)  
+  → videos, audio, playlists, channels
+
+- **wget** & **urllib**  
+  → simple & reliable direct file downloads
+
+- **transmission**  
+  → magnet links & .torrent files
+
+- **selenium**  
+  → JavaScript-heavy / login-protected pages
+
+- **selector** / **xpath**  
+  → link extraction from pages (batch downloads)
+
+- **Custom**  
+  → register any Python callable you want
