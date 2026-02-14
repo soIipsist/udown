@@ -158,6 +158,12 @@ class SQLiteItem:
             if isinstance(item, SQLiteItem):
                 item.insert()
 
+    @classmethod
+    def upsert_all(cls, items: list, filter_condition: str = None):
+        for item in items:
+            if isinstance(item, SQLiteItem):
+                item.upsert(filter_condition)
+
     def upsert(self, filter_condition=None):
         if self.item_exists(filter_condition):
             id = self.update(filter_condition)
