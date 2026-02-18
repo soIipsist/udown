@@ -124,27 +124,27 @@ udown options reset
 
 ## Configuration via environment variables
 
-`udown` reads many of its behaviors from environment variables. You can set them in your shell profile (`.bashrc`, `.zshrc`, etc.), in a `.env` file, or export them directly before running commands.
+`udown` reads many of its behaviors from environment variables. You can set them in your shell profile (`.bashrc`, `.zshrc`, etc.), in a `.env` file, or export them directly before running commands. Check [.default](./src/.default) for the factory/default settings.
 
-| Variable                | Description                                                                                 | Default / Example Value                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `DATABASE_PATH`         | Full path to the SQLite database file that stores downloads and downloaders                 | *`./downloads.db`*                                                           |
-| `DOWNLOADER_TYPE`       | Default downloader type to use when not specified on the command line                       | *(none)*                                                                     |
-| `DOWNLOADER_KEYS`       | Comma-separated fields shown when listing downloaders (`udown downloaders list`)            | *`downloader_type,downloader_path,downloader_args,module,downloader_func`*   |
-| `DOWNLOADER_OP`         | Default filter conjunction for downloader queries (`AND` or `OR`)                           | *`OR`*                                                                       |
-| `DOWNLOADER_ACTION`     | Default subcommand for `udown downloaders` (add, delete, list, reset)                       | *(none / typically `list`)*                                                  |
-| `DOWNLOAD_DIRECTORY`    | Base directory where downloaded files are saved                                             | *(none / falls back to current dir or config)*                               |
-| `DOWNLOAD_FILENAME`     | Default filename for batch URL input when using `--file` or similar                         | *`downloads.txt`*                                                            |
-| `DOWNLOAD_ACTION`       | Default action for main download commands (e.g. `add`, `start`, `list`)                     | *(none)*                                                                     |
-| `DOWNLOAD_PROXY`        | Default proxy URL passed to downloaders that support it (http:// or socks5://)              | *(none)*                                                                     |
-| `DOWNLOAD_KEYS`         | Comma-separated fields displayed when listing downloads (`udown list`)                      | *`url,downloader_type,download_status,output_filename,output_path,progress`* |
-| `DOWNLOAD_OP`           | Default filter conjunction for download queries (`AND` or `OR`)                             | *`AND`*                                                                      |
-| `YTDLP_FORMAT`          | Default yt-dlp downloader type/preset when a YouTube-style URL is detected                  | *`ytdlp_audio`*                                                              |
-| `YTDLP_OPTIONS_PATH`    | Path to JSON file with custom yt-dlp format / postprocessor options                         | *`$HOME/scripts/video_options.json`*                                         |
-| `FFMPEG_OPTS`           | Extra flags passed to ffmpeg when merging or post-processing media                          | *`-protocol_whitelist file,http,https,tcp,tls`*                              |
-| `YTDLP_VIDEO_DIRECTORY` | Default output directory for video downloads (overrides `DOWNLOAD_DIRECTORY` in some cases) | *`/mnt/`*                                                                    |
-| `YTDLP_AUDIO_DIRECTORY` | Default output directory for audio-only downloads                                           | *`/mnt/ssd/Music`*                                                           |
-| `USE_TUI`               | Whether to launch the Textual-based interactive TUI (set to `0` or `false` to disable)      | *`1` (true)*                                                                 |
+| Variable                | Description                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `DATABASE_PATH`         | Full path to the SQLite database file that stores downloads and downloaders                 |
+| `DOWNLOADER_TYPE`       | Default downloader type to use when not specified on the command line                       |
+| `DOWNLOADER_KEYS`       | Comma-separated fields shown when listing downloaders (`udown downloaders list`)            |
+| `DOWNLOADER_OP`         | Default filter conjunction for downloader queries (`AND` or `OR`)                           |
+| `DOWNLOADER_ACTION`     | Default subcommand for `udown downloaders` (add, delete, list, reset)                       |
+| `DOWNLOAD_DIRECTORY`    | Base directory where downloaded files are saved                                             |
+| `DOWNLOAD_FILENAME`     | Default filename for batch URL input when using `--file` or similar                         |
+| `DOWNLOAD_ACTION`       | Default action for main download commands (e.g. `add`, `start`, `list`)                     |
+| `DOWNLOAD_PROXY`        | Default proxy URL passed to downloaders that support it (http:// or socks5://)              |
+| `DOWNLOAD_KEYS`         | Comma-separated fields displayed when listing downloads (`udown list`)                      |
+| `DOWNLOAD_OP`           | Default filter conjunction for download queries (`AND` or `OR`)                             |
+| `YTDLP_FORMAT`          | Default yt-dlp downloader type/preset when a YouTube-style URL is detected                  |
+| `YTDLP_OPTIONS_PATH`    | Path to JSON file with custom yt-dlp format / postprocessor options                         |
+| `FFMPEG_OPTS`           | Extra flags passed to ffmpeg when merging or post-processing media                          |
+| `YTDLP_VIDEO_DIRECTORY` | Default output directory for video downloads (overrides `DOWNLOAD_DIRECTORY` in some cases) |
+| `YTDLP_AUDIO_DIRECTORY` | Default output directory for audio-only downloads                                           |
+| `USE_TUI`               | Whether to launch the Textual-based interactive TUI (set to `0` or `false` to disable)      |
 
 ### Quick examples
 
@@ -155,14 +155,14 @@ export DOWNLOAD_DIRECTORY=/mnt/downloads
 export YTDLP_FORMAT=ytdlp_audio
 export YTDLP_AUDIO_DIRECTORY=/mnt/ssd/Music/Youtube
 
-# Show minimal info when listing
+# Minimal listing output
 export DOWNLOAD_KEYS=url,download_status,progress
 udown list
 
-# Disable TUI for scripting
+# Disable TUI for scripting / logs
 export USE_TUI=0
 
-# Route everything through a proxy
+# Use a proxy for all downloads
 export DOWNLOAD_PROXY="socks5://127.0.0.1:9050"
 ```
 
