@@ -140,6 +140,15 @@ class Downloader(SQLiteItem):
             ensure_ascii=False,
         )
 
+    @classmethod
+    def reset_all(cls, items: list):
+        if not db_exists:
+            cls.insert_all(items)
+        else:
+            cls.upsert_all(items)
+
+        logger.info("Successfully generated default downloaders.")
+
     def get_function(self):
         module_name = self.module.strip()
         func_name = self.downloader_func.strip()
@@ -434,9 +443,7 @@ default_downloaders = [
     ),
 ]
 
-if not db_exists:
-    Downloader.insert_all(default_downloaders)
-    print("Successfully generated default downloaders.")
+Downloader.reset_all(default_downloaders)
 
 
 def get_downloader_types():
@@ -485,8 +492,7 @@ def downloader_action(
         if result:
             print(f"Downloader {d.downloader_type} was successfully deleted.")
     elif action == "reset":
-        Downloader.insert_all(default_downloaders)
-        print("Successfully generated default downloaders.")
+        Downloader.reset_all(default_downloaders)
     else:
         filter_keys = filter_keys.split(",") if filter_keys else None
         downloaders = d.filter_by(filter_keys)

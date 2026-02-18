@@ -1,7 +1,6 @@
 import inspect
 from pathlib import Path
 import os
-import shlex
 import shutil
 from src.options import DOWNLOADER_METADATA_DIR
 from test_base import *
@@ -179,7 +178,7 @@ class TestDownloader(TestBase):
 if __name__ == "__main__":
     test_methods = [
         # TestDownloader.test_get_downloader_func,
-        TestDownloader.test_get_downloader_args,
+        # TestDownloader.test_get_downloader_args,
         # TestDownloader.test_get_downloader_with_extra_args,
         # TestDownloader.test_start_downloads,
         # TestDownloader.test_from_dict,
