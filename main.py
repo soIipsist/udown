@@ -3,9 +3,9 @@
 import argparse
 import sys
 
-from src.download import download_command, download_action
+from src.download import download_command, download_action, complete_downloader_type
 from src.downloader import downloader_command, downloader_action, pp
-from src.options import options_action, options_command
+from src.options import options_action, options_command, get_option
 
 
 def main():
@@ -14,6 +14,15 @@ def main():
     #     return
 
     parser = argparse.ArgumentParser(prog="udown")
+
+    type_arg = parser.add_argument(
+        "-t",
+        "--downloader_type",
+        default=get_option("DOWNLOADER_TYPE", None),
+        type=str,
+    )
+    type_arg.completer = complete_downloader_type
+
     subparsers = parser.add_subparsers(dest="command")
 
     download_parser = download_command(subparsers)
