@@ -4,7 +4,10 @@
       "action": "get",
       "url": "https://quotes.toscrape.com"
     },
-
+    {
+      "action": "save",
+      "filename": "quotes_page_1.html"
+    },
     {
       "action": "wait",
       "by": "css",
@@ -53,7 +56,7 @@
     },
 
     {
-      "action": "save_html",
+      "action": "save",
       "filename": "quotes_page_2.html"
     },
 

@@ -2,7 +2,6 @@ import argparse
 import os
 from pathlib import Path
 from pprint import PrettyPrinter
-
 from downloaders.ytdlp import read_json_file
 from downloaders.selector import _write_output
 from utils.logger import setup_logger
@@ -31,7 +30,7 @@ BY_MAP = {
 }
 
 
-def run_events(driver, events: list):
+def run_events(driver, events: list, result: dict):
     results = {}
 
     def get_by(event):
@@ -117,10 +116,10 @@ def run_events(driver, events: list):
         name = event.get("name", "extract_structured")
         results[name] = structured_data
 
-    def handle_save_html(event):
+    def handle_save(event):
         filename = event.get("filename", "page.html")
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write(driver.page_source)
+        result = driver.page_source
+        _write_output(result, filename)
 
     def handle_screenshot(event):
         driver.save_screenshot(event.get("path", "screenshot.png"))
@@ -137,7 +136,7 @@ def run_events(driver, events: list):
         "extract": handle_extract,
         "extract_all": handle_extract_all,
         "extract_structured": handle_extract_structured,
-        "save_html": handle_save_html,
+        "save": handle_save,
         "screenshot": handle_screenshot,
     }
 
@@ -228,9 +227,10 @@ def download(
     result = {
         "url": url,
         "status": None,
-        "html": None,
         "error": None,
     }
+
+    path = os.path.join(output_directory, output_filename) if output_filename else None
 
     try:
         driver = webdriver.Chrome(options=chrome_options)
@@ -239,17 +239,15 @@ def download(
         driver.get(url)
 
         if events:
-            event_results = run_events(driver, events)
+            results = run_events(driver, events, result)
         else:
-            event_results = [driver.page_source]
+            result["status"] = 0
+            result["progress"] = "100%"
+            result["path"] = path
+            results = [result]
 
-        path = (
-            os.path.join(output_directory, output_filename) if output_filename else None
-        )
-        _write_output(event_results, path)
-        result["data"] = event_results
-        result["status"] = 0
-        result["progress"] = "100%"
+        if path:
+            _write_output(results, path)
 
         driver.quit()
 
@@ -263,7 +261,6 @@ def download(
         result["status"] = 1
         result["error"] = str(e)
 
-    results.append(result)
     return results
 
 

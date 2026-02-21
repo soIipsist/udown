@@ -23,9 +23,13 @@ class TestSelenium(TestBase):
         options = get_selenium_options(options_path)
         print(options)
 
+    def test_download(self):
+        download(url, options_path=options_path, output_filename="index.html")
+
 
 if __name__ == "__main__":
     test_methods = [
-        TestSelenium.test_get_options,
+        # TestSelenium.test_get_options,
+        TestSelenium.test_download,
     ]
     run_test_methods(test_methods)
