@@ -51,8 +51,7 @@
       "action": "extract_all",
       "name": "quotes_page_2",
       "by": "css",
-      "value": ".quote",
-      "attribute": "text"
+      "value": ".quote"
     },
 
     {

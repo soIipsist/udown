@@ -12,7 +12,7 @@ logger = setup_logger(name="selector", log_dir="/udown/selector")
 pp = PrettyPrinter(indent=2)
 
 
-def _write_output(result, path: str = None):
+def _write_output(logger, result, path: str = None):
 
     if path is None:
         logger.info(f"Result: {result}")
@@ -21,16 +21,27 @@ def _write_output(result, path: str = None):
     ext = os.path.splitext(path)[1].lower()
 
     if ext == ".json":
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+            except Exception:
+                existing = None
+
+            if isinstance(existing, list) and isinstance(result, list):
+                result = existing + result
+
         with open(path, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
     else:
         # default: text
-        with open(path, "w", encoding="utf-8") as f:
+        mode = "a" if os.path.exists(path) else "w"
+        with open(path, mode, encoding="utf-8") as f:
             if isinstance(result, (list, tuple)):
                 for item in result:
                     f.write(f"{item}\n")
             else:
-                f.write(str(result))
+                f.write(str(result) + "\n")
 
     logger.info(f"Saved extraction results to {path}")
 
@@ -132,7 +143,7 @@ def extract_selector(
         path = (
             os.path.join(output_directory, output_filename) if output_filename else None
         )
-        _write_output(result, path)
+        _write_output(logger, result, path)
 
     except Exception as e:
         logger.error(f"Exception: {e}")

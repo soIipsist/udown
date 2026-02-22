@@ -64,7 +64,7 @@ def extract_xpath(
         path = (
             os.path.join(output_directory, output_filename) if output_filename else None
         )
-        _write_output(result, path)
+        _write_output(logger, result, path)
     except Exception as e:
         logger.error(f"Exception: {e}")
         return {"status": 1, "result": result, "output_path": None}

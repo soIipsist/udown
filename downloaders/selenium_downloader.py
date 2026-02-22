@@ -30,11 +30,24 @@ BY_MAP = {
 }
 
 
-def run_events(driver, events: list, result: dict):
-    results = {}
+def run_events(driver, events: list, base_result: dict, save_path: str | None = None):
+    emitted_results = []
+
+    def build_result(path):
+        return {
+            "url": base_result["url"],
+            "status": 0,
+            "error": None,
+            "progress": "100%",
+            "path": path,
+        }
 
     def get_by(event):
         return BY_MAP.get(event.get("by", "css"), By.CSS_SELECTOR)
+
+    def write_and_record(content, path):
+        _write_output(logger, content, path)
+        emitted_results.append(build_result(path))
 
     def handle_get(event):
         driver.get(event["url"])
@@ -75,8 +88,11 @@ def run_events(driver, events: list, result: dict):
         else:
             data = driver.page_source
 
-        name = event.get("name", "extract")
-        results.setdefault(name, []).append(data)
+        path = event.get("filename", save_path)
+        if not path:
+            return
+
+        write_and_record(data, path)
 
     def handle_extract_all(event):
         elements = driver.find_elements(get_by(event), event["value"])
@@ -86,8 +102,11 @@ def run_events(driver, events: list, result: dict):
         else:
             data = [el.text for el in elements]
 
-        name = event.get("name", "extract_all")
-        results[name] = data
+        path = event.get("filename", save_path)
+        if not path:
+            return
+
+        write_and_record(data, path)
 
     def handle_extract_structured(event):
         parent_cfg = event["parent"]
@@ -113,16 +132,20 @@ def run_events(driver, events: list, result: dict):
                     item[field_name] = None
             structured_data.append(item)
 
-        name = event.get("name", "extract_structured")
-        results[name] = structured_data
+        path = event.get("filename", save_path)
+        if not path:
+            return
+
+        write_and_record(structured_data, path)
 
     def handle_save(event):
-        filename = event.get("filename", "page.html")
-        result = driver.page_source
-        _write_output(result, filename)
+        path = event.get("filename", "page.html")
+        write_and_record(driver.page_source, path)
 
     def handle_screenshot(event):
-        driver.save_screenshot(event.get("path", "screenshot.png"))
+        path = event.get("path", "screenshot.png")
+        driver.save_screenshot(path)
+        emitted_results.append(build_result(path))
 
     ACTIONS = {
         "get": handle_get,
@@ -149,9 +172,17 @@ def run_events(driver, events: list, result: dict):
         try:
             ACTIONS[action](event)
         except Exception as e:
-            raise RuntimeError(f"[Event #{index}] Failed → {event}\nError: {str(e)}")
+            emitted_results.append(
+                {
+                    "url": base_result["url"],
+                    "status": 1,
+                    "error": f"[Event #{index}] Failed → {event}\nError: {str(e)}",
+                    "progress": "100%",
+                    "path": None,
+                }
+            )
 
-    return results
+    return emitted_results
 
 
 def get_chrome_options(options: dict, output_directory: Path | None = None) -> Options:
@@ -239,7 +270,7 @@ def download(
         driver.get(url)
 
         if events:
-            results = run_events(driver, events, result)
+            results = run_events(driver, events, result, path)
         else:
             result["status"] = 0
             result["progress"] = "100%"
@@ -247,7 +278,7 @@ def download(
             results = [result]
 
         if path:
-            _write_output(results, path)
+            _write_output(logger, results, path)
 
         driver.quit()
 
