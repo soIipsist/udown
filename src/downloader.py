@@ -432,7 +432,7 @@ default_downloaders = [
         None,
         "downloaders.xpath",
         "extract_xpath",
-        "url, xpath=//a, output_directory=output_directory, output_filename=output_filename, rules=make_absolute_urls",
+        "url, xpath=//a/@href, output_directory=output_directory, output_filename=output_filename, rules=make_absolute_urls",
     ),
     Downloader(
         "selenium",

@@ -495,7 +495,7 @@ def download_command(subparsers):
     )
 
     download_cmd.add_argument(
-        "-o",
+        "-d",
         "--output_directory",
         default=get_option("DOWNLOAD_DIRECTORY"),
         type=str,

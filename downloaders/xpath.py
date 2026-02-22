@@ -3,8 +3,8 @@ import os
 from pprint import PrettyPrinter
 import re
 import requests
-from downloaders.selector import write_output, apply_rules
-from utils.logger import setup_logger
+from downloaders.selector import apply_rules
+from utils.logger import setup_logger, write_output
 from lxml import html as lxml_html
 
 logger = setup_logger(name="xpath", log_dir="/udown/xpath")
