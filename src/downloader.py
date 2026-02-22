@@ -142,11 +142,7 @@ class Downloader(SQLiteItem):
 
     @classmethod
     def reset_all(cls, items: list):
-        if not db_exists:
-            cls.insert_all(items)
-        else:
-            cls.upsert_all(items)
-
+        cls.upsert_all(items)
         logger.info("Successfully generated default downloaders.")
 
     def get_function(self):
@@ -443,7 +439,8 @@ default_downloaders = [
     ),
 ]
 
-Downloader.reset_all(default_downloaders)
+if not db_exists:
+    Downloader.reset_all(default_downloaders)
 
 
 def get_downloader_types():
