@@ -327,7 +327,7 @@ class Downloader(SQLiteItem):
                         f"output_path = {child_download.output_path}"
                     )
 
-                    logger.info(filter_condition)
+                    # logger.info(filter_condition)
 
                     if progress is not None:
                         child_download.progress = progress
