@@ -33,11 +33,13 @@ def run_events(driver, events: list, base_result: dict, save_path: str | None = 
     emitted_results = []
 
     def build_result(path):
+        filename = os.path.basename(path)
         return {
             "url": base_result["url"],
             "status": 0,
             "error": None,
             "progress": "100%",
+            "output_filename": (filename if filename else None),
             "path": path,
         }
 
@@ -275,9 +277,6 @@ def download(
             result["progress"] = "100%"
             result["path"] = path
             results = [result]
-
-        if path:
-            write_output(logger, results, path)
 
         driver.quit()
 

@@ -305,10 +305,8 @@ class Downloader(SQLiteItem):
 
                     downloader_type = download.downloader_type
                     output_directory = download.output_directory
-                    output_filename = (
-                        download.output_filename
-                        if download.output_filename
-                        else result.get("output_filename")
+                    output_filename = result.get(
+                        "output_filename", download.output_filename
                     )
 
                     if result.get("is_playlist") is True:
@@ -328,6 +326,8 @@ class Downloader(SQLiteItem):
                         f"downloader_type = {child_download.downloader_type} AND "
                         f"output_path = {child_download.output_path}"
                     )
+
+                    logger.info(filter_condition)
 
                     if progress is not None:
                         child_download.progress = progress
