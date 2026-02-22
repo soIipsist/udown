@@ -3,8 +3,7 @@ import os
 from pathlib import Path
 from pprint import PrettyPrinter
 from downloaders.ytdlp import read_json_file
-from downloaders.selector import _write_output
-from utils.logger import setup_logger
+from utils.logger import setup_logger, write_output
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -46,7 +45,7 @@ def run_events(driver, events: list, base_result: dict, save_path: str | None = 
         return BY_MAP.get(event.get("by", "css"), By.CSS_SELECTOR)
 
     def write_and_record(content, path):
-        _write_output(logger, content, path)
+        write_output(logger, content, path)
         emitted_results.append(build_result(path))
 
     def handle_get(event):
@@ -278,7 +277,7 @@ def download(
             results = [result]
 
         if path:
-            _write_output(logger, results, path)
+            write_output(logger, results, path)
 
         driver.quit()
 

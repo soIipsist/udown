@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import logging
 import os
 from pathlib import Path
@@ -65,3 +66,46 @@ def setup_logger(name="downloader", log_dir="/tmp", level=logging.INFO):
         logger.addHandler(console_handler)
 
     return logger
+
+
+def write_output(logger, result, path: str = None, append: bool = True):
+
+    if path is None:
+        logger.info(f"Result: {result}")
+        return
+
+    ext = os.path.splitext(path)[1].lower()
+    file_exists = os.path.exists(path)
+
+    if ext == ".json":
+
+        if append and file_exists:
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+            except Exception:
+                existing = None
+
+            if isinstance(existing, list) and isinstance(result, list):
+                result = existing + result
+
+            elif isinstance(existing, dict) and isinstance(result, dict):
+                existing.update(result)
+                result = existing
+
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+
+    else:
+        mode = "a" if append else "w"
+
+        with open(path, mode, encoding="utf-8") as f:
+            if isinstance(result, (list, tuple)):
+                for item in result:
+                    f.write(f"{item}\n")
+            else:
+                f.write(str(result))
+                if append:
+                    f.write("\n")
+
+    logger.info(f"{'Appended' if append else 'Saved'} results to {path}")

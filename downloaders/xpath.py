@@ -3,7 +3,7 @@ import os
 from pprint import PrettyPrinter
 import re
 import requests
-from downloaders.selector import _write_output, apply_rules
+from downloaders.selector import write_output, apply_rules
 from utils.logger import setup_logger
 from lxml import html as lxml_html
 
@@ -64,7 +64,7 @@ def extract_xpath(
         path = (
             os.path.join(output_directory, output_filename) if output_filename else None
         )
-        _write_output(logger, result, path)
+        write_output(logger, result, path)
     except Exception as e:
         logger.error(f"Exception: {e}")
         return {"status": 1, "result": result, "output_path": None}
