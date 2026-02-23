@@ -106,7 +106,9 @@ def all_options():
     return dict(load_config())
 
 
-def options_action(action: str, key: str = None, value: str = None, ui: bool = False):
+def options_action(
+    action: str, key: str = None, value: str = None, ui: bool = False, **args
+):
     options = all_options()
 
     if action == "get":
