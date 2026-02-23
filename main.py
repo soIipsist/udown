@@ -8,6 +8,28 @@ from src.downloader import downloader_command, downloader_action, pp
 from src.options import options_action, options_command, get_option
 
 
+def get_defaults(parser, args):
+    defaults = {}
+
+    for action in parser._actions:
+        if action.dest != argparse.SUPPRESS:
+            defaults[action.dest] = action.default
+
+    subparsers_action = next(
+        (a for a in parser._actions if isinstance(a, argparse._SubParsersAction)),
+        None,
+    )
+
+    if subparsers_action and args.command in subparsers_action.choices:
+        subparser = subparsers_action.choices[args.command]
+
+        for action in subparser._actions:
+            if action.dest != argparse.SUPPRESS:
+                defaults[action.dest] = action.default
+
+    return defaults
+
+
 def main():
     # if "_ARGCOMPLETE" in os.environ:
     #     print("ARGCOMPLETE ACTIVE", file=sys.stderr)
@@ -44,7 +66,9 @@ def main():
         sys.argv.insert(1, "download")
 
     args = parser.parse_args()
+    defaults = get_defaults(parser, args)
     args_dict = vars(args)
+    args_dict["_defaults"] = defaults
 
     func = args_dict.pop("func", download_action)
     ui = args_dict.get("ui", True)

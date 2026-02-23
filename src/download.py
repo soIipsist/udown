@@ -14,7 +14,7 @@ from .downloader import (
     detect_downloader_type,
     complete_downloader_type,
 )
-from .options import get_option, str_to_bool
+from .options import get_filter_keys, get_option, str_to_bool
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
@@ -413,7 +413,7 @@ def download_action(**args):
     action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
     url = args.get("url") or None
     ui = args.pop("ui", True)
-    filter_keys = args.pop("filter_keys")
+    filter_keys = get_filter_keys(args)
     conjunction_type = args.pop("conjunction_type", get_option("DOWNLOAD_OP", "AND"))
 
     if action is None:
@@ -447,8 +447,6 @@ def download_action(**args):
                 logger.info(f"Download successfully deleted: {d.url}")
 
     else:
-        if filter_keys:
-            filter_keys = filter_keys.split(",")
         args.pop("url", None)
 
         d = Download(**args)
@@ -506,7 +504,6 @@ def download_command(subparsers):
     download_cmd.add_argument("-ed", "--end_date", default=None, type=str)
     download_cmd.add_argument("-te", "--time_elapsed", default=None, type=str)
 
-    download_cmd.add_argument("-k", "--filter_keys", type=str, default=None)
     download_cmd.add_argument(
         "-p", "--proxy", default=get_option("DOWNLOAD_PROXY"), type=str
     )

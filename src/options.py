@@ -143,3 +143,17 @@ def options_command(subparsers):
         "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
     )
     return options_cmd
+
+
+def get_filter_keys(args):
+    defaults = args.pop("_defaults", {})
+    filter_keys = []
+
+    for key, value in args.items():
+        if key not in defaults:
+            continue
+
+        if value != defaults[key] and value is not None:
+            filter_keys.append(key)
+
+    return filter_keys
