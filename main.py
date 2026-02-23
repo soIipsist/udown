@@ -73,7 +73,6 @@ def main():
     func = args_dict.pop("func", download_action)
     ui = args_dict.get("ui", True)
     command = args_dict.pop("command")
-
     output = func(**args_dict)
 
     if not ui and output:

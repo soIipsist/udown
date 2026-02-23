@@ -433,10 +433,17 @@ def download_action(**args):
             d.insert()
 
     elif action == "download":
+        all_results = []
+
         for d in downloads:
             if not d.url:
                 raise ValueError("No URL provided.")
-            d.download()
+
+            results = d.download()
+            if results:
+                all_results.extend(results)
+
+        return all_results
 
     elif action == "delete":
         for d in downloads:
