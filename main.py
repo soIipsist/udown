@@ -66,9 +66,8 @@ def main():
         sys.argv.insert(1, "download")
 
     args = parser.parse_args()
-    defaults = get_defaults(parser, args)
+    args._defaults = get_defaults(parser, args)
     args_dict = vars(args)
-    args_dict["_defaults"] = defaults
 
     func = args_dict.pop("func", download_action)
     ui = args_dict.get("ui", True)

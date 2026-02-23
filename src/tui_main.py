@@ -5,6 +5,9 @@ from textual.widgets import Header, Footer
 from .tui_downloaders import DownloadersTable
 from .tui_downloads import DownloadsTable
 from .tui_options import OptionsTable
+from utils.logger import setup_logger
+
+logger = setup_logger(name="ui", log_dir="/udown/ui")
 
 
 class UDownApp(App):
@@ -27,6 +30,7 @@ class UDownApp(App):
         table_type="download",
         action=None,
         args=None,
+        defaults=None,
         downloader_types: list = None,
     ):
         super().__init__()
@@ -34,6 +38,9 @@ class UDownApp(App):
         self.table_type = table_type
         self.action = action
         self.args = args
+        if defaults:
+            args["_defaults"] = defaults
+
         self.downloader_types = downloader_types
 
         if self.table_type == "options":
@@ -48,7 +55,6 @@ class UDownApp(App):
                 self.downloader_type_index = self.downloader_types.index(
                     self.downloader_type
                 )
-                # self.notify(f"Downloader: {self.downloader_type}", timeout=1)
             else:
                 self.downloader_type_index = 0
 
@@ -88,10 +94,6 @@ class UDownApp(App):
         if hasattr(self, "active_table"):
             self.active_table.set_items(self.items)
 
-    def set_downloader_type(self, downloader_type):
-        self.args["downloader_type"] = downloader_type
-        self.reload_items()
-
     def action_search(self):
         search = self.query_one("#search", Input)
         search.remove_class("hidden")
@@ -115,9 +117,11 @@ class UDownApp(App):
         )
 
         downloader_type = self.downloader_types[self.downloader_type_index]
+        self.notify(str(downloader_type))
 
         self.notify(f"Downloader: {downloader_type}", timeout=1)
-        self.set_downloader_type(downloader_type)
+        self.args["downloader_type"] = downloader_type
+        self.reload_items()
 
     def action_previous_downloader_type(self):
         self._step_downloader_type(-1)

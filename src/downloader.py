@@ -503,6 +503,7 @@ def downloader_action(
                 "downloaders",
                 downloader_action,
                 args,
+                defaults,
                 downloader_types,
             ).run()
     return downloaders

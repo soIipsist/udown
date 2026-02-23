@@ -470,6 +470,7 @@ def download_action(**args):
                 downloads,
                 action=download_action,
                 args=args,
+                defaults=defaults,
                 downloader_types=downloader_types,
             ).run()
 
