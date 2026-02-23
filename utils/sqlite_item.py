@@ -124,6 +124,13 @@ class SQLiteItem:
         )
         return items
 
+    def get_filter_keys_from_args(self, args_dict, defaults):
+        user_keys = {
+            k for k, v in args_dict.items() if k in defaults and v != defaults[k]
+        }
+
+        return list(user_keys & set(self.column_names))
+
     def select(self, filter_condition=None):
 
         condition = (

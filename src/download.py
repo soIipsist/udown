@@ -14,7 +14,7 @@ from .downloader import (
     detect_downloader_type,
     complete_downloader_type,
 )
-from .options import get_filter_keys, get_option, str_to_bool
+from .options import get_option, str_to_bool
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
@@ -413,7 +413,9 @@ def download_action(**args):
     action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
     url = args.get("url") or None
     ui = args.pop("ui", True)
-    filter_keys = get_filter_keys(args)
+    defaults = args.pop("_defaults", {})
+    filter_keys = Download().get_filter_keys_from_args(args, defaults)
+
     conjunction_type = args.pop("conjunction_type", get_option("DOWNLOAD_OP", "AND"))
 
     if action is None:

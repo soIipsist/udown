@@ -5,7 +5,6 @@ import os
 from pprint import PrettyPrinter
 from .options import (
     get_option,
-    get_filter_keys,
     PROJECT_DIR,
     DOWNLOADER_METADATA_DIR,
     str_to_bool,
@@ -473,6 +472,7 @@ def downloader_action(
     action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
     ui = args.pop("ui", True)
     conjunction_type = args.pop("conjunction_type", get_option("DOWNLOADER_OP", "AND"))
+    defaults = args.pop("_defaults", {})
 
     downloaders = []
     d = Downloader(**args)
@@ -491,9 +491,9 @@ def downloader_action(
     elif action == "reset":
         Downloader.reset_all(default_downloaders)
     else:
-        filter_keys = get_filter_keys(args)
-
+        filter_keys = d.get_filter_keys_from_args(args, defaults)
         downloaders = d.filter_by(filter_keys)
+
         if ui:
             from .tui_main import UDownApp
 
