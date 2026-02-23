@@ -413,7 +413,7 @@ def download_action(**args):
     action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
     url = args.get("url") or None
     ui = args.pop("ui", True)
-    filter_keys = args.pop("filter_keys", get_option("DOWNLOAD_KEYS", None))
+    filter_keys = args.pop("filter_keys")
     conjunction_type = args.pop("conjunction_type", get_option("DOWNLOAD_OP", "AND"))
 
     if action is None:
@@ -506,9 +506,7 @@ def download_command(subparsers):
     download_cmd.add_argument("-ed", "--end_date", default=None, type=str)
     download_cmd.add_argument("-te", "--time_elapsed", default=None, type=str)
 
-    download_cmd.add_argument(
-        "-k", "--filter_keys", type=str, default=get_option("DOWNLOAD_KEYS")
-    )
+    download_cmd.add_argument("-k", "--filter_keys", type=str, default=None)
     download_cmd.add_argument(
         "-p", "--proxy", default=get_option("DOWNLOAD_PROXY"), type=str
     )

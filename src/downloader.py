@@ -471,7 +471,7 @@ def downloader_action(
 ):
     action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
     ui = args.pop("ui", True)
-    filter_keys = args.pop("filter_keys", get_option("DOWNLOADER_KEYS", None))
+    filter_keys = args.pop("filter_keys")
     conjunction_type = args.pop("conjunction_type", get_option("DOWNLOADER_OP", "AND"))
 
     downloaders = []
@@ -530,9 +530,7 @@ def downloader_command(subparsers):
     downloader_cmd.add_argument("-f", "--downloader_func", type=str, default=None)
     downloader_cmd.add_argument("-m", "--module", type=str, default=None)
     downloader_cmd.add_argument("-args", "--downloader_args", type=str, default=None)
-    downloader_cmd.add_argument(
-        "-k", "--filter_keys", type=str, default=get_option("DOWNLOADER_KEYS")
-    )
+    downloader_cmd.add_argument("-k", "--filter_keys", type=str, default=None)
     downloader_cmd.add_argument(
         "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
     )

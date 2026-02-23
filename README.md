@@ -130,14 +130,12 @@ udown options reset
 | ----------------------- | ------------------------------------------------------------------------------------------- |
 | `DATABASE_PATH`         | Full path to the SQLite database file that stores downloads and downloaders                 |
 | `DOWNLOADER_TYPE`       | Default downloader type to use when not specified on the command line                       |
-| `DOWNLOADER_KEYS`       | Comma-separated fields shown when listing downloaders (`udown downloaders list`)            |
 | `DOWNLOADER_OP`         | Default filter conjunction for downloader queries (`AND` or `OR`)                           |
 | `DOWNLOADER_ACTION`     | Default subcommand for `udown downloaders` (add, delete, list, reset)                       |
 | `DOWNLOAD_DIRECTORY`    | Base directory where downloaded files are saved                                             |
 | `DOWNLOAD_FILENAME`     | Default filename for batch URL input when using `--file` or similar                         |
 | `DOWNLOAD_ACTION`       | Default action for main download commands (e.g. `add`, `start`, `list`)                     |
 | `DOWNLOAD_PROXY`        | Default proxy URL passed to downloaders that support it (http:// or socks5://)              |
-| `DOWNLOAD_KEYS`         | Comma-separated fields displayed when listing downloads (`udown list`)                      |
 | `DOWNLOAD_OP`           | Default filter conjunction for download queries (`AND` or `OR`)                             |
 | `YTDLP_FORMAT`          | Default yt-dlp downloader type/preset when a YouTube-style URL is detected                  |
 | `YTDLP_OPTIONS_PATH`    | Path to JSON file with custom yt-dlp format / postprocessor options                         |
@@ -154,10 +152,6 @@ export DATABASE_PATH=~/udown-data/downloads.db
 export DOWNLOAD_DIRECTORY=/mnt/downloads
 export YTDLP_FORMAT=ytdlp_audio
 export YTDLP_AUDIO_DIRECTORY=/mnt/ssd/Music/Youtube
-
-# Minimal listing output
-export DOWNLOAD_KEYS=url,download_status,progress
-udown list
 
 # Disable TUI for scripting / logs
 export USE_TUI=0
