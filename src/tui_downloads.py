@@ -1,7 +1,12 @@
 from textual.widgets import DataTable, Header, Footer
 from textual import events
 from textual.screen import ModalScreen
-from .tui_common import ConfirmModal
+from .tui_common import (
+    ConfirmModal,
+    DownloadConfirmed,
+    download_caption,
+    btn_confirm_download_caption,
+)
 
 
 class DownloadDetails(ModalScreen):
@@ -42,6 +47,9 @@ class DownloadDetails(ModalScreen):
 
 
 class DownloadsTable(DataTable):
+    BINDINGS = [
+        ("d", "download", "Download"),
+    ]
 
     def __init__(self, downloads):
         super().__init__()
@@ -120,3 +128,19 @@ class DownloadsTable(DataTable):
         if download:
             self.app.push_screen(DownloadDetails(download))
             event.stop()
+
+    def action_download(self):
+        def on_result(confirmed: bool):
+            pass
+
+        download = self.get_download()
+        self.app.push_screen(
+            ConfirmModal(
+                download,
+                modal_caption=download_caption,
+                btn_variant="primary",
+                btn_confirm_caption=btn_confirm_download_caption,
+                message_type=DownloadConfirmed,
+            ),
+            on_result,
+        )

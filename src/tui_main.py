@@ -143,3 +143,15 @@ class UDownApp(App):
         )
         item.delete(filter_condition)
         self.reload_items()
+
+    def on_download_confirmed(self, message):
+        item = message.item
+        from src.download import Download
+
+        download = Download(
+            url=item.url, downloader_type=item.downloader_type
+        ).select_first()
+
+        download: Download
+        with self.suspend():
+            download.download()
