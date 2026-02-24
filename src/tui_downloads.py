@@ -1,7 +1,7 @@
 from textual.widgets import DataTable, Header, Footer
 from textual import events
 from textual.screen import ModalScreen
-from .tui_common import ConfirmDelete
+from .tui_common import ConfirmModal
 
 
 class DownloadDetails(ModalScreen):
@@ -36,7 +36,7 @@ class DownloadDetails(ModalScreen):
                 self.dismiss()
 
         self.app.push_screen(
-            ConfirmDelete(self.download),
+            ConfirmModal(self.download),
             on_result,
         )
 
