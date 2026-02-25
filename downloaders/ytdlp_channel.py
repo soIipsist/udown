@@ -1,5 +1,5 @@
 import os
-from downloaders.ytdlp import get_channel_info, download
+from downloaders.ytdlp import get_channel_info
 from argparse import ArgumentParser
 from pprint import PrettyPrinter
 from src.download import Download
@@ -38,7 +38,7 @@ def download(
         Download(
             url=video_url,
             downloader_type=downloader,
-            output_directory=os.environ.get("DOWNLOADS_DIRECTORY"),
+            output_directory=os.environ.get("DOWNLOAD_DIRECTORY"),
             proxy=proxy,
             extra_args=f"sleep_interval={sleep_interval}, max_sleep_interval={max_sleep_interval}",
         )
