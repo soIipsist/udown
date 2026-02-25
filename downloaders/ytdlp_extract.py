@@ -27,6 +27,7 @@ def extract(
     result = {"url": url, "status": 0, "path": path}
 
     results = get_channel_info(url)
+    # logger.info(results)
     video_urls = [
         f"https://www.youtube.com/watch?v={entry['id']}" for entry in results["entries"]
     ]
