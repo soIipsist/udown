@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from textual.app import App
 from textual.containers import Container
 from textual.widgets import Input
@@ -12,7 +14,7 @@ logger = setup_logger(name="ui", log_dir="/udown/ui")
 
 class UDownApp(App):
 
-    CSS_PATH = "app.css"
+    CSS_PATH = Path(__file__).parent / "app.css"
     ENABLE_COMMAND_PALETTE = False
     BINDINGS = [
         ("q", "quit", "Quit"),
