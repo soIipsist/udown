@@ -130,4 +130,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     query = args.query
-    results = torrent(query)
+    torrent_url = args.torrent_url
+    torrent_info_mode = args.torrent_info_mode
+    results = torrent(query, torrent_url, torrent_info_mode)
