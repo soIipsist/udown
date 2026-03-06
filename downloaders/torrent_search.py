@@ -1,8 +1,5 @@
 import os
 import re
-import sys
-import shlex
-import tempfile
 import subprocess
 from urllib.parse import quote
 from argparse import ArgumentParser
