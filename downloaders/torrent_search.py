@@ -52,7 +52,12 @@ def download_torrent(magnet, torrent_directory: str = None):
     subprocess.run(["transmission-cli", magnet, "-w", directory])
 
 
-def torrent(query=None, torrent_url: str = None, torrent_info_mode: int = 0):
+def torrent(
+    query=None,
+    torrent_url: str = None,
+    torrent_info_mode: int = 0,
+    torrent_directory: str = None,
+):
 
     if not query:
         query = input("Enter Search Query: ")
@@ -108,7 +113,7 @@ def torrent(query=None, torrent_url: str = None, torrent_info_mode: int = 0):
         subprocess.run(["less"], input="", text=True)
     else:
         magnet = selection.split("|", 1)[1]
-        download_torrent(magnet)
+        download_torrent(magnet, torrent_directory)
 
 
 if __name__ == "__main__":
@@ -129,4 +134,5 @@ if __name__ == "__main__":
     query = args.query
     torrent_url = args.torrent_url
     torrent_info_mode = args.torrent_info_mode
-    results = torrent(query, torrent_url, torrent_info_mode)
+    torrent_directory = args.torrent_directory
+    results = torrent(query, torrent_url, torrent_info_mode, torrent_directory)
