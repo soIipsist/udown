@@ -1,4 +1,5 @@
 import os
+import json
 from pathlib import Path
 from pprint import PrettyPrinter
 import re
@@ -14,55 +15,6 @@ from utils.logger import setup_logger
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="torrent", log_dir="/udown/torrent")
-
-
-def get_torrent_metadata(torrent_url):
-    response = requests.get(torrent_url, timeout=10)
-    response.raise_for_status()
-
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    details_div = soup.find("div", id="details")
-    if not details_div:
-        logger.info("No details found.")
-        return
-
-    def get_detail(label):
-        dt = details_div.find("dt", string=re.compile(label))
-        if dt and dt.find_next_sibling("dd"):
-            return dt.find_next_sibling("dd").get_text(strip=True)
-        return "N/A"
-
-    file_size = get_detail("Size")
-    seeders = get_detail("Seeders")
-    leechers = get_detail("Leechers")
-    type_ = get_detail("Type")
-
-    nfo_div = soup.find("div", class_="nfo")
-    info = nfo_div.get_text(strip=True) if nfo_div else "No info available"
-
-    metadata_message = f"""
-    ==============================
-    Torrent Metadata
-    ==============================
-    Type     : {type_}
-    Size     : {file_size}
-    Seeders  : {seeders}
-    Leechers : {leechers}
-    ------------------------------
-    Info:
-    {info}
-    ------------------------------
-    URL: {torrent_url}
-    ==============================
-    """.strip()
-
-    logger.info(metadata_message)
-
-
-def download_torrent(magnet, torrent_directory: str = None):
-    directory = torrent_directory or os.path.expanduser("~")
-    subprocess.run(["transmission-cli", magnet, "-w", directory])
 
 
 def check_fzf(links):
@@ -90,8 +42,85 @@ def check_fzf(links):
         return None
 
 
+def get_torrent_metadata(torrent_url, metadata_path=None):
+    response = requests.get(torrent_url, timeout=10)
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    config = None
+
+    if metadata_path and os.path.exists(metadata_path):
+        with open(metadata_path) as f:
+            config = json.load(f)
+
+    if config:
+
+        container_cfg = config.get("details_container")
+        container = soup.find(
+            container_cfg.get("tag"),
+            id=container_cfg.get("id"),
+            class_=container_cfg.get("class"),
+        )
+
+        def get_detail(label):
+            dt = container.find("dt", string=re.compile(label))
+            if dt and dt.find_next_sibling("dd"):
+                return dt.find_next_sibling("dd").get_text(strip=True)
+            return "N/A"
+
+        fields = config.get("fields", {})
+
+        file_size = get_detail(fields.get("Size", "Size"))
+        seeders = get_detail(fields.get("Seeders", "Seeders"))
+        leechers = get_detail(fields.get("Leechers", "Leechers"))
+        type_ = get_detail(fields.get("Type", "Type"))
+
+        info_cfg = config.get("info")
+        nfo_div = soup.find(info_cfg.get("tag"), class_=info_cfg.get("class"))
+        info = nfo_div.get_text(strip=True) if nfo_div else "No info available"
+
+    else:
+
+        text = soup.get_text()
+
+        def extract(label):
+            match = re.search(rf"{label}\s*[:\-]?\s*(.+)", text, re.IGNORECASE)
+            return match.group(1).strip() if match else "N/A"
+
+        file_size = extract("Size")
+        seeders = extract("Seeders")
+        leechers = extract("Leechers")
+        type_ = extract("Type")
+
+        info = "No info available"
+
+    metadata_message = f"""
+==============================
+Torrent Metadata
+==============================
+Type     : {type_}
+Size     : {file_size}
+Seeders  : {seeders}
+Leechers : {leechers}
+------------------------------
+Info:
+{info}
+------------------------------
+URL: {torrent_url}
+==============================
+""".strip()
+
+    logger.info(metadata_message)
+
+
+def download_torrent(magnet, torrent_directory: str = None):
+    directory = torrent_directory or os.path.expanduser("~")
+    subprocess.run(["transmission-cli", magnet, "-w", directory])
+
+
 def search(
-    query=None,
+    query: str = None,
+    metadata_path: str = None,
     torrent_url: str = None,
     torrent_info_mode: bool = False,
     torrent_directory: str = None,
@@ -144,7 +173,7 @@ def search(
         return
 
     if torrent_info_mode:
-        get_torrent_metadata(selection)
+        get_torrent_metadata(selection, metadata_path)
     else:
         magnet = selection.split("|", 1)[1]
         download_torrent(magnet, torrent_directory)
@@ -153,6 +182,7 @@ def search(
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("query", type=str)
+    parser.add_argument("-p", "--metadata_path", default=None, type=str)
     parser.add_argument(
         "-u",
         "--torrent_url",
@@ -178,4 +208,7 @@ if __name__ == "__main__":
     torrent_url = args.torrent_url
     torrent_info_mode = args.torrent_info_mode
     torrent_directory = args.torrent_directory
-    results = search(query, torrent_url, torrent_info_mode, torrent_directory)
+    metadata_path = args.metadata_path
+    results = search(
+        query, metadata_path, torrent_url, torrent_info_mode, torrent_directory
+    )

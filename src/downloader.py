@@ -446,17 +446,17 @@ default_downloaders = [
     ),
     Downloader(
         "torrent",
-        None,
+        os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
         "downloaders.torrent",
         "search",
-        "url, torrent_directory=output_directory, torrent_info_mode=False",
+        "url, metadata_path=downloader_path, torrent_directory=output_directory, torrent_info_mode=False",
     ),
     Downloader(
         "torrent_info",
-        None,
+        os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
         "downloaders.torrent",
         "search",
-        "url, torrent_directory=output_directory, torrent_info_mode=True",
+        "url, metadata_path=downloader_path, torrent_directory=output_directory, torrent_info_mode=True",
     ),
 ]
 

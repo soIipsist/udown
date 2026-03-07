@@ -1,1 +1,18 @@
-{}
+{
+  "details_container": {
+    "tag": "div",
+    "id": "details"
+  },
+
+  "fields": {
+    "Type": { "dt": "Type" },
+    "Size": { "dt": "Size" },
+    "Seeders": { "dt": "Seeders" },
+    "Leechers": { "dt": "Leechers" }
+  },
+
+  "info": {
+    "tag": "div",
+    "class": "nfo"
+  }
+}
