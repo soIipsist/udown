@@ -55,7 +55,7 @@ def get_torrent_metadata(torrent_url, metadata_path=None):
 
     if config:
 
-        container_cfg = config.get("details_container")
+        container_cfg = config.get("details_container", {})
         container = soup.find(
             container_cfg.get("tag"),
             id=container_cfg.get("id"),
@@ -70,10 +70,10 @@ def get_torrent_metadata(torrent_url, metadata_path=None):
 
         fields = config.get("fields", {})
 
-        file_size = get_detail(fields.get("Size", "Size"))
-        seeders = get_detail(fields.get("Seeders", "Seeders"))
-        leechers = get_detail(fields.get("Leechers", "Leechers"))
-        type_ = get_detail(fields.get("Type", "Type"))
+        file_size = get_detail(fields.get("Size", {}).get("dt", "Size"))
+        seeders = get_detail(fields.get("Seeders", {}).get("dt", "Seeders"))
+        leechers = get_detail(fields.get("Leechers", {}).get("dt", "Leechers"))
+        type_ = get_detail(fields.get("Type", {}).get("dt", "Type"))
 
         info_cfg = config.get("info")
         nfo_div = soup.find(info_cfg.get("tag"), class_=info_cfg.get("class"))
