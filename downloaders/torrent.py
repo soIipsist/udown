@@ -5,7 +5,7 @@ from pprint import PrettyPrinter
 import re
 import shutil
 import subprocess
-from urllib.parse import quote
+from urllib.parse import quote, unquote, urljoin
 from argparse import ArgumentParser
 import requests
 from bs4 import BeautifulSoup
@@ -13,6 +13,9 @@ from urllib.parse import quote
 from downloaders.ytdlp import str_to_bool
 from utils.logger import setup_logger
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="torrent", log_dir="/udown/torrent")
@@ -149,6 +152,9 @@ def get_page_response(url: str, use_selenium: bool = False):
             if not driver:
                 driver = webdriver.Chrome()
             driver.get(url)
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
             return driver.page_source
         else:
             response = requests.get(url, headers=headers)
@@ -188,18 +194,22 @@ def search(
     info_links = []
     magnet_links = []
 
+    patterns = metadata.get("patterns", {})
+    info_pattern = patterns.get("info", "/torrent/")
+    magnet_pattern = patterns.get("magnet", "magnet:")
+
     for link in soup.find_all("a", href=True):
         href = link["href"]
 
-        if "/torrent/" in href:
-            if href.startswith("/"):
-                href = torrent_url + href
-            info_links.append(href)
+        if info_pattern and info_pattern in href:
+            info_links.append(urljoin(search_url, href))
 
-        if href.startswith("magnet:"):
-            name = re.search(r"dn=([^&]+)", href)
-            display = name.group(1).replace("+", " ") if name else "Unknown"
-            magnet_links.append(f"{display}|{href}")
+        if magnet_pattern and magnet_pattern in href:
+            magnet = href
+
+            name = re.search(r"dn=([^&]+)", magnet)
+            display = unquote(name.group(1)) if name else "Unknown"
+            magnet_links.append(f"{display}|{magnet}")
 
     if torrent_info_mode:
         links = info_links
