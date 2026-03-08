@@ -24,7 +24,7 @@ def get_torrent_metadata(torrent_url):
 
     details_div = soup.find("div", id="details")
     if not details_div:
-        print("No details found.")
+        logger.info("No details found.")
         return
 
     def get_detail(label):
@@ -41,19 +41,23 @@ def get_torrent_metadata(torrent_url):
     nfo_div = soup.find("div", class_="nfo")
     info = nfo_div.get_text(strip=True) if nfo_div else "No info available"
 
-    print("==============================")
-    print(" Torrent Metadata")
-    print("==============================")
-    print(f" Type     : {type_}")
-    print(f" Size     : {file_size}")
-    print(f" Seeders  : {seeders}")
-    print(f" Leechers : {leechers}")
-    print("------------------------------")
-    print(" Info:")
-    print(info)
-    print("------------------------------")
-    print(f"URL: {torrent_url}")
-    print("==============================")
+    metadata_message = f"""
+    ==============================
+    Torrent Metadata
+    ==============================
+    Type     : {type_}
+    Size     : {file_size}
+    Seeders  : {seeders}
+    Leechers : {leechers}
+    ------------------------------
+    Info:
+    {info}
+    ------------------------------
+    URL: {torrent_url}
+    ==============================
+    """.strip()
+
+    logger.info(metadata_message)
 
 
 def download_torrent(magnet, torrent_directory: str = None):
@@ -82,7 +86,7 @@ def check_fzf(links):
         with open(output_file, "w") as f:
             f.write("\n".join(links))
 
-        print(f"fzf not found. Results exported to: {output_file}")
+        logger.error(f"fzf not found. Results exported to: {output_file}")
         return None
 
 
@@ -128,7 +132,7 @@ def search(
         links = magnet_links
 
     if not links:
-        print("No results found.")
+        logger.info("No results found.")
         return
 
     selection = check_fzf(links)
