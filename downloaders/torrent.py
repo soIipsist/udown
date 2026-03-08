@@ -42,20 +42,15 @@ def check_fzf(links):
         return None
 
 
-def get_torrent_metadata(torrent_url, metadata_path=None):
-    response = requests.get(torrent_url, timeout=10)
+def get_torrent_metadata(torrent_url, metadata=None):
+    response = fetch(url=torrent_url)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, "html.parser")
-    config = None
 
-    if metadata_path and os.path.exists(metadata_path):
-        with open(metadata_path) as f:
-            config = json.load(f)
+    if metadata:
 
-    if config:
-
-        container_cfg = config.get("details_container", {})
+        container_cfg = metadata.get("details_container", {})
         container = soup.find(
             container_cfg.get("tag"),
             id=container_cfg.get("id"),
@@ -68,14 +63,14 @@ def get_torrent_metadata(torrent_url, metadata_path=None):
                 return dt.find_next_sibling("dd").get_text(strip=True)
             return "N/A"
 
-        fields = config.get("fields", {})
+        fields = metadata.get("fields", {})
 
         file_size = get_detail(fields.get("Size", {}).get("dt", "Size"))
         seeders = get_detail(fields.get("Seeders", {}).get("dt", "Seeders"))
         leechers = get_detail(fields.get("Leechers", {}).get("dt", "Leechers"))
         type_ = get_detail(fields.get("Type", {}).get("dt", "Type"))
 
-        info_cfg = config.get("info")
+        info_cfg = metadata.get("info")
         nfo_div = soup.find(info_cfg.get("tag"), class_=info_cfg.get("class"))
         info = nfo_div.get_text(strip=True) if nfo_div else "No info available"
 
@@ -136,6 +131,21 @@ def download_torrent(magnet, torrent_directory: str = None):
     subprocess.run(["transmission-cli", magnet, "-w", directory])
 
 
+def fetch(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Connection": "keep-alive",
+        "Referer": url,
+    }
+
+    session = requests.Session()
+    session.headers.update(headers)
+
+    return session.get(url, timeout=10)
+
+
 def search(
     query: str = None,
     metadata_path: str = None,
@@ -143,18 +153,23 @@ def search(
     torrent_info_mode: bool = False,
     torrent_directory: str = None,
 ):
+    metadata = None
+
+    if metadata_path and os.path.exists(metadata_path):
+        with open(metadata_path) as f:
+            metadata = json.load(f)
 
     if not torrent_url:
-        torrent_url = "https://thepiratebay.party/search"
+        torrent_url = metadata.get("domain", "https://thepiratebay.party/search")
 
     if not query:
         query = input("Enter Search Query: ")
 
     search_url = build_search_url(torrent_url, query)
 
+    logger.info(f"Search url: {search_url}")
     response = requests.get(search_url, timeout=10)
     response.raise_for_status()
-
     soup = BeautifulSoup(response.text, "html.parser")
 
     info_links = []
@@ -183,7 +198,6 @@ def search(
         return
 
     selection = check_fzf(links)
-
     mode = "INFO" if torrent_info_mode else "DOWNLOAD"
     logger.info(f"Using {mode} MODE for query: {query}.")
 
@@ -191,7 +205,7 @@ def search(
         return
 
     if torrent_info_mode:
-        get_torrent_metadata(selection, metadata_path)
+        get_torrent_metadata(selection, metadata)
     else:
         magnet = selection.split("|", 1)[1]
         download_torrent(magnet, torrent_directory)
