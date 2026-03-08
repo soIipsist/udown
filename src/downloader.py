@@ -444,6 +444,14 @@ default_downloaders = [
         "download",
         "url, downloader_path, output_directory, output_filename",
     ),
+    Downloader(
+        "torrent",
+        None,
+        "downloaders.torrent",
+        "search",
+        "url, torrent_directory=output_directory",
+    ),
+    Downloader("torrent_info", None, "downloaders.torrent", "search"),
 ]
 
 if not db_exists:

@@ -52,12 +52,15 @@ def download_torrent(magnet, torrent_directory: str = None):
     subprocess.run(["transmission-cli", magnet, "-w", directory])
 
 
-def torrent(
+def search(
     query=None,
     torrent_url: str = None,
     torrent_info_mode: int = 0,
     torrent_directory: str = None,
 ):
+
+    if not torrent_url:
+        torrent_url = "https://thepiratebay.party/search"
 
     if not query:
         query = input("Enter Search Query: ")
@@ -78,7 +81,7 @@ def torrent(
 
         if "/torrent/" in href:
             if href.startswith("/"):
-                href = "https://thepiratebay.party" + href
+                href = torrent_url + href
             info_links.append(href)
 
         if href.startswith("magnet:"):
@@ -120,7 +123,10 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("query", type=str)
     parser.add_argument(
-        "-u", "--torrent_url", type=str, default=os.environ.get("TORRENT_URL")
+        "-u",
+        "--torrent_url",
+        type=str,
+        default=os.environ.get("TORRENT_URL"),
     )
     parser.add_argument(
         "-d",
@@ -135,4 +141,4 @@ if __name__ == "__main__":
     torrent_url = args.torrent_url
     torrent_info_mode = args.torrent_info_mode
     torrent_directory = args.torrent_directory
-    results = torrent(query, torrent_url, torrent_info_mode, torrent_directory)
+    results = search(query, torrent_url, torrent_info_mode, torrent_directory)
