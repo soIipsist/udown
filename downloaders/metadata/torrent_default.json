@@ -14,5 +14,7 @@
   "info": {
     "tag": "div",
     "class": "nfo"
-  }
+  },
+  "use_selenium": true,
+  "domain": "https://thepiratebay.org/search.php?q="
 }

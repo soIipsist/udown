@@ -12,9 +12,19 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote
 from downloaders.ytdlp import str_to_bool
 from utils.logger import setup_logger
+from selenium import webdriver
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="torrent", log_dir="/udown/torrent")
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Connection": "keep-alive",
+}
+
+driver = None
 
 
 def check_fzf(links):
@@ -42,11 +52,10 @@ def check_fzf(links):
         return None
 
 
-def get_torrent_metadata(torrent_url, metadata=None):
-    response = fetch(url=torrent_url)
-    response.raise_for_status()
+def get_torrent_metadata(torrent_url, use_selenium, metadata=None):
+    page_response = get_page_response(torrent_url, use_selenium)
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    soup = BeautifulSoup(page_response, "html.parser")
 
     if metadata:
 
@@ -131,19 +140,22 @@ def download_torrent(magnet, torrent_directory: str = None):
     subprocess.run(["transmission-cli", magnet, "-w", directory])
 
 
-def fetch(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Connection": "keep-alive",
-        "Referer": url,
-    }
+def get_page_response(url: str, use_selenium: bool = False):
+    try:
 
-    session = requests.Session()
-    session.headers.update(headers)
-
-    return session.get(url, timeout=10)
+        if use_selenium:
+            logger.info("Using selenium!")
+            global driver
+            if not driver:
+                driver = webdriver.Chrome()
+            driver.get(url)
+            return driver.page_source
+        else:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return response.text
+    except Exception as e:
+        print(e)
 
 
 def search(
@@ -168,9 +180,10 @@ def search(
     search_url = build_search_url(torrent_url, query)
 
     logger.info(f"Search url: {search_url}")
-    response = requests.get(search_url, timeout=10)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, "html.parser")
+
+    use_selenium = metadata.get("use_selenium", False)
+    page_response = get_page_response(search_url, use_selenium)
+    soup = BeautifulSoup(page_response, "html.parser")
 
     info_links = []
     magnet_links = []
@@ -205,7 +218,7 @@ def search(
         return
 
     if torrent_info_mode:
-        get_torrent_metadata(selection, metadata)
+        get_torrent_metadata(selection, use_selenium, metadata)
     else:
         magnet = selection.split("|", 1)[1]
         download_torrent(magnet, torrent_directory)
