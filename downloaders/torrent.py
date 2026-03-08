@@ -46,60 +46,38 @@ def check_fzf(links):
         return selection if selection else None
 
     else:
-        output_file = Path("torrent_results.txt")
-
-        with open(output_file, "w") as f:
-            f.write("\n".join(links))
-
-        logger.error(f"fzf not found. Results exported to: {output_file}")
+        logger.error("fzf not found!")
         return None
 
 
-def get_torrent_metadata(torrent_url, use_selenium, metadata=None):
+def get_torrent_metadata(torrent_url, use_selenium, metadata):
     page_response = get_page_response(torrent_url, use_selenium)
 
     soup = BeautifulSoup(page_response, "html.parser")
 
-    if metadata:
+    container_cfg = metadata.get("details_container", {})
+    container = soup.find(
+        container_cfg.get("tag"),
+        id=container_cfg.get("id"),
+        class_=container_cfg.get("class"),
+    )
 
-        container_cfg = metadata.get("details_container", {})
-        container = soup.find(
-            container_cfg.get("tag"),
-            id=container_cfg.get("id"),
-            class_=container_cfg.get("class"),
-        )
+    def get_detail(label):
+        dt = container.find("dt", string=re.compile(label))
+        if dt and dt.find_next_sibling("dd"):
+            return dt.find_next_sibling("dd").get_text(strip=True)
+        return "N/A"
 
-        def get_detail(label):
-            dt = container.find("dt", string=re.compile(label))
-            if dt and dt.find_next_sibling("dd"):
-                return dt.find_next_sibling("dd").get_text(strip=True)
-            return "N/A"
+    fields = metadata.get("fields", {})
 
-        fields = metadata.get("fields", {})
+    file_size = get_detail(fields.get("Size", {}).get("dt", "Size"))
+    seeders = get_detail(fields.get("Seeders", {}).get("dt", "Seeders"))
+    leechers = get_detail(fields.get("Leechers", {}).get("dt", "Leechers"))
+    type_ = get_detail(fields.get("Type", {}).get("dt", "Type"))
 
-        file_size = get_detail(fields.get("Size", {}).get("dt", "Size"))
-        seeders = get_detail(fields.get("Seeders", {}).get("dt", "Seeders"))
-        leechers = get_detail(fields.get("Leechers", {}).get("dt", "Leechers"))
-        type_ = get_detail(fields.get("Type", {}).get("dt", "Type"))
-
-        info_cfg = metadata.get("info")
-        nfo_div = soup.find(info_cfg.get("tag"), class_=info_cfg.get("class"))
-        info = nfo_div.get_text(strip=True) if nfo_div else "No info available"
-
-    else:
-
-        text = soup.get_text()
-
-        def extract(label):
-            match = re.search(rf"{label}\s*[:\-]?\s*(.+)", text, re.IGNORECASE)
-            return match.group(1).strip() if match else "N/A"
-
-        file_size = extract("Size")
-        seeders = extract("Seeders")
-        leechers = extract("Leechers")
-        type_ = extract("Type")
-
-        info = "No info available"
+    info_cfg = metadata.get("info", {})
+    nfo_div = soup.find(info_cfg.get("tag", "div"), class_=info_cfg.get("class"))
+    info = nfo_div.get_text(strip=True) if nfo_div else "No info available"
 
     metadata_message = f"""
 ==============================
@@ -150,7 +128,12 @@ def get_page_response(url: str, use_selenium: bool = False):
             logger.info("Using selenium!")
             global driver
             if not driver:
-                driver = webdriver.Chrome()
+                chrome_options = webdriver.ChromeOptions()
+                chrome_options.add_argument("--headless=new")
+                chrome_options.add_argument("--disable-gpu")
+                chrome_options.add_argument("--no-sandbox")
+                driver = webdriver.Chrome(options=chrome_options)
+
             driver.get(url)
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
@@ -178,7 +161,9 @@ def search(
             metadata = json.load(f)
 
     if not torrent_url:
-        torrent_url = metadata.get("domain", "https://thepiratebay.party/search")
+        torrent_url = "https://thepiratebay.party/search"
+
+    metadata = metadata.get(torrent_url, {})
 
     if not query:
         query = input("Enter Search Query: ")
@@ -232,6 +217,9 @@ def search(
     else:
         magnet = selection.split("|", 1)[1]
         download_torrent(magnet, torrent_directory)
+
+    if driver:
+        driver.quit()
 
 
 if __name__ == "__main__":

@@ -1,24 +1,48 @@
 {
-  "domain": "https://thepiratebay.org/search.php?q=",
-  "details_container": {
-    "tag": "div",
-    "id": "details"
-  },
+  "https://thepiratebay.org/search.php?q=": {
+    "details_container": {
+      "tag": "div",
+      "id": "description_container"
+    },
 
-  "fields": {
-    "Type": { "dt": "Type" },
-    "Size": { "dt": "Size" },
-    "Seeders": { "dt": "Seeders" },
-    "Leechers": { "dt": "Leechers" }
-  },
+    "fields": {
+      "Type": { "dt": "Type" },
+      "Size": { "dt": "Size" },
+      "Seeders": { "dt": "Seeders" },
+      "Leechers": { "dt": "Leechers" }
+    },
 
-  "info": {
-    "tag": "div",
-    "class": "nfo"
+    "info": {
+      "tag": "div",
+      "id": "description_text"
+    },
+    "patterns": {
+      "info": "/description",
+      "magnet": "magnet:"
+    },
+    "use_selenium": true
   },
-  "patterns": {
-    "info": "/description",
-    "magnet": "magnet:"
-  },
-  "use_selenium": true
+  "https://thepiratebay.party/search": {
+    "details_container": {
+      "tag": "div",
+      "id": "details"
+    },
+
+    "fields": {
+      "Type": { "dt": "Type" },
+      "Size": { "dt": "Size" },
+      "Seeders": { "dt": "Seeders" },
+      "Leechers": { "dt": "Leechers" }
+    },
+
+    "info": {
+      "tag": "div",
+      "class": "nfo"
+    },
+    "patterns": {
+      "info": "/torrent",
+      "magnet": "magnet:"
+    },
+    "use_selenium": false
+  }
 }
