@@ -1,10 +1,19 @@
 import os
+from pathlib import Path
+from pprint import PrettyPrinter
 import re
+import shutil
 import subprocess
 from urllib.parse import quote
 from argparse import ArgumentParser
 import requests
 from bs4 import BeautifulSoup
+
+from downloaders.ytdlp import str_to_bool
+from utils.logger import setup_logger
+
+pp = PrettyPrinter(indent=2)
+logger = setup_logger(name="torrent", log_dir="/udown/torrent")
 
 
 def get_torrent_metadata(torrent_url):
@@ -52,10 +61,35 @@ def download_torrent(magnet, torrent_directory: str = None):
     subprocess.run(["transmission-cli", magnet, "-w", directory])
 
 
+def check_fzf(links):
+    fzf_path = shutil.which("fzf")
+
+    if fzf_path:
+        fzf = subprocess.Popen(
+            [fzf_path],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+
+        stdout, _ = fzf.communicate("\n".join(links))
+        selection = stdout.strip()
+        return selection if selection else None
+
+    else:
+        output_file = Path("torrent_results.txt")
+
+        with open(output_file, "w") as f:
+            f.write("\n".join(links))
+
+        print(f"fzf not found. Results exported to: {output_file}")
+        return None
+
+
 def search(
     query=None,
     torrent_url: str = None,
-    torrent_info_mode: int = 0,
+    torrent_info_mode: bool = False,
     torrent_directory: str = None,
 ):
 
@@ -66,7 +100,6 @@ def search(
         query = input("Enter Search Query: ")
 
     search_url = f"{torrent_url}/{quote(query)}"
-    print(search_url)
 
     response = requests.get(search_url, timeout=10)
     response.raise_for_status()
@@ -89,7 +122,7 @@ def search(
             display = name.group(1).replace("+", " ") if name else "Unknown"
             magnet_links.append(f"{display}|{href}")
 
-    if torrent_info_mode == 1:
+    if torrent_info_mode:
         links = info_links
     else:
         links = magnet_links
@@ -98,22 +131,16 @@ def search(
         print("No results found.")
         return
 
-    fzf = subprocess.Popen(
-        ["fzf"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        text=True,
-    )
+    selection = check_fzf(links)
 
-    stdout, _ = fzf.communicate("\n".join(links))
-    selection = stdout.strip()
+    mode = "INFO" if torrent_info_mode else "DOWNLOAD"
+    logger.info(f"Using {mode} MODE for query: {query}.")
 
     if not selection:
         return
 
-    if torrent_info_mode == 1:
+    if torrent_info_mode:
         get_torrent_metadata(selection)
-        subprocess.run(["less"], input="", text=True)
     else:
         magnet = selection.split("|", 1)[1]
         download_torrent(magnet, torrent_directory)
@@ -133,6 +160,12 @@ if __name__ == "__main__":
         "--torrent_directory",
         type=str,
         default=os.environ.get("TORRENT_DIRECTORY"),
+    )
+    parser.add_argument(
+        "-i",
+        "--torrent_info_mode",
+        default=os.environ.get("TORRENT_INFO_MODE", False),
+        type=str_to_bool,
     )
 
     args = parser.parse_args()
