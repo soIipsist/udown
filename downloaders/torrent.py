@@ -9,7 +9,7 @@ from urllib.parse import quote
 from argparse import ArgumentParser
 import requests
 from bs4 import BeautifulSoup
-
+from urllib.parse import quote
 from downloaders.ytdlp import str_to_bool
 from utils.logger import setup_logger
 
@@ -113,6 +113,24 @@ URL: {torrent_url}
     logger.info(metadata_message)
 
 
+def build_search_url(base_url, query):
+    q = quote(query)
+
+    if "{query}" in base_url:
+        return base_url.replace("{query}", q)
+
+    if "?" in base_url:
+        if base_url.endswith("="):
+            return f"{base_url}{q}"
+        else:
+            return f"{base_url}&q={q}"
+
+    if base_url.endswith("/"):
+        return f"{base_url}{q}"
+
+    return f"{base_url}/{q}"
+
+
 def download_torrent(magnet, torrent_directory: str = None):
     directory = torrent_directory or os.path.expanduser("~")
     subprocess.run(["transmission-cli", magnet, "-w", directory])
@@ -132,7 +150,7 @@ def search(
     if not query:
         query = input("Enter Search Query: ")
 
-    search_url = f"{torrent_url}/{quote(query)}"
+    search_url = build_search_url(torrent_url, query)
 
     response = requests.get(search_url, timeout=10)
     response.raise_for_status()
