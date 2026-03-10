@@ -147,6 +147,24 @@ def get_page_response(url: str, use_selenium: bool = False):
         print(e)
 
 
+class Torrent:
+
+    def __init__(
+        self,
+        name: str = None,
+        info_link: str = None,
+        magnet_link: str = None,
+        torrent_link: str = None,
+    ):
+        self.name = name
+        self.info_link = info_link
+        self.magnet_link = magnet_link
+        self.torrent_link = torrent_link
+
+    def extract_links():
+        pass
+
+
 def search(
     query: str = None,
     metadata_path: str = None,
@@ -182,6 +200,7 @@ def search(
     patterns = metadata.get("patterns", {})
     info_pattern = patterns.get("info", "/torrent/")
     magnet_pattern = patterns.get("magnet", "magnet:")
+    torrent_pattern = patterns.get("torrent", "/torrent/")
 
     for link in soup.find_all("a", href=True):
         href = link["href"]

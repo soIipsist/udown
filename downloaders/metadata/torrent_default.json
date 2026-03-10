@@ -46,7 +46,36 @@
     "use_selenium": false
   },
   "https://katcr.to/usearch": {
-    "magnet_in_details": true,
-    "use_selenium": true
+    "use_selenium": true,
+
+    "patterns": {
+      "info": "-t",
+      "magnet": "magnet:"
+    },
+
+    "details_container": {
+      "tag": "div",
+      "class": "torrentDetails"
+    },
+
+    "fields": {
+      "Size": {
+        "dt": "Size"
+      },
+      "Seeders": {
+        "dt": "Seed"
+      },
+      "Leechers": {
+        "dt": "Leech"
+      },
+      "Type": {
+        "dt": "Category"
+      }
+    },
+
+    "info": {
+      "tag": "div",
+      "class": "textcontent"
+    }
   }
 }
