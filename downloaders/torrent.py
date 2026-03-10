@@ -63,9 +63,11 @@ def get_torrent_metadata(torrent_url, use_selenium, metadata):
     )
 
     def get_detail(label):
-        dt = container.find("dt", string=re.compile(label))
-        if dt and dt.find_next_sibling("dd"):
-            return dt.find_next_sibling("dd").get_text(strip=True)
+
+        if container:
+            dt = container.find("dt", string=re.compile(label))
+            if dt and dt.find_next_sibling("dd"):
+                return dt.find_next_sibling("dd").get_text(strip=True)
         return "N/A"
 
     fields = metadata.get("fields", {})
@@ -147,22 +149,31 @@ def get_page_response(url: str, use_selenium: bool = False):
         print(e)
 
 
-class Torrent:
+def extract_links(base_url: str, page_response, patterns):
+    info_pattern = patterns.get("info", "/torrent/")
+    magnet_pattern = patterns.get("magnet", "magnet:")
 
-    def __init__(
-        self,
-        name: str = None,
-        info_link: str = None,
-        magnet_link: str = None,
-        torrent_link: str = None,
-    ):
-        self.name = name
-        self.info_link = info_link
-        self.magnet_link = magnet_link
-        self.torrent_link = torrent_link
+    info_links = []
+    magnet_links = []
 
-    def extract_links():
-        pass
+    soup = BeautifulSoup(page_response, "html.parser")
+
+    for link in soup.find_all("a", href=True):
+        href = link["href"]
+
+        if info_pattern and info_pattern in href:
+            display = link.get_text(strip=True) or href
+            url = urljoin(base_url, href)
+            info_links.append(f"{display}|{url}")
+
+        if magnet_pattern and magnet_pattern in href:
+            magnet = href
+
+            name = re.search(r"dn=([^&]+)", magnet)
+            display = unquote(name.group(1)) if name else "Unknown"
+            magnet_links.append(f"{display}|{magnet}")
+
+    return info_links, magnet_links
 
 
 def search(
@@ -173,6 +184,8 @@ def search(
     torrent_directory: str = None,
 ):
     metadata = None
+    info_links = []
+    magnet_links = []
 
     if metadata_path and os.path.exists(metadata_path):
         with open(metadata_path) as f:
@@ -187,35 +200,26 @@ def search(
         query = input("Enter Search Query: ")
 
     search_url = build_search_url(torrent_url, query)
-
     logger.info(f"Search url: {search_url}")
 
     use_selenium = metadata.get("use_selenium", False)
-    page_response = get_page_response(search_url, use_selenium)
-    soup = BeautifulSoup(page_response, "html.parser")
-
-    info_links = []
-    magnet_links = []
-
     patterns = metadata.get("patterns", {})
-    info_pattern = patterns.get("info", "/torrent/")
-    magnet_pattern = patterns.get("magnet", "magnet:")
-    torrent_pattern = patterns.get("torrent", "/torrent/")
+    page_response = get_page_response(search_url, use_selenium)
+    search_info_links, search_magnet_links = extract_links(
+        search_url, page_response, patterns
+    )
 
-    for link in soup.find_all("a", href=True):
-        href = link["href"]
+    info_links.extend(search_info_links)
+    magnet_links.extend(search_magnet_links)
 
-        if info_pattern and info_pattern in href:
-            display = link.get_text(strip=True) or href
-            url = urljoin(search_url, href)
-            info_links.append(f"{display}|{url}")
-
-        if magnet_pattern and magnet_pattern in href:
-            magnet = href
-
-            name = re.search(r"dn=([^&]+)", magnet)
-            display = unquote(name.group(1)) if name else "Unknown"
-            magnet_links.append(f"{display}|{magnet}")
+    if not magnet_links and info_links and not torrent_info_mode:
+        logger.info("Magnet links not found on search page, checking details pages...")
+        # for item in info_links:
+        #     _, info_url = item.split("|", 1)
+        #     detail_page = get_page_response(info_url, use_selenium)
+        #     _, detail_magnets = extract_links(info_url, detail_page, patterns)
+        #     if detail_magnets:
+        #         magnet_links.extend(detail_magnets)
 
     if torrent_info_mode:
         links = info_links
@@ -229,6 +233,7 @@ def search(
     selection = check_fzf(links)
     mode = "INFO" if torrent_info_mode else "DOWNLOAD"
     logger.info(f"Using {mode} MODE for query: {query}.")
+    logger.info(f"Selection: {selection}")
 
     if not selection:
         return
