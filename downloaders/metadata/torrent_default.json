@@ -44,5 +44,9 @@
       "magnet": "magnet:"
     },
     "use_selenium": false
+  },
+  "https://katcr.to/usearch": {
+    "magnet_in_details": true,
+    "use_selenium": true
   }
 }

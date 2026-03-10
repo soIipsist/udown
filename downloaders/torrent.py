@@ -187,7 +187,9 @@ def search(
         href = link["href"]
 
         if info_pattern and info_pattern in href:
-            info_links.append(urljoin(search_url, href))
+            display = link.get_text(strip=True) or href
+            url = urljoin(search_url, href)
+            info_links.append(f"{display}|{url}")
 
         if magnet_pattern and magnet_pattern in href:
             magnet = href
@@ -213,7 +215,8 @@ def search(
         return
 
     if torrent_info_mode:
-        get_torrent_metadata(selection, use_selenium, metadata)
+        url = selection.split("|", 1)[1]
+        get_torrent_metadata(url, use_selenium, metadata)
     else:
         magnet = selection.split("|", 1)[1]
         download_torrent(magnet, torrent_directory)
