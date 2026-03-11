@@ -10,9 +10,10 @@ import subprocess
 import sys
 from argparse import ArgumentParser
 import tempfile
+import time
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import quote
+from urllib.parse import quote, unquote_plus
 from downloaders.ytdlp import str_to_bool
 from utils.logger import setup_logger
 from selenium import webdriver
@@ -132,10 +133,50 @@ def normalize_magnet(magnet: str) -> str:
     params = parse_qs(parsed.query)
 
     xt = params.get("xt")
-    if not xt:
-        raise ValueError("Magnet link missing xt")
+    normalized = f"magnet:?xt={xt[0]}"
 
-    return f"magnet:?xt={xt[0]}"
+    dn_list = params.get("dn")
+    display_name = None
+    if dn_list:
+        display_name = unquote_plus(dn_list[0])
+
+    logger.info(dn_list)
+
+    return normalized, display_name
+
+
+def get_output_filename(
+    display_name: str, output_directory: str, max_age_seconds: int = 900
+):
+    expected_name = display_name.strip()
+    expected_path = os.path.join(output_directory, expected_name)
+
+    if os.path.exists(expected_path):
+        return display_name
+
+    if not os.path.isdir(output_directory):
+        return None
+
+    now = time.time()
+    best_name = None
+    best_mtime = 0.0
+
+    for entry in os.listdir(output_directory):
+        if entry.startswith(".") or entry.lower().endswith(
+            (".html", ".part", ".torrent")
+        ):
+            continue
+
+        full_path = os.path.join(output_directory, entry)
+        try:
+            mtime = os.path.getmtime(full_path)
+            if mtime > best_mtime and (now - mtime) <= max_age_seconds:
+                best_mtime = mtime
+                best_name = entry
+        except (OSError, PermissionError):
+            continue
+
+    return best_name
 
 
 def download_torrent(
@@ -144,33 +185,26 @@ def download_torrent(
     torrent_directory: str = None,
     confirm_download: bool = False,
 ):
-    magnet = normalize_magnet(magnet)
+    magnet, display_name = normalize_magnet(magnet)
+
+    result = {
+        "url": value,
+        "status": None,
+        "output_filename": display_name,
+        "stdout": "",
+        "error": None,
+    }
 
     if confirm_download:
         answer = (
             input(f"Downloading magnet {magnet} from {value}. (y/n): ").strip().lower()
         )
         if answer != "y":
-            return [
-                {
-                    "url": value,
-                    "status": 1,
-                    "path": None,
-                    "stdout": "",
-                    "error": "Cancelled",
-                }
-            ]
+            result["status"] = 1
+            result["error"] = "Cancelled"
+            return [result]
 
     directory = torrent_directory or os.path.expanduser("~")
-
-    result = {
-        "url": value,
-        "status": None,
-        "path": None,
-        "stdout": "",
-        "error": None,
-    }
-
     placeholder = "/tmp/transmission-finish-placeholder.sh"
 
     cmd = [
@@ -217,6 +251,7 @@ def download_torrent(
 
     finally:
         result["progress"] = "100%"
+        result["output_filename"] = get_output_filename(display_name, directory)
         result["status"] = 0
 
         logger.info("Download completed successfully")
