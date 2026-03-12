@@ -6,7 +6,6 @@ import re
 import shutil
 import subprocess
 import sys
-from urllib.parse import quote, unquote, urljoin
 from argparse import ArgumentParser
 import requests
 from bs4 import BeautifulSoup
@@ -17,6 +16,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from urllib.parse import quote, unquote, urlparse, parse_qs, urljoin
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="torrent", log_dir="/udown/torrent")
@@ -119,12 +119,30 @@ def build_search_url(base_url, query):
     return f"{base_url}/{q}"
 
 
+def normalize_magnet(magnet: str) -> str:
+    magnet = magnet.strip()
+    parsed = urlparse(magnet)
+
+    if parsed.scheme != "magnet":
+        raise ValueError("Not a magnet link")
+
+    params = parse_qs(parsed.query)
+
+    xt = params.get("xt")
+    if not xt:
+        raise ValueError("Magnet link missing xt")
+
+    return f"magnet:?xt={xt[0]}"
+
+
 def download_torrent(
     magnet: str,
     value: str,
     torrent_directory: str = None,
     confirm_download: bool = False,
 ):
+    magnet = normalize_magnet(magnet)
+
     if confirm_download:
         answer = input(f"Downloading magnet {magnet} from {value}. (y/n)")
         if answer != "y":
