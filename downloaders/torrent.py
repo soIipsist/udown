@@ -5,6 +5,7 @@ from pprint import PrettyPrinter
 import re
 import shutil
 import subprocess
+import sys
 from urllib.parse import quote, unquote, urljoin
 from argparse import ArgumentParser
 import requests
@@ -118,9 +119,52 @@ def build_search_url(base_url, query):
     return f"{base_url}/{q}"
 
 
-def download_torrent(magnet, torrent_directory: str = None):
+def download_torrent(
+    magnet: str,
+    value: str,
+    torrent_directory: str = None,
+    confirm_download: bool = False,
+):
+    if confirm_download:
+        answer = input(f"Downloading magnet {magnet} from {value}. (y/n)")
+        if answer != "y":
+            return
     directory = torrent_directory or os.path.expanduser("~")
-    subprocess.run(["transmission-cli", magnet, "-w", directory])
+
+    try:
+        result = {
+            "url": value,
+            "status": None,
+            "path": None,
+            "stdout": "",
+            "error": None,
+        }
+
+        proc = subprocess.Popen(
+            ["transmission-cli", magnet, "-w", directory],
+            stdout=None,
+            stderr=None,
+            text=True,
+        )
+        proc.wait()
+        result["status"] = proc.returncode
+        result["stdout"] = proc.stdout
+
+        if proc.returncode != 0:
+            result["error"] = proc.stderr
+
+    except KeyboardInterrupt:
+        logger.warning("Download interrupted by user")
+        result["status"] = 1
+        result["error"] = "Interrupted by user"
+
+    except Exception as e:
+        logger.error(f"Failed to download {magnet}: {e}")
+        result["status"] = 1
+        result["error"] = str(e)
+
+    results = [result]
+    return results
 
 
 def get_page_response(url: str, use_selenium: bool = False):
@@ -212,19 +256,10 @@ def search(
     info_links.extend(search_info_links)
     magnet_links.extend(search_magnet_links)
 
-    if not magnet_links and info_links and not torrent_info_mode:
-        logger.info("Magnet links not found on search page, checking details pages...")
-        # for item in info_links:
-        #     _, info_url = item.split("|", 1)
-        #     detail_page = get_page_response(info_url, use_selenium)
-        #     _, detail_magnets = extract_links(info_url, detail_page, patterns)
-        #     if detail_magnets:
-        #         magnet_links.extend(detail_magnets)
-
     if torrent_info_mode:
         links = info_links
     else:
-        links = magnet_links
+        links = magnet_links if magnet_links else info_links
 
     if not links:
         logger.info("No results found.")
@@ -241,12 +276,30 @@ def search(
     if torrent_info_mode:
         url = selection.split("|", 1)[1]
         get_torrent_metadata(url, use_selenium, metadata)
+        results = []
     else:
-        magnet = selection.split("|", 1)[1]
-        download_torrent(magnet, torrent_directory)
+        confirm_download = False
+        value = selection.split("|", 1)[1]
+        if value.startswith("magnet:"):
+            magnet = value
+        else:
+            logger.info("Magnet not found on search page, checking details page...")
+            detail_page = get_page_response(value, use_selenium)
+            _, detail_magnets = extract_links(value, detail_page, patterns)
+
+            if not detail_magnets:
+                logger.error("No magnet link found on details page.")
+                return
+
+            magnet = detail_magnets[0].split("|", 1)[1]
+            confirm_download = True
+
+        results = download_torrent(magnet, value, torrent_directory, confirm_download)
 
     if driver:
         driver.quit()
+
+    return results
 
 
 if __name__ == "__main__":
