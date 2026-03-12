@@ -3,10 +3,13 @@ import json
 from pathlib import Path
 from pprint import PrettyPrinter
 import re
+import os
+import signal
 import shutil
 import subprocess
 import sys
 from argparse import ArgumentParser
+import tempfile
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote
@@ -144,34 +147,65 @@ def download_torrent(
     magnet = normalize_magnet(magnet)
 
     if confirm_download:
-        answer = input(f"Downloading magnet {magnet} from {value}. (y/n)")
+        answer = (
+            input(f"Downloading magnet {magnet} from {value}. (y/n): ").strip().lower()
+        )
         if answer != "y":
-            return
+            return [
+                {
+                    "url": value,
+                    "status": 1,
+                    "path": None,
+                    "stdout": "",
+                    "error": "Cancelled",
+                }
+            ]
+
     directory = torrent_directory or os.path.expanduser("~")
 
-    try:
-        result = {
-            "url": value,
-            "status": None,
-            "path": None,
-            "stdout": "",
-            "error": None,
-        }
+    result = {
+        "url": value,
+        "status": None,
+        "path": None,
+        "stdout": "",
+        "error": None,
+    }
 
+    placeholder = "/tmp/transmission-finish-placeholder.sh"
+
+    cmd = [
+        "transmission-cli",
+        magnet,
+        "-w",
+        directory,
+        "-f",
+        placeholder,
+    ]
+
+    try:
         proc = subprocess.Popen(
-            ["transmission-cli", magnet, "-w", directory],
+            cmd,
             stdout=None,
             stderr=None,
-            text=True,
         )
-        proc.wait()
-        result["status"] = proc.returncode
-        result["stdout"] = proc.stdout
 
-        if proc.returncode != 0:
-            result["error"] = proc.stderr
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
+            tmp.write(f"#!/bin/sh\nkill {proc.pid}\n")
+            tmp.flush()
+            real_script = tmp.name
+
+        os.chmod(real_script, 0o755)
+
+        os.rename(real_script, placeholder)
+        proc.wait()
 
     except KeyboardInterrupt:
+        if "proc" in locals() and proc.poll() is None:
+            proc.send_signal(signal.SIGINT)
+            try:
+                proc.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc.kill()
         logger.warning("Download interrupted by user")
         result["status"] = 1
         result["error"] = "Interrupted by user"
@@ -181,8 +215,17 @@ def download_torrent(
         result["status"] = 1
         result["error"] = str(e)
 
-    results = [result]
-    return results
+    finally:
+        result["progress"] = "100%"
+        result["status"] = 0
+
+        logger.info("Download completed successfully")
+        try:
+            os.unlink(placeholder)
+        except OSError:
+            pass
+
+    return [result]
 
 
 def get_page_response(url: str, use_selenium: bool = False):
