@@ -1,5 +1,19 @@
 /* app.css */
 $primary: #7c3aed;
+$accent: #7c3aed;
+$accent-dark: #5b21b6;
+$accent-darker: #4c1d95;
+
+$surface0: #0f0f14;
+$surface1: #11111b;
+$surface2: #181825;
+$border: #313244;
+
+$text: #cdd6f4;
+$text-muted: #94a3b8;
+$text-dim: #6b7280;
+
+$selection: #7c3aed 40%;
 
 /* Global Screen Background */
 Screen {
