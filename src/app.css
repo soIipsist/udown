@@ -15,9 +15,9 @@ $text-dim: #6b7280;
 
 $selection: #7c3aed 40%;
 
-$scrollbar: #4c1d95;
+$scrollbar: #5b21b6;
 $scrollbar-hover: #7c3aed;
-$scrollbar-active: #5b21b6;
+$scrollbar-active: #7c3aed;
 
 /* Global Screen Background */
 Screen {
