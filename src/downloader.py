@@ -316,6 +316,7 @@ class Downloader(SQLiteItem):
                         output_filename=output_filename,
                         source_url=source_url,
                     )
+                    logger.info(f"OUTPUT PATH: {child_download.output_path}")
 
                     filter_condition = (
                         f"url = {child_download.url} AND "

@@ -186,6 +186,7 @@ def download_torrent(
     confirm_download: bool = False,
 ):
     magnet, display_name = normalize_magnet(magnet)
+    logger.info(f"Torrent: {magnet}")
 
     result = {
         "url": value,
@@ -214,8 +215,9 @@ def download_torrent(
         directory,
         "-f",
         placeholder,
+        "-g",
+        tempfile.mkdtemp(),
     ]
-
     try:
         proc = subprocess.Popen(
             cmd,
@@ -250,11 +252,13 @@ def download_torrent(
         result["error"] = str(e)
 
     finally:
-        result["progress"] = "100%"
-        result["output_filename"] = get_output_filename(display_name, directory)
-        result["status"] = 0
 
-        logger.info("Download completed successfully")
+        if not result["error"]:
+            result["progress"] = "100%"
+            result["output_filename"] = get_output_filename(display_name, directory)
+            result["status"] = 0
+
+            logger.info("Download completed successfully")
         try:
             os.unlink(placeholder)
         except OSError:
@@ -338,6 +342,10 @@ def search(
 
     if not query:
         query = input("Enter Search Query: ")
+
+    # if it's a magnet or a torrent file, simply download
+    if query.startswith("magnet:") or query.endswith(".torrent"):
+        pass
 
     search_url = build_search_url(torrent_url, query)
     logger.info(f"Search url: {search_url}")
