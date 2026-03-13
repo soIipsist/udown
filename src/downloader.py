@@ -459,6 +459,20 @@ default_downloaders = [
         "search",
         "url, metadata_path=downloader_path, torrent_directory=output_directory, torrent_info_mode=True",
     ),
+    Downloader(
+        "kat",
+        os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
+        "downloaders.torrent",
+        "search",
+        "torrent_url='https://katcr.to/usearch', metadata_path=downloader_path, torrent_directory=output_directory, torrent_info_mode=False",
+    ),
+    Downloader(
+        "piratebay",
+        os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
+        "downloaders.torrent",
+        "search",
+        "torrent_url='https://thepiratebay.org/search.php?q=', metadata_path=downloader_path, torrent_directory=output_directory, torrent_info_mode=False",
+    ),
 ]
 
 if not db_exists:

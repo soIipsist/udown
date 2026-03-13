@@ -185,11 +185,15 @@ def download_torrent(
     torrent_directory: str = None,
     confirm_download: bool = False,
 ):
-    magnet, display_name = normalize_magnet(magnet)
+    if magnet.startswith("magnet"):
+        magnet, display_name = normalize_magnet(magnet)
+    else:
+        display_name = None
+
     logger.info(f"Torrent: {magnet}")
 
     result = {
-        "url": value,
+        "url": value if value else magnet,
         "status": None,
         "output_filename": display_name,
         "stdout": "",
@@ -197,9 +201,12 @@ def download_torrent(
     }
 
     if confirm_download:
-        answer = (
-            input(f"Downloading magnet {magnet} from {value}. (y/n): ").strip().lower()
+        input_str = (
+            f"Downloading magnet '{magnet}' from {value}. Proceed? (y/n): "
+            if value
+            else f"Downloading magnet '{magnet}'. Proceed? (y/n): "
         )
+        answer = input(input_str).strip().lower()
         if answer != "y":
             result["status"] = 1
             result["error"] = "Cancelled"
@@ -255,7 +262,9 @@ def download_torrent(
 
         if not result["error"]:
             result["progress"] = "100%"
-            result["output_filename"] = get_output_filename(display_name, directory)
+            result["output_filename"] = (
+                get_output_filename(display_name, directory) if display_name else None
+            )
             result["status"] = 0
 
             logger.info("Download completed successfully")
@@ -345,7 +354,8 @@ def search(
 
     # if it's a magnet or a torrent file, simply download
     if query.startswith("magnet:") or query.endswith(".torrent"):
-        pass
+        results = download_torrent(query, None, torrent_directory, True)
+        return results
 
     search_url = build_search_url(torrent_url, query)
     logger.info(f"Search url: {search_url}")
