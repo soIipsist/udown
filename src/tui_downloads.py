@@ -47,7 +47,8 @@ class DownloadDetails(ModalScreen):
 
 class DownloadsTable(DataTable):
     BINDINGS = [
-        ("d", "download", "Download"),
+        ("space", "download", "Download"),
+        ("d", "delete", "Delete"),
     ]
 
     def __init__(self, downloads):
@@ -141,5 +142,15 @@ class DownloadsTable(DataTable):
                 btn_confirm_caption=btn_confirm_download_caption,
                 message_type=DownloadConfirmed,
             ),
+            on_result,
+        )
+
+    def action_delete(self):
+        def on_result(confirmed: bool):
+            pass
+
+        download = self.get_download()
+        self.app.push_screen(
+            ConfirmModal(download),
             on_result,
         )
