@@ -172,7 +172,7 @@ By default, `udown` automatically detects the downloader type from the specified
 - **wget** & **urllib**  
   → simple & reliable direct file downloads
 
-- **torrent** / **torrent_info**
+- **torrent** / **torrent_info**  
   → download or search for torrents online
 
 - **selenium**  
