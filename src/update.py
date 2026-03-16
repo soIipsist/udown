@@ -3,7 +3,15 @@ import sys
 from src.downloader import Downloader, default_downloaders
 
 UDOWN_GIT = "git+https://github.com/soIipsist/udown.git"
-default_packages = [UDOWN_GIT, "yt-dlp", "selenium", "beautifulsoup4", "requests"]
+default_packages = [
+    UDOWN_GIT,
+    "yt-dlp",
+    "selenium",
+    "beautifulsoup4",
+    "requests",
+    "urllib3",
+    "lxml",
+]
 
 
 def pip_upgrade(packages: list):
@@ -12,10 +20,11 @@ def pip_upgrade(packages: list):
         packages = [packages]
 
     for package in packages:
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", "-U", package],
-            check=True,
-        )
+        if package in default_packages:
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "-U", package],
+                check=True,
+            )
 
 
 def update_action(packages=None, **args):
@@ -33,7 +42,9 @@ def update_command(subparsers):
     update_cmd = subparsers.add_parser("update", help="Update udown")
     update_cmd.add_argument(
         "packages",
-        nargs="?",
+        nargs="*",
+        type=str,
+        default=None,
         help="Packages to update (default: udown)",
     )
     return update_cmd
