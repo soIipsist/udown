@@ -41,6 +41,9 @@ class DownloaderDetails(ModalScreen):
 
 
 class DownloadersTable(DataTable):
+    BINDINGS = [
+        ("d", "delete", "Delete"),
+    ]
 
     def __init__(self, downloaders):
         super().__init__()
@@ -113,3 +116,17 @@ class DownloadersTable(DataTable):
         if downloader:
             self.app.push_screen(DownloaderDetails(downloader))
             event.stop()
+
+    def action_delete(self):
+        def on_result(confirmed: bool):
+            pass
+
+        row = self.cursor_row
+        if row is None:
+            return
+
+        downloader = self.row_map.get(row)
+        self.app.push_screen(
+            ConfirmModal(downloader),
+            on_result,
+        )
