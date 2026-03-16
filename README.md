@@ -71,7 +71,7 @@ udown download "https://www.youtube.com/playlist?list=PL3A_1s_Z8MQbYIvki-pbcerX8
 udown download downloads.txt
 
 # Custom output directory + proxy
-udown download "https://example.com/file.jpg" -o ~/Downloads -p http://proxy:8080
+udown download "https://example.com/file.jpg" -d ~/Downloads -p http://proxy:8080
 
 # Filter by status or date range
 udown download -s completed -sd 2025-01-01 -ed 2025-12-31 -c OR
@@ -134,7 +134,7 @@ udown options reset
 | `DOWNLOADER_ACTION`     | Default subcommand for `udown downloaders` (add, delete, list, reset)                       |
 | `DOWNLOAD_DIRECTORY`    | Base directory where downloaded files are saved                                             |
 | `DOWNLOAD_FILENAME`     | Default filename for batch URL input when using `--file` or similar                         |
-| `DOWNLOAD_ACTION`       | Default action for main download commands (e.g. `add`, `start`, `list`)                     |
+| `DOWNLOAD_ACTION`       | Default action for main download commands (e.g. `add`, `download`, `list`)                  |
 | `DOWNLOAD_PROXY`        | Default proxy URL passed to downloaders that support it (http:// or socks5://)              |
 | `DOWNLOAD_OP`           | Default filter conjunction for download queries (`AND` or `OR`)                             |
 | `YTDLP_FORMAT`          | Default yt-dlp downloader type/preset when a YouTube-style URL is detected                  |
@@ -172,8 +172,8 @@ By default, `udown` automatically detects the downloader type from the specified
 - **wget** & **urllib**  
   → simple & reliable direct file downloads
 
-- **transmission**  
-  → magnet links & .torrent files
+- **torrent** / **torrent_info**
+  → download or search for torrents online
 
 - **selenium**  
   → JavaScript-heavy / login-protected pages

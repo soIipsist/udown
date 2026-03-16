@@ -16,7 +16,6 @@ class DownloaderDetails(ModalScreen):
         self.downloader = downloader
 
     def compose(self):
-        yield Header(show_clock=False)
         yield DataTable(id="details")
         yield Footer()
 
@@ -42,6 +41,7 @@ class DownloaderDetails(ModalScreen):
 
 
 class DownloadersTable(DataTable):
+
     def __init__(self, downloaders):
         super().__init__()
         self.downloaders = downloaders

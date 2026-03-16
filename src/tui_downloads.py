@@ -21,7 +21,6 @@ class DownloadDetails(ModalScreen):
         self.download = download
 
     def compose(self):
-        yield Header(show_clock=False)
         yield DataTable(id="details")
         yield Footer()
 

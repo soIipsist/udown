@@ -57,8 +57,8 @@ def main():
     options_parser = options_command(subparsers)
     options_parser.set_defaults(func=options_action)
 
-    # update_parser = update_command(subparsers)
-    # update_parser.set_defaults(func=update_action)
+    update_parser = update_command(subparsers)
+    update_parser.set_defaults(func=update_action)
 
     import argcomplete
 
