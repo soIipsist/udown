@@ -5,6 +5,7 @@ import sys
 
 from src.download import download_command, download_action, complete_downloader_type
 from src.downloader import downloader_command, downloader_action, pp
+from src.update import update_command, update_action
 from src.options import options_action, options_command, get_option
 
 
@@ -56,6 +57,9 @@ def main():
     options_parser = options_command(subparsers)
     options_parser.set_defaults(func=options_action)
 
+    # update_parser = update_command(subparsers)
+    # update_parser.set_defaults(func=update_action)
+
     import argcomplete
 
     argcomplete.autocomplete(parser)
@@ -80,30 +84,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# tests
-
-# playlist urls
-# https://www.youtube.com/playlist?list=PL3A_1s_Z8MQbYIvki-pbcerX8zrF4U8zQ
-
-# regular video urls
-# https://youtu.be/MvsAesQ-4zA?si=gDyPQcdb6sTLWipY
-# https://youtu.be/OlEqHXRrcpc?si=4JAYOOH2B0A6MBvF
-
-# regular urls (wget)
-# https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg
-
-# downloads
-
-# python download.py downloads
-# python download.py "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg" -d "downloads.txt"
-# python download.py "downloads.txt" -o ~/temp
-
-# python download.py -t ytdlp_audio "downloads.txt"
-# python download.py -t ytdlp_audio "downloads.txt" -o ~/temp
-
-# downloaders
-
-# python downloader.py downloaders
-# python downloader.py downloaders -t ytdlp_audio
-# python downloader.py downloaders add -t ytdlp_video -d downloader_path.json

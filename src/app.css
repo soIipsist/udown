@@ -190,11 +190,6 @@ DataTable > .datatable--header-row-label {
   text-style: bold;
 }
 
-DataTable > .datatable--hover > .datatable--row-label {
-  background: $accent-dark;
-  color: white;
-}
-
 DataTable > .datatable--cursor > .datatable--row-label {
   background: $accent;
   color: white;
