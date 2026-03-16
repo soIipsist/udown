@@ -15,6 +15,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote, unquote_plus
 from downloaders.ytdlp import str_to_bool
+from src.options import DOWNLOADER_METADATA_DIR
 from utils.logger import setup_logger
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -340,7 +341,10 @@ def search(
     info_links = []
     magnet_links = []
 
-    if metadata_path and os.path.exists(metadata_path):
+    if not metadata_path:
+        metadata_path = os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json")
+
+    if os.path.exists(metadata_path):
         with open(metadata_path) as f:
             metadata = json.load(f)
 
