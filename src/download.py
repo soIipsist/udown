@@ -140,6 +140,8 @@ class Download(SQLiteItem):
         if not self.extra_args:
             return kwargs, positional
 
+        # f_parts = shlex.split(self.extra_args)
+        # print("FFF", f_parts)
         parts = re.split(r",(?![^\[]*\])", self.extra_args)
 
         for part in parts:

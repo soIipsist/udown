@@ -38,6 +38,9 @@ def download(
     headers = (headers or DEFAULT_HEADERS).copy()
     if user_agent:
         headers["User-Agent"] = user_agent
+        logger.info(f"Using user agent: '{user_agent}'")
+
+    logger.info(f"Headers: {str(headers)}")
 
     http = urllib3.PoolManager(headers=headers)
     results = []
