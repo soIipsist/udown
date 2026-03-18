@@ -56,10 +56,13 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
             if proc.returncode == 0:
                 yield {"url": url, "status": 0, "progress": "100%"}
             else:
-                stderr_output = (
-                    proc.stderr.read().decode("utf-8", errors="replace").strip()
-                )
-                logger.error(f"Command failed with code {proc.returncode}")
+                stderr_output = None
+
+                if proc.stderr:
+                    stderr_output = (
+                        proc.stderr.read().decode("utf-8", errors="replace").strip()
+                    )
+                    logger.error(f"Command failed with code {proc.returncode}")
 
                 if stderr_output:
                     logger.error(f"Error:\n{stderr_output}")
