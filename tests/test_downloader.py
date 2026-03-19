@@ -85,7 +85,7 @@ class TestDownloader(TestBase):
 
     def test_get_downloader_args(self):
         downloader_args = "url, output_directory=red, ytdlp_format=ytdl"
-        extra_args = "prefix=monkey, moo"
+        extra_args = "prefix=monkey max_sleep_interval=100"
         # downloader_args = None
         func = ytdlp_download
         downloader_type = "auto"
@@ -130,9 +130,10 @@ class TestDownloader(TestBase):
             extra_args=extra_args,
         )
 
-        extra_args = download.get_extra_args()
-
-        print(extra_args)
+        kwargs, positional_args = download.get_extra_args()
+        print(positional_args)
+        print(kwargs)
+        print(kwargs.get("user_agent"))
 
     def test_start_downloads(self):
         downloads = [
@@ -180,8 +181,8 @@ class TestDownloader(TestBase):
 if __name__ == "__main__":
     test_methods = [
         # TestDownloader.test_get_downloader_func,
-        # TestDownloader.test_get_downloader_args,
-        TestDownloader.test_get_downloader_with_extra_args,
+        TestDownloader.test_get_downloader_args,
+        # TestDownloader.test_get_downloader_with_extra_args,
         # TestDownloader.test_start_downloads,
         # TestDownloader.test_from_dict,
     ]

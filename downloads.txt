@@ -1,4 +1,28 @@
-https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/ChessSet.jpg/640px-ChessSet.jpg wget
-https://upload.wikimedia.org/wikipedia/commons/e/ea/Elegant_Background-13.jpg wget "Elegant.jpg"
-https://ash-speed.hetzner.com/100MB.bin "test.bin" wget
-https://youtu.be/j17yEgxPwkk?si=mV_z1hW6oZRkvzvh ytdlp_video "red.mp4"
+https://www.youtube.com/watch?v=uwUNbeiiOzM
+https://www.youtube.com/watch?v=eJu-s618WzM
+https://www.youtube.com/watch?v=RgFaK6ZQifE
+https://www.youtube.com/watch?v=XpdpW0z9xnQ
+https://www.youtube.com/watch?v=4dOw3TpoHtk
+https://www.youtube.com/watch?v=VN8AHSlXmeg
+https://www.youtube.com/watch?v=lPG5aKqtpSs
+https://www.youtube.com/watch?v=NrVqLGQlieA
+https://www.youtube.com/watch?v=hgJomfQ5UfY
+https://www.youtube.com/watch?v=VsjsJA0gbBg
+https://www.youtube.com/watch?v=NIioTc_Yz_0
+https://www.youtube.com/watch?v=iC1ScsyGC0Y
+https://www.youtube.com/watch?v=5pAKediqUl8
+https://www.youtube.com/watch?v=oRhz8awvsIM
+https://www.youtube.com/watch?v=539WE7w-5qs
+https://www.youtube.com/watch?v=y1lcSlp070M
+https://www.youtube.com/watch?v=f1kagh6gneU
+https://www.youtube.com/watch?v=CHIWNDAwTqQ
+https://www.youtube.com/watch?v=wl0ncZG2TiM
+https://www.youtube.com/watch?v=iVvXB-Vwnco
+https://www.youtube.com/watch?v=J13GI4Xik1o
+https://www.youtube.com/watch?v=FNdC_3LR2AI
+https://www.youtube.com/watch?v=7j03lu6SBR8
+https://www.youtube.com/watch?v=fqLI8smRob0
+https://www.youtube.com/watch?v=1_qMnqyKiNk
+https://www.youtube.com/watch?v=DhMv5WVOli4
+https://www.youtube.com/watch?v=W0Tkd6ISdPg
+https://www.youtube.com/watch?v=KIHtQi6-Q8M
