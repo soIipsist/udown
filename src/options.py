@@ -1,3 +1,4 @@
+import ast
 import os
 from shutil import copy
 
@@ -12,6 +13,21 @@ ALLOWED_MODULES = [
     for module in os.listdir(DOWNLOADER_DIR)
     if module.endswith(".py")
 ]
+
+
+def parse_value(value):
+    value = value.strip()
+
+    # return as string (without quotes)
+    if (value.startswith('"') and value.endswith('"')) or (
+        value.startswith("'") and value.endswith("'")
+    ):
+        return value[1:-1]
+
+    try:
+        return ast.literal_eval(value)
+    except Exception:
+        return value
 
 
 def str_to_bool(string: str):

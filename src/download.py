@@ -14,7 +14,7 @@ from .downloader import (
     detect_downloader_type,
     complete_downloader_type,
 )
-from .options import get_option, str_to_bool
+from .options import get_option, str_to_bool, parse_value
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
@@ -140,9 +140,8 @@ class Download(SQLiteItem):
         if not self.extra_args:
             return kwargs, positional
 
-        # f_parts = shlex.split(self.extra_args)
-        # print("FFF", f_parts)
-        parts = re.split(r",(?![^\[]*\])", self.extra_args)
+        # parts = re.split(r",(?![^\[]*\])", self.extra_args)
+        parts = shlex.split(self.extra_args)
 
         for part in parts:
             part = part.strip()
@@ -150,16 +149,11 @@ class Download(SQLiteItem):
             if "=" in part:
                 key, value = part.split("=", 1)
                 key, value = key.strip(), value.strip()
-                try:
-                    parsed_value = ast.literal_eval(value)
-                except Exception:
-                    parsed_value = value
+
+                parsed_value = parse_value(value)
                 kwargs.update({key: parsed_value})
             else:
-                try:
-                    parsed_value = ast.literal_eval(part)
-                except Exception:
-                    parsed_value = part
+                parsed_value = parse_value(part)
                 positional.append(parsed_value)
 
         return kwargs, positional

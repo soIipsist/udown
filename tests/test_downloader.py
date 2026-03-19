@@ -1,6 +1,7 @@
 import inspect
 from pathlib import Path
 import os
+import shlex
 import shutil
 from src.options import DOWNLOADER_METADATA_DIR
 from test_base import *
