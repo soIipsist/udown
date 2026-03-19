@@ -4,6 +4,7 @@ from pprint import PrettyPrinter
 import urllib3
 from urllib.parse import urlparse
 from pathlib import Path
+from src.options import get_option
 from utils.logger import setup_logger
 
 DEFAULT_HEADERS = {
@@ -125,7 +126,10 @@ if __name__ == "__main__":
         "-f", "--output_filename", type=str, default=None, help="Custom output filename"
     )
     parser.add_argument(
-        "--user_agent", type=str, default=None, help="Custom User-Agent"
+        "--user_agent",
+        type=str,
+        default=get_option("USER_AGENT"),
+        help="Custom User-Agent",
     )
 
     args = parser.parse_args()
