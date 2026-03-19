@@ -408,7 +408,7 @@ default_downloaders = [
         None,
         "downloaders.url_lib",
         "download",
-        "url, output_directory, output_filename",
+        "url, output_directory, output_filename, proxy=proxy",
     ),
     Downloader(
         "ytdlp_channel",

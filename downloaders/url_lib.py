@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from pathlib import Path
 from src.options import get_option
 from utils.logger import setup_logger
+from urllib3.contrib.socks import SOCKSProxyManager
 
 DEFAULT_HEADERS = {
     "User-Agent": (
@@ -27,6 +28,7 @@ def download(
     output_directory: str = None,
     output_filename: str = None,
     user_agent: str = None,
+    proxy: str = None,
     headers: dict = None,
 ) -> list[dict]:
     """
@@ -43,7 +45,16 @@ def download(
 
     logger.info(f"Headers: {str(headers)}")
 
-    http = urllib3.PoolManager(headers=headers)
+    if proxy:
+        logger.info(f"Using proxy: {proxy}")
+        http = (
+            SOCKSProxyManager(proxy_url=proxy, headers=headers)
+            if proxy.startswith("socks")
+            else urllib3.ProxyManager(proxy_url=proxy, headers=headers)
+        )
+    else:
+        http = urllib3.PoolManager(headers=headers)
+
     results = []
 
     for url in urls:
@@ -131,6 +142,7 @@ if __name__ == "__main__":
         default=get_option("USER_AGENT"),
         help="Custom User-Agent",
     )
+    parser.add_argument("--proxy", type=str, default=get_option("PROXY"), help="Proxy")
 
     args = parser.parse_args()
 
@@ -139,4 +151,5 @@ if __name__ == "__main__":
         args.output_directory,
         args.output_filename,
         args.user_agent,
+        args.proxy,
     )
