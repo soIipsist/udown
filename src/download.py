@@ -510,9 +510,7 @@ def download_command(subparsers):
     download_cmd.add_argument("-ed", "--end_date", default=None, type=str)
     download_cmd.add_argument("-te", "--time_elapsed", default=None, type=str)
 
-    download_cmd.add_argument(
-        "-p", "--proxy", default=get_option("DOWNLOAD_PROXY"), type=str
-    )
+    download_cmd.add_argument("-p", "--proxy", default=get_option("PROXY"), type=str)
     download_cmd.add_argument("-e", "--extra_args", default=None, type=str)
     download_cmd.add_argument("-pr", "--progress", default=None, type=str)
     download_cmd.add_argument(

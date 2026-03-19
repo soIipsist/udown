@@ -135,7 +135,7 @@ udown options reset
 | `DOWNLOAD_DIRECTORY`    | Base directory where downloaded files are saved                                             |
 | `DOWNLOAD_FILENAME`     | Default filename for batch URL input when using `--file` or similar                         |
 | `DOWNLOAD_ACTION`       | Default action for main download commands (e.g. `add`, `download`, `list`)                  |
-| `DOWNLOAD_PROXY`        | Default proxy URL passed to downloaders that support it (http:// or socks5://)              |
+| `PROXY`                 | Default proxy URL passed to downloaders that support it (http:// or socks5://)              |
 | `DOWNLOAD_OP`           | Default filter conjunction for download queries (`AND` or `OR`)                             |
 | `YTDLP_FORMAT`          | Default yt-dlp downloader type/preset when a YouTube-style URL is detected                  |
 | `YTDLP_OPTIONS_PATH`    | Path to JSON file with custom yt-dlp format / postprocessor options                         |
@@ -157,7 +157,7 @@ export YTDLP_AUDIO_DIRECTORY=/mnt/ssd/Music/Youtube
 export USE_TUI=0
 
 # Use a proxy for all downloads
-export DOWNLOAD_PROXY="socks5://127.0.0.1:9050"
+export PROXY="socks5://127.0.0.1:9050"
 ```
 
 ## Supported downloaders
