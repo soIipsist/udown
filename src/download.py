@@ -14,7 +14,7 @@ from .downloader import (
     detect_downloader_type,
     complete_downloader_type,
 )
-from .options import get_option, str_to_bool, parse_value
+from .options import get_option, parse_date, str_to_bool, parse_value
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
@@ -506,8 +506,8 @@ def download_command(subparsers):
     )
     download_cmd.add_argument("-f", "--output_filename", default=None, type=str)
     download_cmd.add_argument("-op", "--output_path", default=None, type=str)
-    download_cmd.add_argument("-sd", "--start_date", default=None, type=str)
-    download_cmd.add_argument("-ed", "--end_date", default=None, type=str)
+    download_cmd.add_argument("-sd", "--start_date", default=None, type=parse_date)
+    download_cmd.add_argument("-ed", "--end_date", default=None, type=parse_date)
     download_cmd.add_argument("-te", "--time_elapsed", default=None, type=str)
 
     download_cmd.add_argument("-p", "--proxy", default=get_option("PROXY"), type=str)
