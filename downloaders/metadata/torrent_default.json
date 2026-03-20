@@ -45,7 +45,7 @@
     },
     "use_selenium": false
   },
-  "https://katcr.to/usearch": {
+  "https://kickasstorrents.to/usearch": {
     "use_selenium": true,
 
     "patterns": {
