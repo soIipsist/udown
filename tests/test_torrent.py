@@ -65,9 +65,17 @@ class TestTorrent(TestBase):
         # print("ACTION:", action)
         # print("SELECTION:", selection)
 
+    def test_download_torrent(self):
+        download_torrent()
+
+    def test_extract_links(self):
+        pass
+
 
 if __name__ == "__main__":
     test_methods = [
-        TestTorrent.test_check_fzf,
+        # TestTorrent.test_check_fzf,
+        # TestTorrent.test_extract_links,
+        TestTorrent.test_download_torrent,
     ]
     run_test_methods(test_methods)

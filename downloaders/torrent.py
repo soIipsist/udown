@@ -188,6 +188,8 @@ def download_torrent(
 ):
     if magnet.startswith("magnet"):
         magnet, display_name = normalize_magnet(magnet)
+    elif magnet.endswith(".torrent"):
+        pass
     else:
         display_name = None
 
@@ -306,9 +308,11 @@ def get_page_response(url: str, use_selenium: bool = False):
 def extract_links(base_url: str, page_response, patterns):
     info_pattern = patterns.get("info", "/torrent/")
     magnet_pattern = patterns.get("magnet", "magnet:")
+    torrent_pattern = patterns.get("torrent", ".torrent")
 
     info_links = []
     magnet_links = []
+    torrent_links = []
 
     soup = BeautifulSoup(page_response, "html.parser")
 
@@ -327,7 +331,11 @@ def extract_links(base_url: str, page_response, patterns):
             display = unquote(name.group(1)) if name else "Unknown"
             magnet_links.append(f"{display}|{magnet}")
 
-    return info_links, magnet_links
+        if torrent_pattern and torrent_pattern in href:
+            torrent = href
+            torrent_links.append(torrent)
+
+    return info_links, magnet_links, torrent_links
 
 
 def search(
@@ -340,6 +348,7 @@ def search(
     metadata = None
     info_links = []
     magnet_links = []
+    torrent_links = []
 
     if not metadata_path:
         metadata_path = os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json")
@@ -367,12 +376,13 @@ def search(
     use_selenium = metadata.get("use_selenium", False)
     patterns = metadata.get("patterns", {})
     page_response = get_page_response(search_url, use_selenium)
-    search_info_links, search_magnet_links = extract_links(
+    search_info_links, search_magnet_links, search_torrent_links = extract_links(
         search_url, page_response, patterns
     )
 
     info_links.extend(search_info_links)
     magnet_links.extend(search_magnet_links)
+    torrent_links.extend(search_torrent_links)
 
     if torrent_info_mode:
         links = info_links
@@ -398,14 +408,18 @@ def search(
     else:
         confirm_download = False
         value = selection.split("|", 1)[1]
-        if value.startswith("magnet:"):
+        if value.startswith("magnet:") or value.endswith(".torrent"):
             magnet = value
         else:
-            logger.info("Magnet not found on search page, checking details page...")
+            logger.info(
+                "Magnets or torrent links not found on search page, checking details page..."
+            )
             detail_page = get_page_response(value, use_selenium)
-            _, detail_magnets = extract_links(value, detail_page, patterns)
+            _, detail_magnets, detail_torrents = extract_links(
+                value, detail_page, patterns
+            )
 
-            if not detail_magnets:
+            if not detail_magnets and not detail_torrents:
                 logger.error("No magnet link found on details page.")
                 return
 
