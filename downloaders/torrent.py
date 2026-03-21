@@ -181,22 +181,23 @@ def get_output_filename(
 
 
 def download_torrent(
-    magnet: str,
-    value: str,
+    torrent: str,
     torrent_directory: str = None,
-    confirm_download: bool = False,
+    confirm_download: bool = True,
 ):
-    if magnet.startswith("magnet"):
-        magnet, display_name = normalize_magnet(magnet)
-    elif magnet.endswith(".torrent"):
-        pass
+    print("EEE", os.path.exists(torrent))
+    if torrent.startswith("magnet"):
+        torrent, display_name = normalize_magnet(torrent)
     else:
+        if os.path.exists(torrent):
+            logger.info("FILE")
+            torrent = os.path.abspath(torrent)
         display_name = None
 
-    logger.info(f"Torrent: {magnet}")
+    logger.info(f"Torrent: {torrent}")
 
     result = {
-        "url": value if value else magnet,
+        "url": torrent,
         "status": None,
         "output_filename": display_name,
         "stdout": "",
@@ -204,11 +205,7 @@ def download_torrent(
     }
 
     if confirm_download:
-        input_str = (
-            f"Downloading magnet '{magnet}' from {value}. Proceed? (y/n): "
-            if value
-            else f"Downloading magnet '{magnet}'. Proceed? (y/n): "
-        )
+        input_str = f"Downloading '{torrent}'. Proceed? (y/n): "
         answer = input(input_str).strip().lower()
         if answer != "y":
             result["status"] = 1
@@ -220,7 +217,7 @@ def download_torrent(
 
     cmd = [
         "transmission-cli",
-        magnet,
+        torrent,
         "-w",
         directory,
         "-f",
@@ -257,7 +254,7 @@ def download_torrent(
         result["error"] = "Interrupted by user"
 
     except Exception as e:
-        logger.error(f"Failed to download {magnet}: {e}")
+        logger.error(f"Failed to download {torrent}: {e}")
         result["status"] = 1
         result["error"] = str(e)
 
@@ -344,6 +341,7 @@ def search(
     torrent_url: str = None,
     torrent_info_mode: bool = False,
     torrent_directory: str = None,
+    confirm_download: bool = True,
 ):
     metadata = None
     info_links = []
@@ -367,7 +365,7 @@ def search(
 
     # if it's a magnet or a torrent file, simply download
     if query.startswith("magnet:") or query.endswith(".torrent"):
-        results = download_torrent(query, None, torrent_directory, True)
+        results = download_torrent(query, torrent_directory, confirm_download)
         return results
 
     search_url = build_search_url(torrent_url, query)
@@ -406,7 +404,6 @@ def search(
         get_torrent_metadata(url, use_selenium, metadata)
         results = []
     else:
-        confirm_download = False
         value = selection.split("|", 1)[1]
         if value.startswith("magnet:") or value.endswith(".torrent"):
             magnet = value
@@ -424,9 +421,8 @@ def search(
                 return
 
             magnet = detail_magnets[0].split("|", 1)[1]
-            confirm_download = True
 
-        results = download_torrent(magnet, value, torrent_directory, confirm_download)
+        results = download_torrent(value, torrent_directory, confirm_download)
 
     if driver:
         driver.quit()
@@ -456,6 +452,12 @@ if __name__ == "__main__":
         default=os.environ.get("TORRENT_INFO_MODE", False),
         type=str_to_bool,
     )
+    parser.add_argument(
+        "-c",
+        "--confirm_download",
+        default=True,
+        type=str_to_bool,
+    )
 
     args = parser.parse_args()
 
@@ -464,6 +466,12 @@ if __name__ == "__main__":
     torrent_info_mode = args.torrent_info_mode
     torrent_directory = args.torrent_directory
     metadata_path = args.metadata_path
+    confirm_download = args.confirm_download
     results = search(
-        query, metadata_path, torrent_url, torrent_info_mode, torrent_directory
+        query,
+        metadata_path,
+        torrent_url,
+        torrent_info_mode,
+        torrent_directory,
+        confirm_download,
     )

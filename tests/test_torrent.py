@@ -12,6 +12,12 @@ os.sys.path.insert(0, str(parent_directory))
 pp = PrettyPrinter(indent=2)
 import subprocess
 
+magnet = "magnet:?xt=urn:btih:65C6FF0DA11FAD4B63E0A2B58FD05B6539C54C19"
+torrent_file = os.path.abspath(
+    os.path.expanduser("~/Downloads/BigBuckBunny_124_archive.torrent")
+)
+torrent_link = ""
+
 
 def check_fzf(links):
 
@@ -66,15 +72,33 @@ class TestTorrent(TestBase):
         # print("SELECTION:", selection)
 
     def test_download_torrent(self):
-        download_torrent()
+        torrent = torrent_file
+        torrent_directory = os.getcwd()
+        confirm_download = False
+
+        print(torrent)
+        self.assertTrue(os.path.exists(torrent))
+
+        results = download_torrent(
+            torrent,
+            torrent_directory=torrent_directory,
+            confirm_download=confirm_download,
+        )
+        print(results)
 
     def test_extract_links(self):
         pass
+
+    def test_normalize_magnet(self):
+        magnet = normalize_magnet(magnet)
+
+        print(magnet)
 
 
 if __name__ == "__main__":
     test_methods = [
         # TestTorrent.test_check_fzf,
+        # TestTorrent.test_normalize_magnet,
         # TestTorrent.test_extract_links,
         TestTorrent.test_download_torrent,
     ]
