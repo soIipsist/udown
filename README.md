@@ -21,6 +21,14 @@ source venv/bin/activate
 pip install -e ".[all]"
 ```
 
+### Updating
+
+You can update `udown` and all of its components using the `update` command:
+
+```bash)
+udown update [packages] # optionally pass pip packages (e.g yt-dlp)
+```
+
 ### Enabling command-line completion (optional)
 
 `udown` supports tab-completion via `argcomplete`. To enable it, paste this in your `.bashrc` or `.zshrc` and restart your shell:
@@ -60,6 +68,12 @@ The main command for downloading files, videos, playlists, channels, or batches 
 ```python)
 # List all downloads
 udown download (same as running "udown")
+
+# List all downloads (without UI)
+udown download -ui 0
+
+export USE_TUI=0
+udown download
 
 # Download a single URL (default action)
 udown "https://youtu.be/MvsAesQ-4zA"
@@ -136,6 +150,7 @@ udown options reset
 | `DOWNLOAD_FILENAME`     | Default filename for batch URL input when using `--file` or similar                         |
 | `DOWNLOAD_ACTION`       | Default action for main download commands (e.g. `add`, `download`, `list`)                  |
 | `PROXY`                 | Default proxy URL passed to downloaders that support it (http:// or socks5://)              |
+| `USER_AGENT`            | Default user agent passed to downloaders that support it                                    |
 | `DOWNLOAD_OP`           | Default filter conjunction for download queries (`AND` or `OR`)                             |
 | `YTDLP_FORMAT`          | Default yt-dlp downloader type/preset when a YouTube-style URL is detected                  |
 | `YTDLP_OPTIONS_PATH`    | Path to JSON file with custom yt-dlp format / postprocessor options                         |
