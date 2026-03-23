@@ -12,11 +12,18 @@ os.sys.path.insert(0, str(parent_directory))
 pp = PrettyPrinter(indent=2)
 import subprocess
 
-magnet = "magnet:?xt=urn:btih:65C6FF0DA11FAD4B63E0A2B58FD05B6539C54C19"
+magnet = "magnet:?xt=urn:btih:0123456789ABCDEF0123456789ABCDEF01234567&dn=Sample+File&tr=udp%3A%2F%2Ftracker.example.com%3A1337%2Fannounce"
 torrent_file = os.path.abspath(
     os.path.expanduser("~/Downloads/BigBuckBunny_124_archive.torrent")
 )
 torrent_link = ""
+
+torrent_urls = [
+    "https://thepiratebay.party/search",
+    "https://thepiratebay.org/search.php?q=",
+    "https://kickasstorrents.to/usearch",
+]
+torrent_url = torrent_urls[0]
 
 
 def check_fzf(links):
@@ -83,23 +90,34 @@ class TestTorrent(TestBase):
             torrent,
             torrent_directory=torrent_directory,
             confirm_download=confirm_download,
+            normalize=True,
         )
         print(results)
 
+    def test_normalize_magnet(self):
+        normalized_magnet = normalize_magnet(magnet, normalize=False)
+        print(normalized_magnet)
+
+    def test_build_search_url(self):
+        search_url = build_search_url(torrent_url, "action")
+        print(search_url)
+
+    def test_get_page_response(self):
+        search_url = build_search_url(torrent_url, "action")
+        response = get_page_response(search_url, False)
+        print(response)
+
     def test_extract_links(self):
         pass
-
-    def test_normalize_magnet(self):
-        magnet = normalize_magnet(magnet)
-
-        print(magnet)
 
 
 if __name__ == "__main__":
     test_methods = [
         # TestTorrent.test_check_fzf,
-        # TestTorrent.test_normalize_magnet,
+        TestTorrent.test_normalize_magnet,
+        # TestTorrent.test_build_search_url,
+        # TestTorrent.test_get_page_response,
         # TestTorrent.test_extract_links,
-        TestTorrent.test_download_torrent,
+        # TestTorrent.test_download_torrent,
     ]
     run_test_methods(test_methods)

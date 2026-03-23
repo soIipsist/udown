@@ -34,7 +34,7 @@ def detect_downloader_type(url: str) -> str:
     url = url.strip()
 
     if url.startswith("magnet:") or url.endswith(".torrent"):
-        downloader_type = "transmission"
+        downloader_type = "torrent"
 
     elif "music.youtube" in url:
         downloader_type = "ytdlp_audio"

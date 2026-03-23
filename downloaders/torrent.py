@@ -124,7 +124,7 @@ def build_search_url(base_url, query):
     return f"{base_url}/{q}"
 
 
-def normalize_magnet(magnet: str) -> str:
+def normalize_magnet(magnet: str, normalize: bool = True) -> str:
     magnet = magnet.strip()
     parsed = urlparse(magnet)
 
@@ -134,7 +134,7 @@ def normalize_magnet(magnet: str) -> str:
     params = parse_qs(parsed.query)
 
     xt = params.get("xt")
-    normalized = f"magnet:?xt={xt[0]}"
+    normalized = f"magnet:?xt={xt[0]}" if normalize else magnet
 
     dn_list = params.get("dn")
     display_name = None
@@ -184,13 +184,12 @@ def download_torrent(
     torrent: str,
     torrent_directory: str = None,
     confirm_download: bool = True,
+    normalize: bool = True,
 ):
-    print("EEE", os.path.exists(torrent))
     if torrent.startswith("magnet"):
-        torrent, display_name = normalize_magnet(torrent)
+        torrent, display_name = normalize_magnet(torrent, normalize)
     else:
         if os.path.exists(torrent):
-            logger.info("FILE")
             torrent = os.path.abspath(torrent)
         display_name = None
 
@@ -342,6 +341,7 @@ def search(
     torrent_info_mode: bool = False,
     torrent_directory: str = None,
     confirm_download: bool = True,
+    normalize: bool = True,
 ):
     metadata = None
     info_links = []
@@ -422,7 +422,9 @@ def search(
 
             magnet = detail_magnets[0].split("|", 1)[1]
 
-        results = download_torrent(value, torrent_directory, confirm_download)
+        results = download_torrent(
+            value, torrent_directory, confirm_download, normalize
+        )
 
     if driver:
         driver.quit()
@@ -458,6 +460,7 @@ if __name__ == "__main__":
         default=True,
         type=str_to_bool,
     )
+    parser.add_argument("-n", "--normalize", type=str_to_bool, default=True)
 
     args = parser.parse_args()
 
@@ -467,6 +470,7 @@ if __name__ == "__main__":
     torrent_directory = args.torrent_directory
     metadata_path = args.metadata_path
     confirm_download = args.confirm_download
+    normalize = args.normalize
     results = search(
         query,
         metadata_path,
@@ -474,4 +478,5 @@ if __name__ == "__main__":
         torrent_info_mode,
         torrent_directory,
         confirm_download,
+        normalize,
     )
