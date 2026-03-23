@@ -1,3 +1,4 @@
+from enum import Enum
 import os
 import json
 from pathlib import Path
@@ -309,13 +310,23 @@ def get_display_name(
     return display
 
 
+class LinkType(str, Enum):
+    MAGNET = ("magnet",)
+    INFO = ("info",)
+    TORRENT = "torrent"
+
+
 class Link:
     _link_type: str = None
     _link: str = None
 
     @property
     def link_type(self):
-        return self._link_type
+        return (
+            self._link_type.value
+            if isinstance(self._link_type, Enum)
+            else self._link_type
+        )
 
     @link_type.setter
     def link_type(self, type: str):
@@ -333,8 +344,9 @@ class Link:
         self.link = link
         self.link_type = link_type
 
-    def get_display_name(self):
-        pass
+    @classmethod
+    def filter_by_type(cls, links: list, link_type):
+        return [link.link["href"] for link in links if link.link_type == link_type]
 
 
 def extract_links(page_response, patterns):
@@ -352,15 +364,15 @@ def extract_links(page_response, patterns):
         if info_pattern and info_pattern in href:
             # display = link.get_text(strip=True) or href
             # url = urljoin(base_url, href)
-            link = Link(link=link, link_type="info")
+            link = Link(link=link, link_type=LinkType.INFO)
             links.append(link)
 
         if magnet_pattern and magnet_pattern in href:
-            link = Link(link=link, link_type="magnet")
+            link = Link(link=link, link_type=LinkType.MAGNET)
             links.append(link)
 
         if torrent_pattern and torrent_pattern in href:
-            link = Link(link=link, link_type="torrent")
+            link = Link(link=link, link_type=LinkType.TORRENT)
             links.append(link)
 
     return links
@@ -388,9 +400,6 @@ def search(
     normalize: bool = True,
 ):
     metadata = None
-    info_links = []
-    magnet_links = []
-    torrent_links = []
 
     if not metadata_path:
         metadata_path = os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json")
@@ -419,6 +428,10 @@ def search(
     patterns = metadata.get("patterns", {})
     page_response = get_page_response(search_url, use_selenium)
     links = extract_links(page_response, patterns)
+
+    info_links = Link.filter_by_type("info")
+    magnet_links = Link.filter_by_type("magnet")
+    torrent_links = Link.filter_by_type("torrent")
 
     if torrent_info_mode:
         links = info_links
@@ -450,7 +463,7 @@ def search(
                 "Magnets or torrent links not found on search page, checking details page..."
             )
             detail_page = get_page_response(url, use_selenium)
-            links = extract_links(url, detail_page, patterns)
+            links = extract_links(detail_page, patterns)
 
         results = download_torrent(url, torrent_directory, confirm_download, normalize)
 

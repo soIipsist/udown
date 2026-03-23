@@ -171,10 +171,10 @@ class TestTorrent(TestBase):
         write_output(logger, page_response, f"{page_name}.html", append=False)
         self.assertTrue(os.path.exists(f"{page_name}.html"))
 
-        info_links, magnet_links, torrent_links = extract_links(
-            search_url, page_response, patterns
-        )
-        check_fzf(torrent_links)
+        links = extract_links(page_response, patterns)
+        magnet_links = Link.filter_by_type(links, LinkType.MAGNET)
+
+        check_fzf(magnet_links)
 
     def test_get_torrent_from_url(self):
         url = get_torrent_from_url(torrent_file, os.getcwd())
@@ -188,9 +188,7 @@ class TestTorrent(TestBase):
         write_output(logger, page_response, f"{page_name}.html", append=False)
         self.assertTrue(os.path.exists(f"{page_name}.html"))
 
-        info_links, magnet_links, torrent_links = extract_links(
-            search_url, page_response, patterns
-        )
+        links = extract_links(page_response, patterns)
         new_url = get_torrent_from_url(url, os.getcwd())
 
         print(new_url)
@@ -203,7 +201,7 @@ if __name__ == "__main__":
         # TestTorrent.test_build_search_url,
         # TestTorrent.test_get_page_response,
         # TestTorrent.test_download_torrent,
-        TestTorrent.test_get_torrent_from_url,
-        # TestTorrent.test_extract_links,
+        # TestTorrent.test_get_torrent_from_url,
+        TestTorrent.test_extract_links,
     ]
     run_test_methods(test_methods)
