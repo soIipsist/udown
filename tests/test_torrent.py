@@ -99,8 +99,50 @@ class TestTorrent(TestBase):
         print(normalized_magnet)
 
     def test_build_search_url(self):
-        search_url = build_search_url(torrent_url, "action")
-        print(search_url)
+        cases = [
+            # {query} placeholder
+            (
+                "https://example.com/search/{query}",
+                "hello world",
+                f"https://example.com/search/{quote('hello world')}",
+            ),
+            # endswith "="
+            (
+                "https://example.com/search?q=",
+                "hello world",
+                f"https://example.com/search?q={quote('hello world')}",
+            ),
+            # has "?" but not "=" at end
+            (
+                "https://example.com/search?page=1",
+                "hello world",
+                f"https://example.com/search?page=1&q={quote('hello world')}",
+            ),
+            # endswith "/"
+            (
+                "https://example.com/search/",
+                "hello world",
+                f"https://example.com/search/{quote('hello world')}",
+            ),
+            # default case
+            (
+                "https://example.com/search",
+                "hello world",
+                f"https://example.com/search/{quote('hello world')}",
+            ),
+            # encoding edge case
+            (
+                "https://example.com/search/",
+                "a+b & c/d",
+                f"https://example.com/search/{quote('a+b & c/d')}",
+            ),
+        ]
+
+        for base_url, query, expected in cases:
+            with self.subTest(base_url=base_url, query=query):
+                result = build_search_url(base_url, query)
+                self.assertEqual(result, expected)
+                print(result, expected)
 
     def test_get_page_response(self):
         search_url = build_search_url(torrent_url, "action")
@@ -114,9 +156,9 @@ class TestTorrent(TestBase):
 if __name__ == "__main__":
     test_methods = [
         # TestTorrent.test_check_fzf,
-        TestTorrent.test_normalize_magnet,
+        # TestTorrent.test_normalize_magnet,
         # TestTorrent.test_build_search_url,
-        # TestTorrent.test_get_page_response,
+        TestTorrent.test_get_page_response,
         # TestTorrent.test_extract_links,
         # TestTorrent.test_download_torrent,
     ]
