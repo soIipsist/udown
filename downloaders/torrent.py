@@ -18,7 +18,7 @@ from urllib.parse import quote, unquote_plus
 from downloaders.ytdlp import str_to_bool
 from downloaders.wget import download as wget_download
 from src.options import DOWNLOADER_METADATA_DIR
-from utils.logger import setup_logger
+from utils.logger import setup_logger, write_output
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -311,9 +311,15 @@ def get_display_name(
 
 
 class LinkType(str, Enum):
-    MAGNET = ("magnet",)
-    INFO = ("info",)
+    MAGNET = "magnet"
+    INFO = "info"
     TORRENT = "torrent"
+
+
+class TorrentMode(str, Enum):
+    INFO = "info"
+    EXTRACT = "extract"
+    DOWNLOAD = "download"
 
 
 class Link:
@@ -340,13 +346,20 @@ class Link:
     def link(self, link: str):
         self._link = link
 
+    @property
+    def display_name(self):
+        if self._link_type == "magnet":
+            pass
+        else:
+            pass
+
     def __init__(self, link: str, link_type: str):
         self.link = link
         self.link_type = link_type
 
     @classmethod
     def filter_by_type(cls, links: list, link_type):
-        return [link.link["href"] for link in links if link.link_type == link_type]
+        return [link for link in links if link.link_type == link_type]
 
 
 def extract_links(page_response, patterns):
@@ -394,7 +407,7 @@ def search(
     query: str = None,
     metadata_path: str = None,
     torrent_url: str = None,
-    torrent_info_mode: bool = False,
+    torrent_mode: str = TorrentMode.DOWNLOAD,
     torrent_directory: str = None,
     confirm_download: bool = True,
     normalize: bool = True,
@@ -409,7 +422,7 @@ def search(
             metadata = json.load(f)
 
     if not torrent_url:
-        torrent_url = "https://thepiratebay.party/search"
+        raise ValueError("Base torrent url was not defined!")
 
     metadata = metadata.get(torrent_url, {})
 
@@ -429,43 +442,48 @@ def search(
     page_response = get_page_response(search_url, use_selenium)
     links = extract_links(page_response, patterns)
 
-    info_links = Link.filter_by_type("info")
-    magnet_links = Link.filter_by_type("magnet")
-    torrent_links = Link.filter_by_type("torrent")
-
-    if torrent_info_mode:
-        links = info_links
-    else:
-        links = magnet_links if magnet_links else info_links
-
     if not links:
         logger.info("No results found.")
         return
 
-    selection = check_fzf(links)
-    mode = "INFO" if torrent_info_mode else "DOWNLOAD"
-    logger.info(f"Using {mode} MODE for query: {query}.")
+    info_links = Link.filter_by_type("info")
+    magnet_links = Link.filter_by_type("magnet")
+    torrent_links = Link.filter_by_type("torrent")
+    selection = check_fzf(links)  # this always returns a Link object
+
+    logger.info(f"Using {torrent_mode} MODE for query: {query}.")
     logger.info(f"Selection: {selection}")
 
     if not selection:
         return
 
     url = selection
+    results = []
 
-    if torrent_info_mode:
+    if torrent_mode == TorrentMode.INFO:
         get_torrent_metadata(url, use_selenium, metadata)
-        results = []
+
+    elif torrent_mode == TorrentMode.EXTRACT:
+        output = {
+            "info_links": info_links,
+            "magnet_links": magnet_links,
+            "torrent_links": torrent_links,
+        }
+        path = os.path.join(torrent_directory, "links.json")
+        write_output(logger, output, path, append=False)
     else:
-        if url.startswith("magnet:") or url.endswith(".torrent"):
-            magnet = url
-        else:
+
+        if not magnet_links and not torrent_links:
             logger.info(
                 "Magnets or torrent links not found on search page, checking details page..."
             )
             detail_page = get_page_response(url, use_selenium)
             links = extract_links(detail_page, patterns)
+            info_links = Link.filter_by_type("info")
+            magnet_links = Link.filter_by_type("magnet")
+            torrent_links = Link.filter_by_type("torrent")
 
-        results = download_torrent(url, torrent_directory, confirm_download, normalize)
+        # results = download_torrent(url, torrent_directory, confirm_download, normalize)
 
     if driver:
         driver.quit()
@@ -490,10 +508,10 @@ if __name__ == "__main__":
         default=os.environ.get("TORRENT_DIRECTORY"),
     )
     parser.add_argument(
-        "-i",
-        "--torrent_info_mode",
-        default=os.environ.get("TORRENT_INFO_MODE", False),
-        type=str_to_bool,
+        "-m",
+        "--torrent_mode",
+        default=os.environ.get("TORRENT_MODE", TorrentMode.DOWNLOAD),
+        type=TorrentMode,
     )
     parser.add_argument(
         "-c",
@@ -507,7 +525,7 @@ if __name__ == "__main__":
 
     query = args.query
     torrent_url = args.torrent_url
-    torrent_info_mode = args.torrent_info_mode
+    torrent_mode = args.torrent_mode
     torrent_directory = args.torrent_directory
     metadata_path = args.metadata_path
     confirm_download = args.confirm_download
@@ -516,7 +534,7 @@ if __name__ == "__main__":
         query,
         metadata_path,
         torrent_url,
-        torrent_info_mode,
+        torrent_mode,
         torrent_directory,
         confirm_download,
         normalize,
