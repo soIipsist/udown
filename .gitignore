@@ -224,6 +224,7 @@ tests/*.png
 tests/*.bin
 tests/*.json
 tests/*.txt
+tests/*.html
 *.mp4
 *.mp3
 *.jpg

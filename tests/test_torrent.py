@@ -3,6 +3,7 @@ import os
 from downloaders.torrent import *
 from test_base import *
 from src.options import DOWNLOADER_METADATA_DIR
+from utils.logger import write_output
 
 current_file = Path(__file__).resolve()
 parent_directory = current_file.parents[2]
@@ -146,11 +147,17 @@ class TestTorrent(TestBase):
 
     def test_get_page_response(self):
         search_url = build_search_url(torrent_url, "action")
-        response = get_page_response(search_url, False)
-        print(response)
+        page_response = get_page_response(search_url, False)
+        write_output(logger, page_response, "index.html", append=False)
+        self.assertTrue(os.path.exists("index.html"))
 
     def test_extract_links(self):
-        pass
+        page_name = os.path.basename(torrent_url)
+
+        search_url = build_search_url(torrent_url, "action")
+        page_response = get_page_response(search_url, False)
+        write_output(logger, page_response, f"{page_name}.html", append=False)
+        # self.assertTrue(os.path.exists(f"{torrent_url}.html"))
 
 
 if __name__ == "__main__":
@@ -158,8 +165,8 @@ if __name__ == "__main__":
         # TestTorrent.test_check_fzf,
         # TestTorrent.test_normalize_magnet,
         # TestTorrent.test_build_search_url,
-        TestTorrent.test_get_page_response,
-        # TestTorrent.test_extract_links,
+        # TestTorrent.test_get_page_response,
         # TestTorrent.test_download_torrent,
+        TestTorrent.test_extract_links,
     ]
     run_test_methods(test_methods)
