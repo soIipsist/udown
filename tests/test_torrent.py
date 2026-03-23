@@ -89,7 +89,7 @@ class TestTorrent(TestBase):
     def test_download_torrent(self):
         torrent = torrent_file
         torrent_directory = os.getcwd()
-        confirm_download = False
+        confirm_download = True
 
         print(torrent)
         self.assertTrue(os.path.exists(torrent))
@@ -176,6 +176,25 @@ class TestTorrent(TestBase):
         )
         check_fzf(torrent_links)
 
+    def test_get_torrent_from_url(self):
+        url = get_torrent_from_url(torrent_file, os.getcwd())
+        print(url)
+
+        search_url = (
+            "https://kickasstorrents.to/9-1-1-s09e14-hdtv-x264-ngp-t6608005.html"
+        )
+        page_name = os.path.basename(torrent_url)
+        page_response = get_page_response(search_url, False)
+        write_output(logger, page_response, f"{page_name}.html", append=False)
+        self.assertTrue(os.path.exists(f"{page_name}.html"))
+
+        info_links, magnet_links, torrent_links = extract_links(
+            search_url, page_response, patterns
+        )
+        new_url = get_torrent_from_url(url, os.getcwd())
+
+        print(new_url)
+
 
 if __name__ == "__main__":
     test_methods = [
@@ -184,6 +203,7 @@ if __name__ == "__main__":
         # TestTorrent.test_build_search_url,
         # TestTorrent.test_get_page_response,
         # TestTorrent.test_download_torrent,
-        TestTorrent.test_extract_links,
+        TestTorrent.test_get_torrent_from_url,
+        # TestTorrent.test_extract_links,
     ]
     run_test_methods(test_methods)

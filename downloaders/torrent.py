@@ -15,6 +15,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote, unquote_plus
 from downloaders.ytdlp import str_to_bool
+from downloaders.wget import download as wget_download
 from src.options import DOWNLOADER_METADATA_DIR
 from utils.logger import setup_logger
 from selenium import webdriver
@@ -127,9 +128,10 @@ def build_search_url(base_url, query):
 def normalize_magnet(magnet: str, normalize: bool = True) -> str:
     magnet = magnet.strip()
     parsed = urlparse(magnet)
+    display_name = None
 
     if parsed.scheme != "magnet":
-        raise ValueError("Not a magnet link")
+        return magnet, display_name
 
     params = parse_qs(parsed.query)
 
@@ -137,7 +139,6 @@ def normalize_magnet(magnet: str, normalize: bool = True) -> str:
     normalized = f"magnet:?xt={xt[0]}" if normalize else magnet
 
     dn_list = params.get("dn")
-    display_name = None
     if dn_list:
         display_name = unquote_plus(dn_list[0])
 
@@ -186,12 +187,7 @@ def download_torrent(
     confirm_download: bool = True,
     normalize: bool = True,
 ):
-    if torrent.startswith("magnet"):
-        torrent, display_name = normalize_magnet(torrent, normalize)
-    else:
-        if os.path.exists(torrent):
-            torrent = os.path.abspath(torrent)
-        display_name = None
+    torrent, display_name = normalize_magnet(torrent, normalize)
 
     logger.info(f"Torrent: {torrent}")
 
@@ -313,14 +309,40 @@ def get_display_name(
     return display
 
 
-def extract_links(base_url: str, page_response, patterns):
+class Link:
+    _link_type: str = None
+    _link: str = None
+
+    @property
+    def link_type(self):
+        return self._link_type
+
+    @link_type.setter
+    def link_type(self, type: str):
+        self._link_type = type
+
+    @property
+    def link(self):
+        return self._link
+
+    @link.setter
+    def link(self, link: str):
+        self._link = link
+
+    def __init__(self, link: str, link_type: str):
+        self.link = link
+        self.link_type = link_type
+
+    def get_display_name(self):
+        pass
+
+
+def extract_links(page_response, patterns):
     info_pattern = patterns.get("info")
     magnet_pattern = patterns.get("magnet")
     torrent_pattern = patterns.get("torrent")
 
-    info_links = []
-    magnet_links = []
-    torrent_links = []
+    links = []
 
     soup = BeautifulSoup(page_response, "html.parser")
 
@@ -329,18 +351,31 @@ def extract_links(base_url: str, page_response, patterns):
 
         if info_pattern and info_pattern in href:
             # display = link.get_text(strip=True) or href
-            url = urljoin(base_url, href)
-            info_links.append(url)
+            # url = urljoin(base_url, href)
+            link = Link(link=link, link_type="info")
+            links.append(link)
 
         if magnet_pattern and magnet_pattern in href:
-            magnet = href
-            magnet_links.append(magnet)
+            link = Link(link=link, link_type="magnet")
+            links.append(link)
 
         if torrent_pattern and torrent_pattern in href:
-            url = urljoin(base_url, href)
-            torrent_links.append(url)
+            link = Link(link=link, link_type="torrent")
+            links.append(link)
 
-    return info_links, magnet_links, torrent_links
+    return links
+
+
+def get_torrent_from_url(
+    url: str,
+    torrent_directory: str = None,
+):
+    if not url.endswith(".torrent"):
+        # download torrent with wget and then download
+        wget_download(url, torrent_directory, "test.torrent")
+        url = urljoin(url, "test.torrent")
+        print(url)
+    return url
 
 
 def search(
@@ -383,13 +418,7 @@ def search(
     use_selenium = metadata.get("use_selenium", False)
     patterns = metadata.get("patterns", {})
     page_response = get_page_response(search_url, use_selenium)
-    search_info_links, search_magnet_links, search_torrent_links = extract_links(
-        search_url, page_response, patterns
-    )
-
-    info_links.extend(search_info_links)
-    magnet_links.extend(search_magnet_links)
-    torrent_links.extend(search_torrent_links)
+    links = extract_links(page_response, patterns)
 
     if torrent_info_mode:
         links = info_links
@@ -421,19 +450,9 @@ def search(
                 "Magnets or torrent links not found on search page, checking details page..."
             )
             detail_page = get_page_response(url, use_selenium)
-            _, detail_magnets, detail_torrents = extract_links(
-                url, detail_page, patterns
-            )
+            links = extract_links(url, detail_page, patterns)
 
-            if not detail_magnets and not detail_torrents:
-                logger.error("No magnet link found on details page.")
-                return
-
-            magnet = detail_magnets[0].split("|", 1)[1]
-
-        results = download_torrent(
-            magnet, torrent_directory, confirm_download, normalize
-        )
+        results = download_torrent(url, torrent_directory, confirm_download, normalize)
 
     if driver:
         driver.quit()
