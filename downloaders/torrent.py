@@ -38,7 +38,63 @@ headers = {
 driver = None
 
 
-def check_fzf(links):
+class LinkType(str, Enum):
+    MAGNET = "magnet"
+    INFO = "info"
+    TORRENT = "torrent"
+
+
+class TorrentMode(str, Enum):
+    INFO = "info"
+    EXTRACT = "extract"
+    DOWNLOAD = "download"
+
+
+class Link:
+    _link_type: str = None
+    _link: str = None
+
+    @property
+    def link_type(self):
+        return (
+            self._link_type.value
+            if isinstance(self._link_type, Enum)
+            else self._link_type
+        )
+
+    @link_type.setter
+    def link_type(self, type: str):
+        self._link_type = type
+
+    @property
+    def link(self):
+        return self._link
+
+    @link.setter
+    def link(self, link: str):
+        self._link = link
+
+    def get_display_name(
+        link: str,
+    ):
+        display_name = None
+        name = re.search(r"dn=([^&]+)", link)
+
+        if name:
+            display_name = unquote(name.group(1))
+
+        return display_name
+
+    def __init__(self, link: str, link_type: str):
+        self.link = link
+        self.link_type = link_type
+
+    @classmethod
+    def filter_by_type(cls, links: list, link_type):
+        return [link for link in links if link.link_type == link_type]
+
+
+def check_fzf(links: list[Link]):
     fzf_path = shutil.which("fzf")
 
     if fzf_path:
@@ -298,70 +354,6 @@ def get_page_response(url: str, use_selenium: bool = False):
         print(e)
 
 
-def get_display_name(
-    link: str,
-):
-    display = None
-    name = re.search(r"dn=([^&]+)", link)
-
-    if name:
-        display = unquote(name.group(1))
-
-    return display
-
-
-class LinkType(str, Enum):
-    MAGNET = "magnet"
-    INFO = "info"
-    TORRENT = "torrent"
-
-
-class TorrentMode(str, Enum):
-    INFO = "info"
-    EXTRACT = "extract"
-    DOWNLOAD = "download"
-
-
-class Link:
-    _link_type: str = None
-    _link: str = None
-
-    @property
-    def link_type(self):
-        return (
-            self._link_type.value
-            if isinstance(self._link_type, Enum)
-            else self._link_type
-        )
-
-    @link_type.setter
-    def link_type(self, type: str):
-        self._link_type = type
-
-    @property
-    def link(self):
-        return self._link
-
-    @link.setter
-    def link(self, link: str):
-        self._link = link
-
-    @property
-    def display_name(self):
-        if self._link_type == "magnet":
-            pass
-        else:
-            pass
-
-    def __init__(self, link: str, link_type: str):
-        self.link = link
-        self.link_type = link_type
-
-    @classmethod
-    def filter_by_type(cls, links: list, link_type):
-        return [link for link in links if link.link_type == link_type]
-
-
 def extract_links(page_response, patterns):
     info_pattern = patterns.get("info")
     magnet_pattern = patterns.get("magnet")
@@ -483,7 +475,7 @@ def search(
             magnet_links = Link.filter_by_type("magnet")
             torrent_links = Link.filter_by_type("torrent")
 
-        # results = download_torrent(url, torrent_directory, confirm_download, normalize)
+        results = download_torrent(url, torrent_directory, confirm_download, normalize)
 
     if driver:
         driver.quit()
