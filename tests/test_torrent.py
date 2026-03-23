@@ -24,7 +24,14 @@ torrent_urls = [
     "https://thepiratebay.org/search.php?q=",
     "https://kickasstorrents.to/usearch",
 ]
-torrent_url = torrent_urls[0]
+torrent_url = torrent_urls[2]
+
+patterns_arr = [
+    {"info": "/torrent", "magnet": "magnet:"},
+    {"info": "/description", "magnet": "magnet:"},
+    {"info": "-t", "magnet": "magnet:", "torrent": "/download/"},
+]
+patterns = patterns_arr[2]
 
 
 def check_fzf(links):
@@ -155,9 +162,19 @@ class TestTorrent(TestBase):
         page_name = os.path.basename(torrent_url)
 
         search_url = build_search_url(torrent_url, "action")
+
+        search_url = (
+            "https://kickasstorrents.to/9-1-1-s09e14-hdtv-x264-ngp-t6608005.html"
+        )
+
         page_response = get_page_response(search_url, False)
         write_output(logger, page_response, f"{page_name}.html", append=False)
-        # self.assertTrue(os.path.exists(f"{torrent_url}.html"))
+        self.assertTrue(os.path.exists(f"{page_name}.html"))
+
+        info_links, magnet_links, torrent_links = extract_links(
+            search_url, page_response, patterns
+        )
+        check_fzf(torrent_links)
 
 
 if __name__ == "__main__":

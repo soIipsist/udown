@@ -50,7 +50,8 @@
 
     "patterns": {
       "info": "-t",
-      "magnet": "magnet:"
+      "magnet": "magnet:",
+      "torrent": "/download/"
     },
 
     "details_container": {

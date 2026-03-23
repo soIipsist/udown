@@ -301,10 +301,22 @@ def get_page_response(url: str, use_selenium: bool = False):
         print(e)
 
 
+def get_display_name(
+    link: str,
+):
+    display = None
+    name = re.search(r"dn=([^&]+)", link)
+
+    if name:
+        display = unquote(name.group(1))
+
+    return display
+
+
 def extract_links(base_url: str, page_response, patterns):
-    info_pattern = patterns.get("info", "/torrent/")
-    magnet_pattern = patterns.get("magnet", "magnet:")
-    torrent_pattern = patterns.get("torrent", ".torrent")
+    info_pattern = patterns.get("info")
+    magnet_pattern = patterns.get("magnet")
+    torrent_pattern = patterns.get("torrent")
 
     info_links = []
     magnet_links = []
@@ -316,20 +328,17 @@ def extract_links(base_url: str, page_response, patterns):
         href = link["href"]
 
         if info_pattern and info_pattern in href:
-            display = link.get_text(strip=True) or href
+            # display = link.get_text(strip=True) or href
             url = urljoin(base_url, href)
-            info_links.append(f"{display}|{url}")
+            info_links.append(url)
 
         if magnet_pattern and magnet_pattern in href:
             magnet = href
-
-            name = re.search(r"dn=([^&]+)", magnet)
-            display = unquote(name.group(1)) if name else "Unknown"
-            magnet_links.append(f"{display}|{magnet}")
+            magnet_links.append(magnet)
 
         if torrent_pattern and torrent_pattern in href:
-            torrent = href
-            torrent_links.append(torrent)
+            url = urljoin(base_url, href)
+            torrent_links.append(url)
 
     return info_links, magnet_links, torrent_links
 
@@ -399,21 +408,21 @@ def search(
     if not selection:
         return
 
+    url = selection
+
     if torrent_info_mode:
-        url = selection.split("|", 1)[1]
         get_torrent_metadata(url, use_selenium, metadata)
         results = []
     else:
-        value = selection.split("|", 1)[1]
-        if value.startswith("magnet:") or value.endswith(".torrent"):
-            magnet = value
+        if url.startswith("magnet:") or url.endswith(".torrent"):
+            magnet = url
         else:
             logger.info(
                 "Magnets or torrent links not found on search page, checking details page..."
             )
-            detail_page = get_page_response(value, use_selenium)
+            detail_page = get_page_response(url, use_selenium)
             _, detail_magnets, detail_torrents = extract_links(
-                value, detail_page, patterns
+                url, detail_page, patterns
             )
 
             if not detail_magnets and not detail_torrents:
@@ -423,7 +432,7 @@ def search(
             magnet = detail_magnets[0].split("|", 1)[1]
 
         results = download_torrent(
-            value, torrent_directory, confirm_download, normalize
+            magnet, torrent_directory, confirm_download, normalize
         )
 
     if driver:
