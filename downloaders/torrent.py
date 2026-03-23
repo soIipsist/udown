@@ -399,15 +399,18 @@ def extract_links(page_response, patterns, base_url: str = None):
     return links
 
 
-def get_torrent_from_url(
+def download_torrent_from_url(
     url: str,
     torrent_directory: str = None,
 ):
-    if not url.endswith(".torrent"):
-        # download torrent with wget and then download
-        wget_download(url, torrent_directory, "test.torrent")
-        url = urljoin(url, "test.torrent")
-        print(url)
+    if not os.path.exists(url):
+        for result in wget_download(url, torrent_directory, "test.torrent"):
+            pass
+        url = (
+            os.path.join(torrent_directory, "test.torrent")
+            if torrent_directory
+            else "test.torrent"
+        )
     return url
 
 

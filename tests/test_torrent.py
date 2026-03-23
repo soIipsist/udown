@@ -176,21 +176,13 @@ class TestTorrent(TestBase):
 
         check_fzf(magnet_links)
 
-    def test_get_torrent_from_url(self):
+    def test_download_torrent_from_url(self):
 
-        search_url = (
-            "https://kickasstorrents.to/9-1-1-s09e14-hdtv-x264-ngp-t6608005.html"
-        )
-        page_name = os.path.basename(torrent_url)
-        page_response = get_page_response(search_url, False)
-        write_output(logger, page_response, f"{page_name}.html", append=False)
-        self.assertTrue(os.path.exists(f"{page_name}.html"))
+        torrent_url = "https://archive.org/download/BigBuckBunny_124/BigBuckBunny_124_archive.torrent"
+        torrent_directory = None
+        torrent_path = download_torrent_from_url(torrent_url, torrent_directory)
 
-        links = extract_links(page_response, patterns, search_url)
-        torrent_links = Link.filter_by_type(links, LinkType.TORRENT)
-        magnet_links = Link.filter_by_type(links, LinkType.MAGNET)
-        check_fzf(magnet_links)
-        url = torrent_links[0]
+        self.assertTrue(os.path.exists(torrent_path))
 
 
 if __name__ == "__main__":
@@ -200,7 +192,7 @@ if __name__ == "__main__":
         # TestTorrent.test_build_search_url,
         # TestTorrent.test_get_page_response,
         # TestTorrent.test_download_torrent,
-        TestTorrent.test_get_torrent_from_url,
+        TestTorrent.test_download_torrent_from_url,
         # TestTorrent.test_extract_links,
     ]
     run_test_methods(test_methods)
