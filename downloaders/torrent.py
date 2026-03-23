@@ -74,14 +74,17 @@ class Link:
     def link(self, link: str):
         self._link = link
 
-    def get_display_name(
-        link: str,
-    ):
-        display_name = None
-        name = re.search(r"dn=([^&]+)", link)
+    def get_display_name(self):
 
-        if name:
-            display_name = unquote(name.group(1))
+        display_name = None
+        href = self.link.get("href")
+
+        if self.link_type == LinkType.MAGNET.value:
+            name = re.search(r"dn=([^&]+)", href)
+            if name:
+                display_name = unquote(name.group(1))
+        else:
+            display_name = self.link.get_text(strip=True) or href
 
         return display_name
 
@@ -367,8 +370,7 @@ def extract_links(page_response, patterns):
         href = link["href"]
 
         if info_pattern and info_pattern in href:
-            # display = link.get_text(strip=True) or href
-            # url = urljoin(base_url, href)
+
             link = Link(link=link, link_type=LinkType.INFO)
             links.append(link)
 

@@ -460,6 +460,13 @@ default_downloaders = [
         "url, metadata_path=downloader_path, torrent_directory=output_directory, torrent_mode=info",
     ),
     Downloader(
+        "torrent_extract",
+        os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
+        "downloaders.torrent",
+        "search",
+        "url, metadata_path=downloader_path, torrent_directory=output_directory, torrent_mode=extract",
+    ),
+    Downloader(
         "kat",
         os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
         "downloaders.torrent",
