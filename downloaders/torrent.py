@@ -52,7 +52,7 @@ class TorrentMode(str, Enum):
 
 class Link:
     _link_type: str = None
-    _link: str = None
+    _tag = None
 
     @property
     def link_type(self):
@@ -67,29 +67,28 @@ class Link:
         self._link_type = type
 
     @property
-    def link(self):
-        return self._link
+    def tag(self):
+        return self._tag
 
-    @link.setter
-    def link(self, link: str):
-        self._link = link
+    @tag.setter
+    def tag(self, tag):
+        self._tag = tag
+
+    @property
+    def link_str(self):
+        return f"{self.get_display_name()} | {self.tag["href"]}"
 
     def get_display_name(self):
-
-        display_name = None
-        href = self.link.get("href")
-
         if self.link_type == LinkType.MAGNET.value:
-            name = re.search(r"dn=([^&]+)", href)
+            name = re.search(r"dn=([^&]+)", self.url)
             if name:
-                display_name = unquote(name.group(1))
-        else:
-            display_name = self.link.get_text(strip=True) or href
+                return unquote(name.group(1))
 
-        return display_name
+        return self.tag.get_text(strip=True) or self.url
 
-    def __init__(self, link: str, link_type: str):
-        self.link = link
+    def __init__(self, tag, link_type: str):
+        self.tag = tag
+        self.url = tag.get("href")
         self.link_type = link_type
 
     @classmethod
@@ -108,9 +107,14 @@ def check_fzf(links: list[Link]):
             text=True,
         )
 
-        stdout, _ = fzf.communicate("\n".join(links))
-        selection = stdout.strip()
-        return selection if selection else None
+        # links_str = "\n".join(link.link_str for link in links)
+
+        for link in links:
+            print(type(link.link_str))
+
+        # stdout, _ = fzf.communicate(links_str)
+        # selection = stdout.strip()
+        return None
 
     else:
         logger.error("fzf not found!")
@@ -366,21 +370,17 @@ def extract_links(page_response, patterns):
 
     soup = BeautifulSoup(page_response, "html.parser")
 
-    for link in soup.find_all("a", href=True):
-        href = link["href"]
+    for tag in soup.find_all("a", href=True):
+        href = tag["href"]
 
         if info_pattern and info_pattern in href:
-
-            link = Link(link=link, link_type=LinkType.INFO)
-            links.append(link)
+            links.append(Link(tag=tag, link_type=LinkType.INFO))
 
         if magnet_pattern and magnet_pattern in href:
-            link = Link(link=link, link_type=LinkType.MAGNET)
-            links.append(link)
+            links.append(Link(tag=tag, link_type=LinkType.MAGNET))
 
         if torrent_pattern and torrent_pattern in href:
-            link = Link(link=link, link_type=LinkType.TORRENT)
-            links.append(link)
+            links.append(Link(tag=tag, link_type=LinkType.TORRENT))
 
     return links
 

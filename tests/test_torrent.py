@@ -34,25 +34,25 @@ patterns_arr = [
 patterns = patterns_arr[2]
 
 
-def check_fzf(links):
+# def check_fzf(links):
 
-    proc = subprocess.run(
-        ["fzf", "--expect=ctrl-i"],
-        input="\n".join(links),
-        text=True,
-        capture_output=True,
-    )
+#     proc = subprocess.run(
+#         ["fzf", "--expect=ctrl-i"],
+#         input="\n".join(links),
+#         text=True,
+#         capture_output=True,
+#     )
 
-    lines = proc.stdout.splitlines()
+#     lines = proc.stdout.splitlines()
 
-    if not lines:
-        return None, None
+#     if not lines:
+#         return None, None
 
-    if lines[0] == "ctrl-i":
-        selection = lines[1] if len(lines) > 1 else None
-        return "toggle", selection
+#     if lines[0] == "ctrl-i":
+#         selection = lines[1] if len(lines) > 1 else None
+#         return "toggle", selection
 
-    return "select", lines[0]
+#     return "select", lines[0]
 
 
 def simple_two_list_toggle():
@@ -178,7 +178,6 @@ class TestTorrent(TestBase):
 
     def test_get_torrent_from_url(self):
         url = get_torrent_from_url(torrent_file, os.getcwd())
-        print(url)
 
         search_url = (
             "https://kickasstorrents.to/9-1-1-s09e14-hdtv-x264-ngp-t6608005.html"
@@ -189,9 +188,15 @@ class TestTorrent(TestBase):
         self.assertTrue(os.path.exists(f"{page_name}.html"))
 
         links = extract_links(page_response, patterns)
-        new_url = get_torrent_from_url(url, os.getcwd())
+        torrent_links = Link.filter_by_type(links, LinkType.TORRENT)
 
-        print(new_url)
+        # for link in torrent_links:
+        #     print(type(link.link_str))
+        # check_fzf(torrent_links)
+        # print(torrent_links)
+        # new_url = get_torrent_from_url(url, os.getcwd())
+
+        # print(new_url)
 
 
 if __name__ == "__main__":
@@ -201,7 +206,7 @@ if __name__ == "__main__":
         # TestTorrent.test_build_search_url,
         # TestTorrent.test_get_page_response,
         # TestTorrent.test_download_torrent,
-        # TestTorrent.test_get_torrent_from_url,
-        TestTorrent.test_extract_links,
+        TestTorrent.test_get_torrent_from_url,
+        # TestTorrent.test_extract_links,
     ]
     run_test_methods(test_methods)
