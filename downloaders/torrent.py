@@ -52,7 +52,16 @@ class TorrentMode(str, Enum):
 
 class Link:
     _link_type: str = None
+    _base_url: str = None
     _tag = None
+
+    @property
+    def base_url(self):
+        return self._base_url
+
+    @base_url.setter
+    def base_url(self, base_url: str):
+        self._base_url = base_url
 
     @property
     def link_type(self):
@@ -76,7 +85,15 @@ class Link:
 
     @property
     def link_str(self):
-        return f"{self.get_display_name()} | {self.tag["href"]}"
+        return f"{self.get_display_name()} | {self.url}"
+
+    @property
+    def url(self):
+        return (
+            urljoin(self.base_url, self.tag.get("href"))
+            if self.base_url
+            else self.tag.get("href")
+        )
 
     def get_display_name(self):
         if self.link_type == LinkType.MAGNET.value:
@@ -86,13 +103,13 @@ class Link:
 
         return self.tag.get_text(strip=True) or self.url
 
-    def __init__(self, tag, link_type: str):
+    def __init__(self, tag, link_type: str, base_url: str = None):
         self.tag = tag
-        self.url = tag.get("href")
         self.link_type = link_type
+        self.base_url = base_url
 
     @classmethod
-    def filter_by_type(cls, links: list, link_type):
+    def filter_by_type(cls, links: list, link_type) -> list[Link]:
         return [link for link in links if link.link_type == link_type]
 
 
@@ -107,14 +124,11 @@ def check_fzf(links: list[Link]):
             text=True,
         )
 
-        # links_str = "\n".join(link.link_str for link in links)
+        links_str = "\n".join(link.link_str for link in links)
 
-        for link in links:
-            print(type(link.link_str))
-
-        # stdout, _ = fzf.communicate(links_str)
-        # selection = stdout.strip()
-        return None
+        stdout, _ = fzf.communicate(links_str)
+        selection = stdout.strip()
+        return selection if selection else None
 
     else:
         logger.error("fzf not found!")
@@ -361,7 +375,7 @@ def get_page_response(url: str, use_selenium: bool = False):
         print(e)
 
 
-def extract_links(page_response, patterns):
+def extract_links(page_response, patterns, base_url: str = None):
     info_pattern = patterns.get("info")
     magnet_pattern = patterns.get("magnet")
     torrent_pattern = patterns.get("torrent")
@@ -374,13 +388,13 @@ def extract_links(page_response, patterns):
         href = tag["href"]
 
         if info_pattern and info_pattern in href:
-            links.append(Link(tag=tag, link_type=LinkType.INFO))
+            links.append(Link(tag=tag, link_type=LinkType.INFO, base_url=base_url))
 
         if magnet_pattern and magnet_pattern in href:
-            links.append(Link(tag=tag, link_type=LinkType.MAGNET))
+            links.append(Link(tag=tag, link_type=LinkType.MAGNET, base_url=base_url))
 
         if torrent_pattern and torrent_pattern in href:
-            links.append(Link(tag=tag, link_type=LinkType.TORRENT))
+            links.append(Link(tag=tag, link_type=LinkType.TORRENT, base_url=base_url))
 
     return links
 
@@ -434,7 +448,7 @@ def search(
     use_selenium = metadata.get("use_selenium", False)
     patterns = metadata.get("patterns", {})
     page_response = get_page_response(search_url, use_selenium)
-    links = extract_links(page_response, patterns)
+    links = extract_links(page_response, patterns, search_url)
 
     if not links:
         logger.info("No results found.")
@@ -443,7 +457,7 @@ def search(
     info_links = Link.filter_by_type("info")
     magnet_links = Link.filter_by_type("magnet")
     torrent_links = Link.filter_by_type("torrent")
-    selection = check_fzf(links)  # this always returns a Link object
+    selection = check_fzf(links)  # this always returns a Link object's link_str
 
     logger.info(f"Using {torrent_mode} MODE for query: {query}.")
     logger.info(f"Selection: {selection}")
@@ -469,10 +483,10 @@ def search(
 
         if not magnet_links and not torrent_links:
             logger.info(
-                "Magnets or torrent links not found on search page, checking details page..."
+                "Magnet or torrent links not found on search page, checking details page..."
             )
             detail_page = get_page_response(url, use_selenium)
-            links = extract_links(detail_page, patterns)
+            links = extract_links(detail_page, patterns, url)
             info_links = Link.filter_by_type("info")
             magnet_links = Link.filter_by_type("magnet")
             torrent_links = Link.filter_by_type("torrent")

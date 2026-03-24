@@ -177,7 +177,6 @@ class TestTorrent(TestBase):
         check_fzf(magnet_links)
 
     def test_get_torrent_from_url(self):
-        url = get_torrent_from_url(torrent_file, os.getcwd())
 
         search_url = (
             "https://kickasstorrents.to/9-1-1-s09e14-hdtv-x264-ngp-t6608005.html"
@@ -187,16 +186,11 @@ class TestTorrent(TestBase):
         write_output(logger, page_response, f"{page_name}.html", append=False)
         self.assertTrue(os.path.exists(f"{page_name}.html"))
 
-        links = extract_links(page_response, patterns)
+        links = extract_links(page_response, patterns, search_url)
         torrent_links = Link.filter_by_type(links, LinkType.TORRENT)
-
-        # for link in torrent_links:
-        #     print(type(link.link_str))
-        # check_fzf(torrent_links)
-        # print(torrent_links)
-        # new_url = get_torrent_from_url(url, os.getcwd())
-
-        # print(new_url)
+        magnet_links = Link.filter_by_type(links, LinkType.MAGNET)
+        check_fzf(magnet_links)
+        url = torrent_links[0]
 
 
 if __name__ == "__main__":
