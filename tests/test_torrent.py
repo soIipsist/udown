@@ -184,6 +184,11 @@ class TestTorrent(TestBase):
 
         self.assertTrue(os.path.exists(torrent_path))
 
+    def test_search(self):
+        results = search("naruto", None, torrent_urls[0], torrent_mode="extract")
+
+        print(results)
+
 
 if __name__ == "__main__":
     test_methods = [
@@ -192,7 +197,8 @@ if __name__ == "__main__":
         # TestTorrent.test_build_search_url,
         # TestTorrent.test_get_page_response,
         # TestTorrent.test_download_torrent,
-        TestTorrent.test_download_torrent_from_url,
+        # TestTorrent.test_download_torrent_from_url,
         # TestTorrent.test_extract_links,
+        TestTorrent.test_search
     ]
     run_test_methods(test_methods)

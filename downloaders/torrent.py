@@ -47,7 +47,8 @@ class LinkType(str, Enum):
 class TorrentMode(str, Enum):
     INFO = "info"
     EXTRACT = "extract"
-    DOWNLOAD = "download"
+    MAGNET = "magnet"
+    TORRENT = "torrent"
 
 
 class Link:
@@ -418,7 +419,7 @@ def search(
     query: str = None,
     metadata_path: str = None,
     torrent_url: str = None,
-    torrent_mode: str = TorrentMode.DOWNLOAD,
+    torrent_mode: str = TorrentMode.MAGNET,
     torrent_directory: str = None,
     confirm_download: bool = True,
     normalize: bool = True,
@@ -434,6 +435,9 @@ def search(
 
     if not torrent_url:
         raise ValueError("Base torrent url was not defined!")
+
+    if not torrent_directory:
+        torrent_directory = os.getcwd()
 
     metadata = metadata.get(torrent_url, {})
 
@@ -457,9 +461,20 @@ def search(
         logger.info("No results found.")
         return
 
-    info_links = Link.filter_by_type("info")
-    magnet_links = Link.filter_by_type("magnet")
-    torrent_links = Link.filter_by_type("torrent")
+    info_links = Link.filter_by_type(links, "info")
+    magnet_links = Link.filter_by_type(links, "magnet")
+    torrent_links = Link.filter_by_type(links, "torrent")
+
+    if torrent_mode == TorrentMode.EXTRACT:
+        output = {
+            "info_links": info_links,
+            "magnet_links": magnet_links,
+            "torrent_links": torrent_links,
+        }
+        path = os.path.join(torrent_directory, "links.json")
+        write_output(logger, output, path, append=False)
+        return
+
     selection = check_fzf(links)  # this always returns a Link object's link_str
 
     logger.info(f"Using {torrent_mode} MODE for query: {query}.")
@@ -468,20 +483,16 @@ def search(
     if not selection:
         return
 
-    url = selection
+    url = selection.split("|").strip("")
+    print("URL", url)
     results = []
 
     if torrent_mode == TorrentMode.INFO:
         get_torrent_metadata(url, use_selenium, metadata)
 
-    elif torrent_mode == TorrentMode.EXTRACT:
-        output = {
-            "info_links": info_links,
-            "magnet_links": magnet_links,
-            "torrent_links": torrent_links,
-        }
-        path = os.path.join(torrent_directory, "links.json")
-        write_output(logger, output, path, append=False)
+    elif torrent_mode == TorrentMode.MAGNET:
+        results = download_torrent(url, torrent_directory, confirm_download, normalize)
+
     else:
 
         if not magnet_links and not torrent_links:
@@ -490,9 +501,9 @@ def search(
             )
             detail_page = get_page_response(url, use_selenium)
             links = extract_links(detail_page, patterns, url)
-            info_links = Link.filter_by_type("info")
-            magnet_links = Link.filter_by_type("magnet")
-            torrent_links = Link.filter_by_type("torrent")
+            info_links = Link.filter_by_type(links, "info")
+            magnet_links = Link.filter_by_type(links, "magnet")
+            torrent_links = Link.filter_by_type(links, "torrent")
 
         results = download_torrent(url, torrent_directory, confirm_download, normalize)
 
@@ -521,7 +532,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-m",
         "--torrent_mode",
-        default=os.environ.get("TORRENT_MODE", TorrentMode.DOWNLOAD),
+        default=os.environ.get("TORRENT_MODE", TorrentMode.MAGNET),
         type=TorrentMode,
     )
     parser.add_argument(

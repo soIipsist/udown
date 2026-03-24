@@ -450,7 +450,7 @@ default_downloaders = [
         os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
         "downloaders.torrent",
         "search",
-        "url, metadata_path=downloader_path, torrent_directory=output_directory, torrent_mode=download",
+        "url, metadata_path=downloader_path, torrent_directory=output_directory, torrent_mode=magnet",
     ),
     Downloader(
         "torrent_info",
@@ -471,14 +471,14 @@ default_downloaders = [
         os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
         "downloaders.torrent",
         "search",
-        "url, torrent_url=https://kickasstorrents.to/usearch, metadata_path=downloader_path, torrent_directory=output_directory, torrent_mode=download",
+        "url, torrent_url=https://kickasstorrents.to/usearch, metadata_path=downloader_path, torrent_directory=output_directory, torrent_mode=magnet",
     ),
     Downloader(
         "piratebay",
         os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
         "downloaders.torrent",
         "search",
-        "url, torrent_url=https://thepiratebay.org/search.php?q=, metadata_path=downloader_path, torrent_directory=output_directory, torrent_mode=download",
+        "url, torrent_url=https://thepiratebay.org/search.php?q=, metadata_path=downloader_path, torrent_directory=output_directory, torrent_mode=magnet",
     ),
 ]
 
