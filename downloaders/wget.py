@@ -48,7 +48,7 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
                 match = PROGRESS_RE.search(line)
                 if match:
                     percent = match.group(1)
-                    logger.info(f"Progress: {str(percent)}")
+                    logger.info(f"Progress: {str(percent)}%")
                     yield {"url": url, "status": None, "progress": f"{percent}%"}
 
             proc.wait()

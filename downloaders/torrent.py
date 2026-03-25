@@ -104,6 +104,12 @@ class Link:
 
         return self.tag.get_text(strip=True) or self.url
 
+    def to_dict(self):
+        return {
+            "url": self.url,
+            "name": self.get_display_name(),
+        }
+
     def __init__(self, tag, link_type: str, base_url: str = None):
         self.tag = tag
         self.link_type = link_type
@@ -113,8 +119,16 @@ class Link:
     def filter_by_type(cls, links: list, link_type) -> list[Link]:
         return [link for link in links if link.link_type == link_type]
 
+    def __repr__(self):
+        return f"{self.url}"
 
-def check_fzf(links: list[Link]):
+    def __str__(self):
+        return f"{self.url}"
+
+
+def check_fzf(
+    links: list[Link] = None,
+):
     fzf_path = shutil.which("fzf")
 
     if fzf_path:
@@ -415,6 +429,12 @@ def download_torrent_from_url(
     return url
 
 
+def get_url_from_selection(selection: str):
+    parts = selection.split("|")
+    url = parts[1] if parts else selection
+    return url
+
+
 def search(
     query: str = None,
     metadata_path: str = None,
@@ -425,6 +445,7 @@ def search(
     normalize: bool = True,
 ):
     metadata = None
+    not_found = False
 
     if not metadata_path:
         metadata_path = os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json")
@@ -446,7 +467,9 @@ def search(
 
     # if it's a magnet or a torrent file, simply download
     if query.startswith("magnet:") or query.endswith(".torrent"):
-        results = download_torrent(query, torrent_directory, confirm_download)
+        results = download_torrent(
+            query, torrent_directory, confirm_download, normalize
+        )
         return results
 
     search_url = build_search_url(torrent_url, query)
@@ -467,15 +490,31 @@ def search(
 
     if torrent_mode == TorrentMode.EXTRACT:
         output = {
-            "info_links": info_links,
-            "magnet_links": magnet_links,
-            "torrent_links": torrent_links,
+            "info_links": [l.to_dict() for l in info_links],
+            "magnet_links": [l.to_dict() for l in magnet_links],
+            "torrent_links": [l.to_dict() for l in torrent_links],
         }
+
         path = os.path.join(torrent_directory, "links.json")
         write_output(logger, output, path, append=False)
         return
 
-    selection = check_fzf(links)  # this always returns a Link object's link_str
+    # info mode: get metadata
+    # magnet mode: get magnet links only
+    # torrent mode: get torrent links only
+
+    if torrent_mode == TorrentMode.INFO:
+        links = info_links
+    elif torrent_mode == TorrentMode.MAGNET:
+        links = magnet_links
+    else:
+        links = torrent_links
+
+    if not links:
+        not_found = True
+        links = info_links
+
+    selection = check_fzf(links)
 
     logger.info(f"Using {torrent_mode} MODE for query: {query}.")
     logger.info(f"Selection: {selection}")
@@ -483,27 +522,35 @@ def search(
     if not selection:
         return
 
-    url = selection.split("|").strip("")
-    print("URL", url)
-    results = []
+    url = get_url_from_selection(selection)
 
     if torrent_mode == TorrentMode.INFO:
         get_torrent_metadata(url, use_selenium, metadata)
 
-    elif torrent_mode == TorrentMode.MAGNET:
-        results = download_torrent(url, torrent_directory, confirm_download, normalize)
-
     else:
-
-        if not magnet_links and not torrent_links:
+        if not_found:
             logger.info(
-                "Magnet or torrent links not found on search page, checking details page..."
+                f"{torrent_mode} links not found on search page, checking details page..."
             )
             detail_page = get_page_response(url, use_selenium)
             links = extract_links(detail_page, patterns, url)
             info_links = Link.filter_by_type(links, "info")
             magnet_links = Link.filter_by_type(links, "magnet")
             torrent_links = Link.filter_by_type(links, "torrent")
+
+            if torrent_mode == TorrentMode.INFO:
+                torrent_mode = TorrentMode.MAGNET
+
+            if torrent_mode == TorrentMode.MAGNET:
+                links = magnet_links
+            else:
+                links = torrent_links
+
+            url = get_url_from_selection(links[0]) if links else None
+
+        if not url:
+            print(f"No {torrent_mode} links found.")
+            return
 
         results = download_torrent(url, torrent_directory, confirm_download, normalize)
 
