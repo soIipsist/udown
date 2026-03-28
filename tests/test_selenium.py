@@ -26,10 +26,14 @@ class TestSelenium(TestBase):
     def test_download(self):
         download(url, options_path=options_path, output_filename="index.html")
 
+    def test_get_driver_instance(self):
+        driver = SeleniumDriver()
+
 
 if __name__ == "__main__":
     test_methods = [
         # TestSelenium.test_get_options,
-        TestSelenium.test_download,
+        # TestSelenium.test_download,
+        TestSelenium.test_get_driver_instance,
     ]
     run_test_methods(test_methods)

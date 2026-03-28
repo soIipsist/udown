@@ -4,7 +4,7 @@ from pathlib import Path
 from pprint import PrettyPrinter
 from downloaders.ytdlp import read_json_file
 from utils.logger import setup_logger, write_output
-
+import re
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException
@@ -92,6 +92,57 @@ class Event:
         variable_part = parts[0].strip()
         function_part = parts[1].strip() if len(parts) > 1 else None
 
+    @classmethod
+    def get_function_name_and_arguments(cls, function_part: str):
+        function_pattern = r"([\w_\.]+)(?:\(\s*([^\(\)]*)\s*\))?"
+
+        match = re.match(function_pattern, function_part)
+
+        function_name = None
+        arguments = []
+
+        if match:
+            function_name = match.group(1)
+            arguments = match.group(2)
+
+            if not arguments:
+                arguments = []
+            else:
+                argument_list = []
+                argument = ""
+                inside_array = False
+
+                for char in arguments:
+                    if char == "[":
+                        inside_array = True
+                        argument += char
+                    elif char == "]":
+                        inside_array = False
+                        argument += char
+                    elif char == "," and not inside_array:
+                        argument_list.append(argument.strip())
+                        argument = ""
+                    else:
+                        argument += char
+
+                if argument:
+                    argument_list.append(argument.strip())
+
+                arguments = []
+                for arg in argument_list:
+                    arg = arg.strip().strip("'").strip('"')
+                    if arg.startswith("[") and arg.endswith("]"):
+                        elements = arg[1:-1].split(",")
+                        elements = [
+                            element.strip().strip("'").strip('"')
+                            for element in elements
+                        ]
+                        arguments.append(elements)
+                    else:
+                        arguments.append(arg)
+
+        return function_name, arguments
+
 
 class SeleniumDriver:
     _driver_type = None
@@ -126,6 +177,9 @@ class SeleniumDriver:
         self.driver_type = driver_type
         self.events = events
         self.options = options
+
+    def get_driver_instance(self):
+        return
 
 
 def run_events(driver, events: list, base_result: dict, save_path: str | None = None):
