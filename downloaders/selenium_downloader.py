@@ -13,6 +13,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+import undetected_chromedriver as uc
+
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="selenium_downloader", log_dir="/udown/selenium")
 
@@ -148,6 +150,15 @@ class SeleniumDriver:
     _driver_type = None
     _events: list = None
     _options = None
+    _driver = None
+
+    @property
+    def driver(self):
+        return self._driver
+
+    @driver.setter
+    def driver(self, driver):
+        self._driver = driver
 
     @property
     def driver_type(self):
@@ -178,8 +189,14 @@ class SeleniumDriver:
         self.events = events
         self.options = options
 
+    def get_options(self):
+        pass
+
     def get_driver_instance(self):
-        return
+        if self.driver_type == webdriver:
+            self.driver = webdriver.Chrome(options=self.options)
+        else:
+            self.driver = uc.Chrome(options=self.options)
 
 
 def run_events(driver, events: list, base_result: dict, save_path: str | None = None):
