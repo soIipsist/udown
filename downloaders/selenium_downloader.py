@@ -29,6 +29,105 @@ BY_MAP = {
 }
 
 
+# functions = {
+#     "e": self.driver.get_element,
+#     "e.name": self.driver.get_element_by_name,
+#     "e.id": self.driver.get_element_by_id,
+#     "e.class_name": self.driver.get_element_by_class_name,
+#     "e.selector": self.driver.get_element_by_selector,
+#     "e.link_text": self.driver.get_element_by_link_text,
+#     "e.partial_link_text": self.driver.get_element_by_partial_link_text,
+#     "e.clear": self.driver.clear_element,
+#     "c": self.driver.add_cookies,
+#     "cookies": self.driver.get_cookies,
+#     "delete_cookies": self.driver.delete_cookies,
+#     "delay": self.driver.add_delay,
+#     "wait": self.driver.add_implicit_wait,
+#     "explicit_wait": self.driver.add_explicit_wait,
+#     "js": self.driver.execute_script,
+#     "keys": self.driver.send_keys,
+#     "click": self.driver.click_element,
+#     "dnd": self.driver.drag_and_drop,
+#     "select": self.driver.select,
+#     "deselect": self.driver.deselect,
+# }
+
+
+class Event:
+
+    _arguments: list = None
+    _function_name: str = None
+    _variable: str = None
+
+    @property
+    def variable(self):
+        return self._variable
+
+    @variable.setter
+    def variable(self, variable):
+        self._variable = variable
+
+    @property
+    def arguments(self):
+        return self._arguments
+
+    @arguments.setter
+    def arguments(self, arguments):
+        self._arguments = arguments
+
+    @property
+    def function_name(self):
+        return self._function_name
+
+    @function_name.setter
+    def function_name(self, function_name: str):
+        self._function_name = function_name
+
+    def __init__(self, event: str):
+        pass
+
+    def parse_event(self, event: str):
+        parts = event.split("=", 1)  # split once
+
+        variable_part = parts[0].strip()
+        function_part = parts[1].strip() if len(parts) > 1 else None
+
+
+class SeleniumDriver:
+    _driver_type = None
+    _events: list = None
+    _options = None
+
+    @property
+    def driver_type(self):
+        return self._driver_type
+
+    @driver_type.setter
+    def driver_type(self, driver_type):
+        self._driver_type = driver_type
+
+    @property
+    def events(self):
+        return self._events
+
+    @events.setter
+    def events(self, events):
+        self._events = events
+
+    @property
+    def options(self):
+        return self._options
+
+    @options.setter
+    def options(self, options):
+        self._options = options
+
+    def __init__(self, driver_type=webdriver, events: list = None, options=None):
+        self.driver_type = driver_type
+        self.events = events
+        self.options = options
+
+
 def run_events(driver, events: list, base_result: dict, save_path: str | None = None):
     emitted_results = []
 
