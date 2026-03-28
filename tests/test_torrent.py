@@ -23,6 +23,7 @@ torrent_urls = [
     "https://thepiratebay.party/search",
     "https://thepiratebay.org/search.php?q=",
     "https://kickasstorrents.to/usearch",
+    "https://archive.org/search.php?query=",
 ]
 torrent_url = torrent_urls[2]
 
@@ -185,8 +186,12 @@ class TestTorrent(TestBase):
         self.assertTrue(os.path.exists(torrent_path))
 
     def test_search(self):
-        results = search("limitless", None, torrent_urls[0], torrent_mode="magnet")
-        print(results)
+        # results = search("limitless", None, torrent_urls[0], torrent_mode="magnet")
+        # print(results)
+
+        # results = search("limitless", None, torrent_urls[1], torrent_mode="torrent")
+
+        results = search("limitless", None, torrent_urls[1], torrent_mode="torrent")
 
 
 if __name__ == "__main__":

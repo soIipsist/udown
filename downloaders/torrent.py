@@ -381,6 +381,7 @@ def get_page_response(url: str, use_selenium: bool = False):
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
+
             return driver.page_source
         else:
             response = requests.get(url, headers=headers)
@@ -442,7 +443,7 @@ def search(
     torrent_mode: str = TorrentMode.MAGNET,
     torrent_directory: str = None,
     confirm_download: bool = True,
-    normalize: bool = True,
+    normalize: bool = False,
 ):
     metadata = None
     not_found = False
@@ -526,7 +527,7 @@ def search(
 
     if torrent_mode == TorrentMode.INFO:
         get_torrent_metadata(url, use_selenium, metadata)
-
+        return []
     else:
         if not_found:
             logger.info(
@@ -546,7 +547,7 @@ def search(
             else:
                 links = torrent_links
 
-            url = get_url_from_selection(links[0]) if links else None
+            url = get_url_from_selection(links[0].link_str) if links else None
 
         if not url:
             print(f"No {torrent_mode} links found.")
