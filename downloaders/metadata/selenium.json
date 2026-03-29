@@ -1,57 +1,35 @@
 {
-  "events": [
-    {
-      "action": "get",
-      "url": "https://quotes.toscrape.com"
-    },
-    {
-      "action": "save",
-      "filename": "quotes_page_1.html"
-    },
-    {
-      "action": "wait",
-      "by": "css",
-      "value": ".quote",
-      "timeout": 10
-    },
-
-    {
-      "action": "extract_structured",
-      "name": "quotes",
-      "parent": {
-        "by": "css",
-        "value": ".quote"
-      },
-      "fields": {
-        "text": {
-          "by": "css",
-          "value": ".text"
-        },
-        "author": {
-          "by": "css",
-          "value": ".author"
+  "browser_type": "chrome",
+  "driver_type": "undetected",
+  "browser_options": {
+    "experimental_options": [
+      {
+        "name": "detach",
+        "value": false
+      }
+    ],
+    "arguments": [
+      "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36",
+      "--ignore-certificate-errors",
+      "--disable-gpu",
+      "--allow-running-insecure-content"
+    ],
+    "capabilities": {
+      "goog:chromeOptions": {
+        "perfLoggingPrefs": {
+          "enableNetwork": true
         }
       }
-    },
-
-    {
-      "action": "click",
-      "by": "xpath",
-      "value": "//li[@class='next']/a"
-    },
-
+    }
+  },
+  "events": [
+    "get('https://quotes.toscrape.com')",
+    "save(quotes_page_1.html)",
     {
       "action": "wait",
       "by": "css",
       "value": ".quote",
       "timeout": 10
-    },
-
-    {
-      "action": "extract_all",
-      "name": "quotes_page_2",
-      "by": "css",
-      "value": ".quote"
     },
 
     {

@@ -14,6 +14,10 @@ pp = PrettyPrinter(indent=2)
 url = "https://quotes.toscrape.com"
 options_path = os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
 
+options = read_json_file(options_path)
+# print(options)
+selenium_driver = SeleniumDriver(**options)
+
 
 class TestSelenium(TestBase):
     def setUp(self) -> None:
@@ -27,7 +31,7 @@ class TestSelenium(TestBase):
         download(url, options_path=options_path, output_filename="index.html")
 
     def test_get_driver_instance(self):
-        driver = SeleniumDriver()
+        print(selenium_driver.browser_type)
 
 
 if __name__ == "__main__":

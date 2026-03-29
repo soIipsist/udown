@@ -6,7 +6,6 @@ from downloaders.ytdlp import read_json_file
 from utils.logger import setup_logger, write_output
 import re
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException
 import time
 from selenium.webdriver.common.by import By
@@ -29,30 +28,6 @@ BY_MAP = {
     "link_text": By.LINK_TEXT,
     "partial_link_text": By.PARTIAL_LINK_TEXT,
 }
-
-
-# functions = {
-#     "e": self.driver.get_element,
-#     "e.name": self.driver.get_element_by_name,
-#     "e.id": self.driver.get_element_by_id,
-#     "e.class_name": self.driver.get_element_by_class_name,
-#     "e.selector": self.driver.get_element_by_selector,
-#     "e.link_text": self.driver.get_element_by_link_text,
-#     "e.partial_link_text": self.driver.get_element_by_partial_link_text,
-#     "e.clear": self.driver.clear_element,
-#     "c": self.driver.add_cookies,
-#     "cookies": self.driver.get_cookies,
-#     "delete_cookies": self.driver.delete_cookies,
-#     "delay": self.driver.add_delay,
-#     "wait": self.driver.add_implicit_wait,
-#     "explicit_wait": self.driver.add_explicit_wait,
-#     "js": self.driver.execute_script,
-#     "keys": self.driver.send_keys,
-#     "click": self.driver.click_element,
-#     "dnd": self.driver.drag_and_drop,
-#     "select": self.driver.select,
-#     "deselect": self.driver.deselect,
-# }
 
 
 class Event:
@@ -93,6 +68,29 @@ class Event:
 
         variable_part = parts[0].strip()
         function_part = parts[1].strip() if len(parts) > 1 else None
+
+    # functions = {
+    #     "e": self.driver.get_element,
+    #     "e.name": self.driver.get_element_by_name,
+    #     "e.id": self.driver.get_element_by_id,
+    #     "e.class_name": self.driver.get_element_by_class_name,
+    #     "e.selector": self.driver.get_element_by_selector,
+    #     "e.link_text": self.driver.get_element_by_link_text,
+    #     "e.partial_link_text": self.driver.get_element_by_partial_link_text,
+    #     "e.clear": self.driver.clear_element,
+    #     "c": self.driver.add_cookies,
+    #     "cookies": self.driver.get_cookies,
+    #     "delete_cookies": self.driver.delete_cookies,
+    #     "delay": self.driver.add_delay,
+    #     "wait": self.driver.add_implicit_wait,
+    #     "explicit_wait": self.driver.add_explicit_wait,
+    #     "js": self.driver.execute_script,
+    #     "keys": self.driver.send_keys,
+    #     "click": self.driver.click_element,
+    #     "dnd": self.driver.drag_and_drop,
+    #     "select": self.driver.select,
+    #     "deselect": self.driver.deselect,
+    # }
 
     @classmethod
     def get_function_name_and_arguments(cls, function_part: str):
@@ -148,9 +146,32 @@ class Event:
 
 class SeleniumDriver:
     _driver_type = None
+    _browser_type = None
     _events: list = None
-    _options = None
+    _browser_options = None
     _driver = None
+
+    browser_types = {
+        "chrome": webdriver.Chrome,
+        "firefox": webdriver.Firefox,
+        "edge": webdriver.Edge,
+        "ie": webdriver.Ie,
+        "safari": webdriver.Safari,
+    }
+
+    @property
+    def browser_type(self):
+        return self._browser_type
+
+    @browser_type.setter
+    def browser_type(self, browser_type):
+        if isinstance(browser_type, str):
+            if self.driver_type == "undetected":
+                browser_type = uc.Chrome
+            else:
+                browser_type = self.browser_types.get(browser_type, webdriver.Chrome)
+
+        self._browser_type = browser_type
 
     @property
     def driver(self):
@@ -177,29 +198,35 @@ class SeleniumDriver:
         self._events = events
 
     @property
-    def options(self):
-        return self._options
+    def browser_options(self):
+        return self._browser_options
 
-    @options.setter
-    def options(self, options):
-        self._options = options
+    @browser_options.setter
+    def browser_options(self, browser_options):
+        self._browser_options = browser_options
 
-    def __init__(self, driver_type=webdriver, events: list = None, options=None):
+    def __init__(
+        self,
+        driver_type=webdriver,
+        browser_type=webdriver.Chrome,
+        browser_options=None,
+        events: list = None,
+    ):
         self.driver_type = driver_type
+        self.browser_type = browser_type
+        self.browser_options = browser_options
         self.events = events
-        self.options = options
-
-    def get_options(self):
-        pass
 
     def get_driver_instance(self):
-        if self.driver_type == webdriver:
-            self.driver = webdriver.Chrome(options=self.options)
-        else:
-            self.driver = uc.Chrome(options=self.options)
+
+        self.driver = self.browser_type(options=self.browser_options)
+
+        return self.driver
 
 
-def run_events(driver, events: list, base_result: dict, save_path: str | None = None):
+def execute_events(
+    driver, events: list, base_result: dict, save_path: str | None = None
+):
     emitted_results = []
 
     def build_result(path):
@@ -356,8 +383,10 @@ def run_events(driver, events: list, base_result: dict, save_path: str | None = 
     return emitted_results
 
 
-def get_chrome_options(options: dict, output_directory: Path | None = None) -> Options:
-    chrome_options = Options()
+def get_chrome_options(
+    options: dict, output_directory: Path | None = None
+) -> webdriver.ChromeOptions:
+    chrome_options = webdriver.ChromeOptions()
 
     # chrome_options.add_argument("--headless=new")
     # chrome_options.add_argument("--no-sandbox")
@@ -441,7 +470,7 @@ def download(
         driver.get(url)
 
         if events:
-            results = run_events(driver, events, result, path)
+            results = execute_events(driver, events, result, path)
         else:
             result["status"] = 0
             result["progress"] = "100%"
