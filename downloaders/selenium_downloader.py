@@ -11,6 +11,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver import DesiredCapabilities
 
 import undetected_chromedriver as uc
 
@@ -144,6 +145,100 @@ class Event:
         return function_name, arguments
 
 
+class BrowserOptions:
+    _browser_options_type = None
+    _browser_options_obj = None
+
+    browser_option_types = {
+        "chrome": webdriver.ChromeOptions,
+        "edge": webdriver.EdgeOptions,
+        "firefox": webdriver.FirefoxOptions,
+        "safari": webdriver.SafariOptions,
+        "ie": webdriver.IeOptions,
+    }
+
+    capability_types = {
+        "chrome": DesiredCapabilities.CHROME.copy(),
+        "edge": DesiredCapabilities.EDGE.copy(),
+        "firefox": DesiredCapabilities.FIREFOX.copy(),
+        "safari": DesiredCapabilities.SAFARI.copy(),
+        "ie": DesiredCapabilities.INTERNETEXPLORER.copy(),
+    }
+
+    @property
+    def browser_options_type(self):
+        return self._browser_options_type
+
+    @browser_options_type.setter
+    def browser_options_type(self, browser_options_type):
+        self._browser_options_type = browser_options_type
+
+    @property
+    def browser_options_obj(self):
+        return self._browser_options_obj
+
+    @browser_options_obj.setter
+    def browser_options_obj(self, browser_options_obj):
+        self._browser_options_obj = browser_options_obj
+
+    def __init__(self, driver_type=None, browser_type="chrome", **args):
+        if driver_type == "undetected":
+            self.browser_options_type = uc.options.ChromeOptions
+        else:
+            self.browser_options_type = self.browser_option_types.get(browser_type)
+
+    def add_arguments(self, arguments: list = None):
+        if not hasattr(self.browser_options_obj, "add_argument"):
+            return
+
+        for argument in arguments:
+            if argument not in self.browser_options_obj.arguments:
+                self.browser_options_obj.add_argument(argument)
+
+    def add_experimental_options(self, experimental_options: dict = None):
+        if not hasattr(
+            self.browser_options_obj, "add_experimental_option"
+        ) or not isinstance(experimental_options, dict):
+            return
+
+        for name, value in experimental_options.items():
+            self.browser_options_obj.add_experimental_option(name, value)
+
+    def add_additional_options(self, additional_options: dict = None):
+        if not hasattr(
+            self.browser_options_obj, "add_additional_option"
+        ) or not isinstance(additional_options, dict):
+            return
+
+        for name, value in additional_options.items():
+            self.browser_options_obj.add_additional_option(name, value)
+
+    def set_capabilities(self, capabilities: dict = None):
+
+        if not hasattr(self.browser_options_obj, "set_capability") or not isinstance(
+            capabilities, dict
+        ):
+            return
+
+        for name, value in capabilities.items():
+            print(name, value)
+            self.browser_options_obj.set_capability(name, value)
+
+    def set_preferences(self, preferences: dict = None):
+        if not hasattr(self.browser_options_obj, "set_preference") or not isinstance(
+            preferences, dict
+        ):
+            return
+
+        for name, value in preferences.items():
+            self.browser_options_obj.set_preference(name, value)
+
+    def get_browser_options(self):
+        browser_options = self.browser_options_type()
+
+        return
+
+
 class SeleniumDriver:
     _driver_type = None
     _browser_type = None
@@ -151,13 +246,19 @@ class SeleniumDriver:
     _browser_options = None
     _driver = None
 
-    browser_types = {
-        "chrome": webdriver.Chrome,
-        "firefox": webdriver.Firefox,
-        "edge": webdriver.Edge,
-        "ie": webdriver.Ie,
-        "safari": webdriver.Safari,
-    }
+    @property
+    def browser_types(self):
+        return (
+            {"chrome": uc.Chrome}
+            if self.driver_type == "undetected"
+            else {
+                "chrome": webdriver.Chrome,
+                "edge": webdriver.Edge,
+                "firefox": webdriver.Firefox,
+                "safari": webdriver.Safari,
+                "ie": webdriver.Ie,
+            }
+        )
 
     @property
     def browser_type(self):
@@ -166,10 +267,7 @@ class SeleniumDriver:
     @browser_type.setter
     def browser_type(self, browser_type):
         if isinstance(browser_type, str):
-            if self.driver_type == "undetected":
-                browser_type = uc.Chrome
-            else:
-                browser_type = self.browser_types.get(browser_type, webdriver.Chrome)
+            browser_type = self.browser_types.get(browser_type, webdriver.Chrome)
 
         self._browser_type = browser_type
 
@@ -216,6 +314,13 @@ class SeleniumDriver:
         self.browser_type = browser_type
         self.browser_options = browser_options
         self.events = events
+
+    def get_browser_options(self, browser_options: dict):
+        browser_options = BrowserOptions(
+            self.driver_type, self.browser_type
+        ).get_browser_options()
+
+        return browser_options
 
     def get_driver_instance(self):
 

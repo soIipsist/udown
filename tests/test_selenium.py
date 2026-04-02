@@ -33,11 +33,16 @@ class TestSelenium(TestBase):
     def test_get_driver_instance(self):
         print(selenium_driver.browser_type)
 
+    def test_get_browser_options(self):
+        browser_options_metadata = options.get("browser_options")
+        selenium_driver.get_browser_options(browser_options_metadata)
+
 
 if __name__ == "__main__":
     test_methods = [
         # TestSelenium.test_get_options,
         # TestSelenium.test_download,
-        TestSelenium.test_get_driver_instance,
+        # TestSelenium.test_get_driver_instance,
+        TestSelenium.test_get_browser_options,
     ]
     run_test_methods(test_methods)
