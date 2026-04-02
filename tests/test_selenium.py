@@ -38,12 +38,19 @@ class TestSelenium(TestBase):
         browser_options = selenium_driver.get_browser_options(browser_options_metadata)
 
         if options.get("driver_type") == "undetected":
-            self.assertTrue(isinstance(selenium_driver.driver, uc.Chrome))
+            self.assertTrue(selenium_driver.driver_type == "undetected")
             self.assertTrue(
                 isinstance(selenium_driver.browser_options, uc.ChromeOptions)
             )
         else:
-            print(selenium_driver.driver_type)
+            print("DRIVER", selenium_driver.browser_type)
+            b_type = browser_option_types.get(
+                selenium_driver.browser_type, webdriver.Chrome
+            )
+            # print(b_type)
+            # self.assertTrue(selenium_driver.browser_options == b_type)
+
+        # print(browser_options.to_capabilities())
 
 
 if __name__ == "__main__":

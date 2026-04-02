@@ -270,12 +270,13 @@ class BrowserOptions:
         capabilities = self.browser_args.get("capabilities")
         experimental_options = self.browser_args.get("experimental_options")
         additional_options = self.browser_args.get("additional_options")
+        arguments = self.browser_args.get("arguments")
 
         self.set_capabilities(capabilities)
         self.add_experimental_options(experimental_options)
         self.set_preferences(preferences)
         self.add_additional_options(additional_options)
-
+        self.add_arguments(arguments)
         return self.browser_options_obj
 
 
@@ -306,9 +307,6 @@ class SeleniumDriver:
 
     @browser_type.setter
     def browser_type(self, browser_type):
-        if isinstance(browser_type, str):
-            browser_type = self.browser_types.get(browser_type, webdriver.Chrome)
-
         self._browser_type = browser_type
 
     @property
