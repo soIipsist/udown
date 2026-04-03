@@ -24,7 +24,7 @@ class TestSelenium(TestBase):
         super().setUp()
 
     def test_get_options(self):
-        options = get_selenium_options(options_path)
+        options = get_selenium_options(None)
         print(options)
 
     def test_download(self):
@@ -52,9 +52,9 @@ class TestSelenium(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        # TestSelenium.test_get_options,
+        TestSelenium.test_get_options,
         # TestSelenium.test_download,
-        TestSelenium.test_get_driver_instance,
+        # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
     ]
     run_test_methods(test_methods)

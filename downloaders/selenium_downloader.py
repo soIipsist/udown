@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from pprint import PrettyPrinter
 from downloaders.ytdlp import read_json_file
+from src.options import DOWNLOADER_METADATA_DIR
 from utils.logger import setup_logger, write_output
 import re
 from selenium import webdriver
@@ -371,222 +372,170 @@ class SeleniumDriver:
 
         return self.driver
 
-    def execute_events(self):
-        pass
+    def execute_events(self, base_result: dict, save_path: str | None = None):
+        emitted_results = []
 
+        def build_result(path):
+            filename = os.path.basename(path)
+            return {
+                "url": base_result["url"],
+                "status": 0,
+                "error": None,
+                "progress": "100%",
+                "output_filename": (filename if filename else None),
+                "path": path,
+            }
 
-def execute_events(
-    driver, events: list, base_result: dict, save_path: str | None = None
-):
-    emitted_results = []
+        def get_by(event):
+            return BY_MAP.get(event.get("by", "css"), By.CSS_SELECTOR)
 
-    def build_result(path):
-        filename = os.path.basename(path)
-        return {
-            "url": base_result["url"],
-            "status": 0,
-            "error": None,
-            "progress": "100%",
-            "output_filename": (filename if filename else None),
-            "path": path,
+        def write_and_record(content, path):
+            write_output(logger, content, path)
+            emitted_results.append(build_result(path))
+
+        def handle_get(event):
+            self.driver.get(event["url"])
+
+        def handle_quit(event):
+            self.driver.quit()
+
+        def handle_wait(event):
+            WebDriverWait(self.driver, event.get("timeout", 10)).until(
+                EC.presence_of_element_located((get_by(event), event["value"]))
+            )
+
+        def handle_click(event):
+            self.driver.find_element(get_by(event), event["value"]).click()
+
+        def handle_type(event):
+            el = self.driver.find_element(get_by(event), event["value"])
+            el.clear()
+            el.send_keys(event.get("text", ""))
+
+        def handle_submit(event):
+            self.driver.find_element(get_by(event), event["value"]).submit()
+
+        def handle_sleep(event):
+            time.sleep(event.get("seconds", 1))
+
+        def handle_execute_js(event):
+            self.driver.execute_script(event.get("script", ""))
+
+        def handle_extract(event):
+            if event.get("value"):
+                el = self.driver.find_element(get_by(event), event["value"])
+                data = (
+                    el.get_attribute(event["attribute"])
+                    if event.get("attribute")
+                    else el.text
+                )
+            else:
+                data = self.driver.page_source
+
+            path = event.get("filename", save_path)
+            if not path:
+                return
+
+            write_and_record(data, path)
+
+        def handle_extract_all(event):
+            elements = self.driver.find_elements(get_by(event), event["value"])
+
+            if event.get("attribute"):
+                data = [el.get_attribute(event["attribute"]) for el in elements]
+            else:
+                data = [el.text for el in elements]
+
+            path = event.get("filename", save_path)
+            if not path:
+                return
+
+            write_and_record(data, path)
+
+        def handle_extract_structured(event):
+            parent_cfg = event["parent"]
+            fields = event.get("fields", {})
+
+            parent_by = BY_MAP.get(parent_cfg.get("by", "css"))
+            parents = self.driver.find_elements(parent_by, parent_cfg["value"])
+
+            structured_data = []
+
+            for parent in parents:
+                item = {}
+                for field_name, field_cfg in fields.items():
+                    field_by = BY_MAP.get(field_cfg.get("by", "css"))
+                    try:
+                        el = parent.find_element(field_by, field_cfg["value"])
+                        item[field_name] = (
+                            el.get_attribute(field_cfg["attribute"])
+                            if field_cfg.get("attribute")
+                            else el.text
+                        )
+                    except Exception:
+                        item[field_name] = None
+                structured_data.append(item)
+
+            path = event.get("filename", save_path)
+            if not path:
+                return
+
+            write_and_record(structured_data, path)
+
+        def handle_save(event):
+            path = event.get("filename", "page.html")
+            write_and_record(self.driver.page_source, path)
+
+        def handle_screenshot(event):
+            path = event.get("path", "screenshot.png")
+            self.driver.save_screenshot(path)
+            emitted_results.append(build_result(path))
+
+        ACTIONS = {
+            "get": handle_get,
+            "quit": handle_quit,
+            "wait": handle_wait,
+            "click": handle_click,
+            "type": handle_type,
+            "submit": handle_submit,
+            "sleep": handle_sleep,
+            "execute_js": handle_execute_js,
+            "extract": handle_extract,
+            "extract_all": handle_extract_all,
+            "extract_structured": handle_extract_structured,
+            "save": handle_save,
+            "screenshot": handle_screenshot,
         }
 
-    def get_by(event):
-        return BY_MAP.get(event.get("by", "css"), By.CSS_SELECTOR)
+        for index, event in enumerate(self.events):
+            action = event.get("action")
 
-    def write_and_record(content, path):
-        write_output(logger, content, path)
-        emitted_results.append(build_result(path))
+            if action not in ACTIONS:
+                raise ValueError(f"[Event #{index}] Unknown action: {action}")
 
-    def handle_get(event):
-        driver.get(event["url"])
+            try:
+                ACTIONS[action](event)
+            except Exception as e:
+                emitted_results.append(
+                    {
+                        "url": base_result["url"],
+                        "status": 1,
+                        "error": f"[Event #{index}] Failed → {event}\nError: {str(e)}",
+                        "progress": "100%",
+                        "path": None,
+                    }
+                )
 
-    def handle_quit(event):
-        driver.quit()
-
-    def handle_wait(event):
-        WebDriverWait(driver, event.get("timeout", 10)).until(
-            EC.presence_of_element_located((get_by(event), event["value"]))
-        )
-
-    def handle_click(event):
-        driver.find_element(get_by(event), event["value"]).click()
-
-    def handle_type(event):
-        el = driver.find_element(get_by(event), event["value"])
-        el.clear()
-        el.send_keys(event.get("text", ""))
-
-    def handle_submit(event):
-        driver.find_element(get_by(event), event["value"]).submit()
-
-    def handle_sleep(event):
-        time.sleep(event.get("seconds", 1))
-
-    def handle_execute_js(event):
-        driver.execute_script(event.get("script", ""))
-
-    def handle_extract(event):
-        if event.get("value"):
-            el = driver.find_element(get_by(event), event["value"])
-            data = (
-                el.get_attribute(event["attribute"])
-                if event.get("attribute")
-                else el.text
-            )
-        else:
-            data = driver.page_source
-
-        path = event.get("filename", save_path)
-        if not path:
-            return
-
-        write_and_record(data, path)
-
-    def handle_extract_all(event):
-        elements = driver.find_elements(get_by(event), event["value"])
-
-        if event.get("attribute"):
-            data = [el.get_attribute(event["attribute"]) for el in elements]
-        else:
-            data = [el.text for el in elements]
-
-        path = event.get("filename", save_path)
-        if not path:
-            return
-
-        write_and_record(data, path)
-
-    def handle_extract_structured(event):
-        parent_cfg = event["parent"]
-        fields = event.get("fields", {})
-
-        parent_by = BY_MAP.get(parent_cfg.get("by", "css"))
-        parents = driver.find_elements(parent_by, parent_cfg["value"])
-
-        structured_data = []
-
-        for parent in parents:
-            item = {}
-            for field_name, field_cfg in fields.items():
-                field_by = BY_MAP.get(field_cfg.get("by", "css"))
-                try:
-                    el = parent.find_element(field_by, field_cfg["value"])
-                    item[field_name] = (
-                        el.get_attribute(field_cfg["attribute"])
-                        if field_cfg.get("attribute")
-                        else el.text
-                    )
-                except Exception:
-                    item[field_name] = None
-            structured_data.append(item)
-
-        path = event.get("filename", save_path)
-        if not path:
-            return
-
-        write_and_record(structured_data, path)
-
-    def handle_save(event):
-        path = event.get("filename", "page.html")
-        write_and_record(driver.page_source, path)
-
-    def handle_screenshot(event):
-        path = event.get("path", "screenshot.png")
-        driver.save_screenshot(path)
-        emitted_results.append(build_result(path))
-
-    ACTIONS = {
-        "get": handle_get,
-        "quit": handle_quit,
-        "wait": handle_wait,
-        "click": handle_click,
-        "type": handle_type,
-        "submit": handle_submit,
-        "sleep": handle_sleep,
-        "execute_js": handle_execute_js,
-        "extract": handle_extract,
-        "extract_all": handle_extract_all,
-        "extract_structured": handle_extract_structured,
-        "save": handle_save,
-        "screenshot": handle_screenshot,
-    }
-
-    for index, event in enumerate(events):
-        action = event.get("action")
-
-        if action not in ACTIONS:
-            raise ValueError(f"[Event #{index}] Unknown action: {action}")
-
-        try:
-            ACTIONS[action](event)
-        except Exception as e:
-            emitted_results.append(
-                {
-                    "url": base_result["url"],
-                    "status": 1,
-                    "error": f"[Event #{index}] Failed → {event}\nError: {str(e)}",
-                    "progress": "100%",
-                    "path": None,
-                }
-            )
-
-    return emitted_results
+        return emitted_results
 
 
-def get_chrome_options(
-    options: dict, output_directory: Path | None = None
-) -> webdriver.ChromeOptions:
-    chrome_options = webdriver.ChromeOptions()
+def get_selenium_options(options_path: str = None):
+    if not options_path or not os.path.exists(options_path):
+        options_path = os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
 
-    # chrome_options.add_argument("--headless=new")
-    # chrome_options.add_argument("--no-sandbox")
-    # chrome_options.add_argument("--disable-gpu")
+    logger.info(f"Using selenium options from path: {options_path}")
+    options = read_json_file(options_path)
 
-    chrome_config = options.get("chrome_options", {})
-
-    prefs = {}
-    if output_directory:
-        prefs.update(
-            {
-                "download.default_directory": str(output_directory.resolve()),
-                "download.prompt_for_download": False,
-                "download.directory_upgrade": True,
-                "safebrowsing.enabled": True,
-            }
-        )
-
-    for key, value in chrome_config.items():
-
-        if key == "arguments" and isinstance(value, list):
-            for arg in value:
-                chrome_options.add_argument(arg)
-
-        elif key == "prefs" and isinstance(value, dict):
-            prefs.update(value)
-
-        elif key == "experimental_options" and isinstance(value, dict):
-            for exp_key, exp_val in value.items():
-                chrome_options.add_experimental_option(exp_key, exp_val)
-
-        else:
-            logger.warning(f"Unknown chrome option key ignored: {key}")
-
-    if prefs:
-        chrome_options.add_experimental_option("prefs", prefs)
-
-    return chrome_options
-
-
-def get_selenium_options(options_path: str | None, output_directory: Path | None):
-    if options_path and os.path.exists(options_path):
-        logger.info(f"Using selenium options from path: {options_path}")
-        options = read_json_file(options_path)
-    else:
-        options = {}
-
-    chrome_options = get_chrome_options(options, output_directory)
-    options["chrome_options"] = chrome_options
     return options
 
 
@@ -602,9 +551,19 @@ def download(
     out_dir = Path(output_directory or ".")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    options = get_selenium_options(options_path, out_dir)
-    chrome_options = options.get("chrome_options")
-    events = options.get("events")
+    options = get_selenium_options(options_path)
+
+    if output_directory:
+        if options["preferences"]:
+            options["preferences"].update(
+                {
+                    "download.default_directory": str(output_directory.resolve()),
+                    "download.prompt_for_download": False,
+                    "download.directory_upgrade": True,
+                    "safebrowsing.enabled": True,
+                }
+            )
+    selenium_driver = SeleniumDriver(**options)
 
     result = {
         "url": url,
@@ -615,20 +574,10 @@ def download(
     path = os.path.join(output_directory, output_filename) if output_filename else None
 
     try:
-        driver = webdriver.Chrome(options=chrome_options)
+        results = selenium_driver.execute_events(result, save_path=path)
 
-        logger.info(f"Loading URL: {url}")
-        driver.get(url)
-
-        if events:
-            results = execute_events(driver, events, result, path)
-        else:
-            result["status"] = 0
-            result["progress"] = "100%"
-            result["path"] = path
-            results = [result]
-
-        driver.quit()
+        if selenium_driver.driver:
+            selenium_driver.driver.quit()
 
     except WebDriverException as e:
         logger.error(f"Selenium error: {e}")
