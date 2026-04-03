@@ -30,34 +30,31 @@ class TestSelenium(TestBase):
     def test_download(self):
         download(url, options_path=options_path, output_filename="index.html")
 
-    def test_get_driver_instance(self):
-        print(selenium_driver.browser_type)
-
     def test_get_browser_options(self):
         browser_options_metadata = options.get("browser_options")
-        browser_options = selenium_driver.get_browser_options(browser_options_metadata)
+        browser_options = BrowserOptions(
+            selenium_driver.driver_type,
+            selenium_driver.browser_type,
+            browser_options_metadata,
+        ).get_browser_options()
 
         if options.get("driver_type") == "undetected":
             self.assertTrue(selenium_driver.driver_type == "undetected")
-            self.assertTrue(
-                isinstance(selenium_driver.browser_options, uc.ChromeOptions)
-            )
+            self.assertTrue(isinstance(browser_options, uc.ChromeOptions))
+            print(browser_options)
         else:
-            print("DRIVER", selenium_driver.browser_type)
-            b_type = browser_option_types.get(
-                selenium_driver.browser_type, webdriver.Chrome
-            )
-            # print(b_type)
-            # self.assertTrue(selenium_driver.browser_options == b_type)
+            self.assertTrue(selenium_driver.driver_type != "undetected")
+            print(browser_options)
 
-        # print(browser_options.to_capabilities())
+    def test_get_driver_instance(self):
+        print(selenium_driver.get_driver_instance())
 
 
 if __name__ == "__main__":
     test_methods = [
         # TestSelenium.test_get_options,
         # TestSelenium.test_download,
-        # TestSelenium.test_get_driver_instance,
-        TestSelenium.test_get_browser_options,
+        TestSelenium.test_get_driver_instance,
+        # TestSelenium.test_get_browser_options,
     ]
     run_test_methods(test_methods)

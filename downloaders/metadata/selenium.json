@@ -1,7 +1,7 @@
 {
-  "browser_type": "chrome",
+  "browser_type": "firefox",
   "browser_options": {
-    "default_capabilities": false,
+    "use_default_capabilities": false,
     "experimental_options": {
       "detach": false
     },

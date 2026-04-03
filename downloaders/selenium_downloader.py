@@ -12,7 +12,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import DesiredCapabilities
-
 import undetected_chromedriver as uc
 
 pp = PrettyPrinter(indent=2)
@@ -288,20 +287,6 @@ class SeleniumDriver:
     _driver = None
 
     @property
-    def browser_types(self):
-        return (
-            {"chrome": uc.Chrome}
-            if self.driver_type == "undetected"
-            else {
-                "chrome": webdriver.Chrome,
-                "edge": webdriver.Edge,
-                "firefox": webdriver.Firefox,
-                "safari": webdriver.Safari,
-                "ie": webdriver.Ie,
-            }
-        )
-
-    @property
     def browser_type(self):
         return self._browser_type
 
@@ -353,16 +338,15 @@ class SeleniumDriver:
         self.browser_options = browser_options
         self.events = events
 
-    def get_browser_options(self, browser_options: dict):
+    def get_driver_instance(self):
         browser_options = BrowserOptions(
-            self.driver_type, self.browser_type, browser_options
+            self.driver_type,
+            self.browser_type,
+            self.browser_options,
         ).get_browser_options()
 
-        return browser_options
-
-    def get_driver_instance(self):
-
-        self.driver = self.browser_type(options=self.browser_options)
+        print(browser_options)
+        # self.driver = self.browser_type(options=self.browser_options)
         return self.driver
 
 
