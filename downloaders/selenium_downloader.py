@@ -17,6 +17,7 @@ import undetected_chromedriver as uc
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="selenium_downloader", log_dir="/udown/selenium")
 
+driver_instance = None
 
 BY_MAP = {
     "css": By.CSS_SELECTOR,
@@ -27,6 +28,31 @@ BY_MAP = {
     "tag": By.TAG_NAME,
     "link_text": By.LINK_TEXT,
     "partial_link_text": By.PARTIAL_LINK_TEXT,
+}
+
+
+driver_types = {
+    "chrome": webdriver.Chrome,
+    "edge": webdriver.Edge,
+    "firefox": webdriver.Firefox,
+    "safari": webdriver.Safari,
+    "ie": webdriver.Ie,
+}
+
+browser_option_types = {
+    "chrome": webdriver.ChromeOptions,
+    "edge": webdriver.EdgeOptions,
+    "firefox": webdriver.FirefoxOptions,
+    "safari": webdriver.SafariOptions,
+    "ie": webdriver.IeOptions,
+}
+
+capability_types = {
+    "chrome": DesiredCapabilities.CHROME.copy(),
+    "edge": DesiredCapabilities.EDGE.copy(),
+    "firefox": DesiredCapabilities.FIREFOX.copy(),
+    "safari": DesiredCapabilities.SAFARI.copy(),
+    "ie": DesiredCapabilities.INTERNETEXPLORER.copy(),
 }
 
 
@@ -142,23 +168,6 @@ class Event:
                         arguments.append(arg)
 
         return function_name, arguments
-
-
-browser_option_types = {
-    "chrome": webdriver.ChromeOptions,
-    "edge": webdriver.EdgeOptions,
-    "firefox": webdriver.FirefoxOptions,
-    "safari": webdriver.SafariOptions,
-    "ie": webdriver.IeOptions,
-}
-
-capability_types = {
-    "chrome": DesiredCapabilities.CHROME.copy(),
-    "edge": DesiredCapabilities.EDGE.copy(),
-    "firefox": DesiredCapabilities.FIREFOX.copy(),
-    "safari": DesiredCapabilities.SAFARI.copy(),
-    "ie": DesiredCapabilities.INTERNETEXPLORER.copy(),
-}
 
 
 class BrowserOptions:
@@ -310,6 +319,13 @@ class SeleniumDriver:
     def driver_type(self, driver_type):
         self._driver_type = driver_type
 
+    def get_driver_type(self):
+        return (
+            uc.Chrome
+            if self.driver_type == "undetected"
+            else driver_types.get(self.browser_type, webdriver.Chrome)
+        )
+
     @property
     def events(self):
         return self._events
@@ -326,6 +342,14 @@ class SeleniumDriver:
     def browser_options(self, browser_options):
         self._browser_options = browser_options
 
+    @property
+    def browser_options_instance(self) -> BrowserOptions:
+        return BrowserOptions(
+            self.driver_type,
+            self.browser_type,
+            self.browser_options,
+        )
+
     def __init__(
         self,
         driver_type=None,
@@ -339,15 +363,16 @@ class SeleniumDriver:
         self.events = events
 
     def get_driver_instance(self):
-        browser_options = BrowserOptions(
-            self.driver_type,
-            self.browser_type,
-            self.browser_options,
-        ).get_browser_options()
 
-        print(browser_options)
-        # self.driver = self.browser_type(options=self.browser_options)
+        browser_options = self.browser_options_instance.get_browser_options()
+
+        if not self.driver:
+            self.driver = self.get_driver_type()(options=browser_options)
+
         return self.driver
+
+    def execute_events(self):
+        pass
 
 
 def execute_events(
