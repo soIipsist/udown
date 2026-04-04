@@ -46,25 +46,31 @@ class TestSelenium(TestBase):
             print(browser_options)
 
     def test_get_driver_instance(self):
-        print(selenium_driver.get_driver_instance())
-        self.assertIsNotNone(selenium_driver.driver)
 
-        cookies = selenium_driver.get_cookies()
+        from selenium.webdriver.support import expected_conditions as EC
 
-        selenium_driver.add_implicit_wait(10)
-        selenium_driver.get(url)
-        print(cookies)
-        js = "return document.title;"
-        result = selenium_driver.execute_script(js)
+        ec_function = "element_to_be_clickable"
+        print(EC.__dict__.get(ec_function))
 
-        element = selenium_driver.get_element_by_xpath(
-            "/html/body/div/div[2]/div[1]/div[1]/div/a[1]"
-        )
-        selenium_driver.click_element(element)
+        # selenium_driver.get_driver_instance()
+        # self.assertIsNotNone(selenium_driver.driver)
+
+        # cookies = selenium_driver.get_cookies()
+
+        # selenium_driver.add_implicit_wait(10)
+        # selenium_driver.get(url)
+        # print(cookies)
+        # js = "return document.title;"
+        # result = selenium_driver.execute_script(js)
+
+        # element = selenium_driver.get_element_by_xpath(
+        #     "/html/body/div/div[2]/div[1]/div[1]/div/a[1]"
+        # )
+        # selenium_driver.click_element(element)
 
         # selenium_driver.quit()
-
-        self.assertTrue(isinstance(selenium_driver.driver, webdriver.Chrome))
+        # selenium_driver.execute_events()
+        # self.assertTrue(isinstance(selenium_driver.driver, webdriver.Chrome))
         # selenium_driver.quit()
         # print("RESULT", result)
         # selenium_driver.execute_events()

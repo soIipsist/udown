@@ -427,6 +427,9 @@ class SeleniumDriver:
 
     # events stuff
     def parse_event(self, event: str):
+        if isinstance(event, dict):
+            return event
+
         event_dict = {"action": None, "value": None}
         parts = event.split("=", 1)  # split once
 
@@ -608,38 +611,35 @@ class SeleniumDriver:
         def handle_explicit_wait(event):
             self.driver.add_explicit_wait(event.get("value"))
 
-        # functions = {
-        #     "e": self.driver.get_element,
-        #     "e.name": self.driver.get_element_by_name,
-        #     "e.id": self.driver.get_element_by_id,
-        #     "e.class_name": self.driver.get_element_by_class_name,
-        #     "e.selector": self.driver.get_element_by_selector,
-        #     "e.link_text": self.driver.get_element_by_link_text,
-        #     "e.partial_link_text": self.driver.get_element_by_partial_link_text,
-        #     "e.clear": self.driver.clear_element,
-        #     "c": self.driver.add_cookies,
-        #     "cookies": self.driver.get_cookies,
-        #     "delete_cookies": self.driver.delete_cookies,
-        #     "delay": self.driver.add_delay,
-        #     "wait": self.driver.add_implicit_wait,
-        #     "explicit_wait": self.driver.add_explicit_wait,
-        #     "js": self.driver.execute_script,
-        #     "keys": self.driver.send_keys,
-        #     "click": self.driver.click_element,
-        #     "dnd": self.driver.drag_and_drop,
-        #     "select": self.driver.select,
-        #     "deselect": self.driver.deselect,
-        # }
-
         ACTIONS = {
-            "get": handle_get,
-            "quit": handle_quit,
+            "e": self.get_element,
+            "e.name": self.get_element_by_name,
+            "e.id": self.get_element_by_id,
+            "e.class_name": self.get_element_by_class_name,
+            "e.selector": self.get_element_by_selector,
+            "e.link_text": self.get_element_by_link_text,
+            "e.partial_link_text": self.get_element_by_partial_link_text,
+            "e.clear": self.clear_element,
+            "c": self.add_cookies,
+            "cookies": self.get_cookies,
+            "delete_cookies": self.delete_cookies,
+            "delay": self.add_delay,
+            "wait": self.add_implicit_wait,
+            "explicit_wait": self.add_explicit_wait,
+            "js": self.execute_script,
+            "keys": self.send_keys,
+            "click": self.click_element,
+            "dnd": self.drag_and_drop,
+            "select": self.select,
+            "deselect": self.deselect,
+            "get": self.get,
+            "quit": self.quit,
             "wait": handle_wait,
-            "click": handle_click,
-            "type": handle_type,
+            "click": self.click_element,
+            "type": self.send_keys,
             "submit": handle_submit,
             "sleep": handle_sleep,
-            "execute_js": handle_execute_js,
+            "execute_js": self.execute_script,
             "extract": handle_extract,
             "extract_all": handle_extract_all,
             "extract_structured": handle_extract_structured,
