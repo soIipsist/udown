@@ -15,7 +15,7 @@ url = "https://quotes.toscrape.com"
 options_path = os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
 options = read_json_file(options_path)
 # print(options)
-selenium_driver = SeleniumDriver(**options)
+selenium_driver = SeleniumDownloader(**options)
 
 
 class TestSelenium(TestBase):
@@ -47,13 +47,13 @@ class TestSelenium(TestBase):
 
     def test_get_driver_instance(self):
 
-        from selenium.webdriver.support import expected_conditions as EC
+        # from selenium.webdriver.support import expected_conditions as EC
 
-        ec_function = "element_to_be_clickable"
-        print(EC.__dict__.get(ec_function))
+        # ec_function = "element_to_be_clickable"
+        # print(EC.__dict__.get(ec_function))
 
-        # selenium_driver.get_driver_instance()
-        # self.assertIsNotNone(selenium_driver.driver)
+        selenium_driver.get_driver_instance()
+        self.assertIsNotNone(selenium_driver.driver)
 
         # cookies = selenium_driver.get_cookies()
 
@@ -75,12 +75,21 @@ class TestSelenium(TestBase):
         # print("RESULT", result)
         # selenium_driver.execute_events()
 
+    def test_parse_event(self):
+        event = f"var = get({url})"
+        event_dict = selenium_driver.parse_event(event)
+
+        event = f"get({url})"
+        event_dict = selenium_driver.parse_event(event)
+        print(event_dict)
+
 
 if __name__ == "__main__":
     test_methods = [
         # TestSelenium.test_get_options,
         # TestSelenium.test_download,
-        TestSelenium.test_get_driver_instance,
+        # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
+        TestSelenium.test_parse_event
     ]
     run_test_methods(test_methods)
