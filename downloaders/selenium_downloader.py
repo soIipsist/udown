@@ -442,35 +442,32 @@ class SeleniumDownloader:
         parts = event.split("=", 1)  # split once
 
         variable_part = parts[0].strip()
-        function_part = parts[1].strip() if len(parts) > 1 else None
+        action_part = parts[1].strip() if len(parts) > 1 else None
 
-        if not function_part:
-            function_part = variable_part
+        if not action_part:
+            action_part = variable_part
             variable_part = None
 
-        function_name, arguments = self.get_function_name_and_arguments(function_part)
-
-        print("VARIABLE PART", variable_part)
-        print("FUNCTION PART", function_name, arguments)
+        action, arguments = self.get_action_and_arguments(action_part)
 
         event_dict = {
             "variable": variable_part,
-            "function": function_name,
+            "action": action,
             "arguments": arguments,
         }
 
         return event_dict
 
-    def get_function_name_and_arguments(self, function_part: str):
-        function_pattern = r"([\w_\.]+)(?:\(\s*([^\(\)]*)\s*\))?"
+    def get_action_and_arguments(self, action_part: str):
+        action_pattern = r"([\w_\.]+)(?:\(\s*([^\(\)]*)\s*\))?"
 
-        match = re.match(function_pattern, function_part)
+        match = re.match(action_pattern, action_part)
 
-        function_name = None
+        action = None
         arguments = []
 
         if match:
-            function_name = match.group(1)
+            action = match.group(1)
             arguments = match.group(2)
 
             if not arguments:
@@ -509,7 +506,7 @@ class SeleniumDownloader:
                     else:
                         arguments.append(arg)
 
-        return function_name, arguments
+        return action, arguments
 
     def execute_events(self, url: str = None, save_path: str | None = None):
         emitted_results = []
