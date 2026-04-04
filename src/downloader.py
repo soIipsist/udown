@@ -3,11 +3,11 @@ from importlib import import_module
 import json
 import os
 from pprint import PrettyPrinter
+from utils import str_to_bool
 from .options import (
     get_option,
     PROJECT_DIR,
     DOWNLOADER_METADATA_DIR,
-    str_to_bool,
     ALLOWED_MODULES,
 )
 from utils.logger import setup_logger

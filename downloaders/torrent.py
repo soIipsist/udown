@@ -15,9 +15,9 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote, unquote_plus
-from downloaders.ytdlp import str_to_bool
 from downloaders.wget import download as wget_download
 from src.options import DOWNLOADER_METADATA_DIR
+from utils import str_to_bool
 from utils.logger import setup_logger, write_output
 from selenium import webdriver
 from selenium.webdriver.common.by import By

@@ -5,6 +5,7 @@ from pathlib import Path
 from pprint import PrettyPrinter
 from downloaders.ytdlp import read_json_file
 from src.options import DOWNLOADER_METADATA_DIR
+from utils import read_file
 from utils.logger import setup_logger, write_output
 import re
 from selenium import webdriver
@@ -324,7 +325,7 @@ class SeleniumDriver:
 
     def execute_script(self, script: str, asynchronous=False):
         if os.path.exists(script):
-            script = read_json_file(script)
+            script = read_file(script, logger=logger)
 
         if asynchronous:
             result = self.driver.execute_async_script(script)

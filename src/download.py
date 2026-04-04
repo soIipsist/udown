@@ -14,7 +14,8 @@ from .downloader import (
     detect_downloader_type,
     complete_downloader_type,
 )
-from .options import get_option, parse_date, str_to_bool, parse_value
+from utils import str_to_bool, parse_value, parse_date
+from .options import get_option
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,

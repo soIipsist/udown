@@ -13,7 +13,6 @@ pp = PrettyPrinter(indent=2)
 
 url = "https://quotes.toscrape.com"
 options_path = os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
-
 options = read_json_file(options_path)
 # print(options)
 selenium_driver = SeleniumDriver(**options)
@@ -54,6 +53,9 @@ class TestSelenium(TestBase):
 
         selenium_driver.get(url)
         print(cookies)
+        js = "return document.title;"
+        result = selenium_driver.execute_script(js)
+        # print("RESULT", result)
         # selenium_driver.execute_events()
 
 

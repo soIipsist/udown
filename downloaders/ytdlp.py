@@ -5,9 +5,9 @@ import json
 from pprint import PrettyPrinter
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 from src.options import get_option
+from utils import read_json_file
 from utils.logger import setup_logger
 
-bool_choices = ["0", "1", 0, 1, "true", "false", True, False, None]
 parent_directory = os.path.dirname(os.path.abspath(__file__))
 pp = PrettyPrinter(indent=2)
 
@@ -33,19 +33,6 @@ def get_urls(urls: list, removed_args: list = None):
         for url in urls
         if (parsed := urlparse(url))
     ]
-
-
-def str_to_bool(string: str):
-    return string in ["1", "true", True]
-
-
-def read_json_file(json_file, errors=None):
-    try:
-        with open(json_file, "r", errors=errors) as file:
-            json_object = json.load(file)
-            return json_object
-    except Exception as e:
-        logger.error(str(e))
 
 
 def get_outtmpl(
@@ -160,7 +147,7 @@ def get_options(
 
     if os.path.exists(options_path):  # read from metadata file, if it exists
         logger.info(f"Using ytdlp options from path: {options_path}.")
-        options = read_json_file(options_path)
+        options = read_json_file(options_path, logger=logger)
     else:
         options = {}
 
