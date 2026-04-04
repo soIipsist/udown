@@ -51,10 +51,21 @@ class TestSelenium(TestBase):
 
         cookies = selenium_driver.get_cookies()
 
+        selenium_driver.add_implicit_wait(10)
         selenium_driver.get(url)
         print(cookies)
         js = "return document.title;"
         result = selenium_driver.execute_script(js)
+
+        element = selenium_driver.get_element_by_xpath(
+            "/html/body/div/div[2]/div[1]/div[1]/div/a[1]"
+        )
+        selenium_driver.click_element(element)
+
+        # selenium_driver.quit()
+
+        self.assertTrue(isinstance(selenium_driver.driver, webdriver.Chrome))
+        # selenium_driver.quit()
         # print("RESULT", result)
         # selenium_driver.execute_events()
 

@@ -269,15 +269,28 @@ class SeleniumDriver:
 
         self.driver.get(url)
 
+    def quit(self):
+        if self.driver:
+            self.driver.quit()
+
     def get_element(self, value: str, by: str = None):
         if by is None:
             by = "xpath"
 
-        element = self.driver.find_element(by=by, value=value)
+        element = None
+
+        try:
+            element = self.driver.find_element(by=by, value=value)
+        except Exception as e:
+            print(e)
+
         return element
 
     def get_locator(self, by: str, value: str):
         return (by, value)
+
+    def get_element_by_xpath(self, xpath: str):
+        return self.get_element(by=By.XPATH, value=xpath)
 
     def get_element_by_id(self, id: str):
         return self.get_element(by=By.ID, value=id)
@@ -301,15 +314,15 @@ class SeleniumDriver:
         return self.get_element(by=By.CSS_SELECTOR, value=selector)
 
     def send_keys(self, element: WebElement, keys: str):
-        if isinstance(element, WebElement):
+        if element and isinstance(element, WebElement):
             element.send_keys(keys)
 
     def click_element(self, element: WebElement):
-        if isinstance(element, WebElement):
+        if element and isinstance(element, WebElement):
             element.click()
 
     def clear_element(self, element: WebElement):
-        if isinstance(element, WebElement):
+        if element and isinstance(element, WebElement):
             element.clear()
 
     def add_cookies(self, cookies: list):
@@ -334,7 +347,7 @@ class SeleniumDriver:
 
         return result
 
-    def add_explicit_wait(self, delay: int, ec_function: str, *args, **kwargs):
+    def add_explicit_wait(self, delay: int, ec_function: str = None, *args, **kwargs):
         ec_function = EC.__dict__.get(ec_function)
         result = None
 
@@ -362,7 +375,7 @@ class SeleniumDriver:
         )
 
     def select(self, select_element: WebElement, value: int):
-        if isinstance(select_element, WebElement):
+        if select_element and isinstance(select_element, WebElement):
             select = Select(select_element)
             if isinstance(value, int):
                 select.select_by_index(value)
@@ -370,7 +383,7 @@ class SeleniumDriver:
                 select.select_by_value(value)
 
     def deselect(self, select_element: WebElement):
-        if isinstance(select_element, WebElement):
+        if select_element and isinstance(select_element, WebElement):
             select = Select(select_element)
             select.deselect_all()
 
@@ -609,7 +622,7 @@ class SeleniumDriver:
         #     "delete_cookies": self.driver.delete_cookies,
         #     "delay": self.driver.add_delay,
         #     "wait": self.driver.add_implicit_wait,
-        # "explicit_wait": self.driver.add_explicit_wait,
+        #     "explicit_wait": self.driver.add_explicit_wait,
         #     "js": self.driver.execute_script,
         #     "keys": self.driver.send_keys,
         #     "click": self.driver.click_element,
