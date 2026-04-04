@@ -179,7 +179,7 @@ class BrowserOptions:
         return self.browser_options_obj
 
 
-class SeleniumDriver:
+class SeleniumDownloader:
     _driver_type = None
     _browser_type = None
     _events: list = None
@@ -436,6 +436,13 @@ class SeleniumDriver:
         variable_part = parts[0].strip()
         function_part = parts[1].strip() if len(parts) > 1 else None
 
+        if not function_part:
+            function_part = variable_part
+            variable_part = None
+
+        print("VARIABLE PART", variable_part)
+        print("FUNCTION PART", function_part)
+
         return event_dict
 
     def get_function_name_and_arguments(self, function_part: str):
@@ -502,10 +509,6 @@ class SeleniumDriver:
                 "path": path,
             }
 
-        def handle_get(event):
-            url = event.get("value")
-            self.driver.get(url)
-
         def get_by(event):
             return BY_MAP.get(event.get("by", "css"), By.CSS_SELECTOR)
 
@@ -513,21 +516,10 @@ class SeleniumDriver:
             write_output(logger, content, path)
             emitted_results.append(build_result(path))
 
-        def handle_quit(event):
-            self.driver.quit()
-
         def handle_wait(event):
             WebDriverWait(self.driver, event.get("timeout", 10)).until(
                 EC.presence_of_element_located((get_by(event), event["value"]))
             )
-
-        def handle_click(event):
-            self.driver.find_element(get_by(event), event["value"]).click()
-
-        def handle_type(event):
-            el = self.driver.find_element(get_by(event), event["value"])
-            el.clear()
-            el.send_keys(event.get("text", ""))
 
         def handle_submit(event):
             self.driver.find_element(get_by(event), event["value"]).submit()
@@ -658,7 +650,7 @@ class SeleniumDriver:
                 raise ValueError(f"[Event #{index}] Unknown action: {action}")
 
             try:
-                ACTIONS[action](event)
+                ACTIONS[action](*event)
             except Exception as e:
                 emitted_results.append(
                     {
@@ -707,7 +699,7 @@ def download(
                     "safebrowsing.enabled": True,
                 }
             )
-    selenium_driver = SeleniumDriver(**options)
+    selenium_driver = SeleniumDownloader(**options)
 
     result = {
         "url": url,
