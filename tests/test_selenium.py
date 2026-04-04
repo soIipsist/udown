@@ -79,9 +79,12 @@ class TestSelenium(TestBase):
         event = f"var = get({url})"
         event_dict = selenium_driver.parse_event(event)
 
+        self.assertTrue(event_dict.get("variable") == "var")
+
         event = f"get({url})"
         event_dict = selenium_driver.parse_event(event)
         print(event_dict)
+        self.assertTrue(event_dict.get("variable") == None)
 
 
 if __name__ == "__main__":
