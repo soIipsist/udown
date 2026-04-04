@@ -48,13 +48,20 @@ class TestSelenium(TestBase):
 
     def test_get_driver_instance(self):
         print(selenium_driver.get_driver_instance())
+        self.assertIsNotNone(selenium_driver.driver)
+
+        cookies = selenium_driver.get_cookies()
+
+        selenium_driver.get(url)
+        print(cookies)
+        # selenium_driver.execute_events()
 
 
 if __name__ == "__main__":
     test_methods = [
-        TestSelenium.test_get_options,
+        # TestSelenium.test_get_options,
         # TestSelenium.test_download,
-        # TestSelenium.test_get_driver_instance,
+        TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
     ]
     run_test_methods(test_methods)

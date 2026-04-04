@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 from pathlib import Path
 from pprint import PrettyPrinter
@@ -9,8 +10,10 @@ import re
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 import time
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import DesiredCapabilities
 import undetected_chromedriver as uc
@@ -55,120 +58,6 @@ capability_types = {
     "safari": DesiredCapabilities.SAFARI.copy(),
     "ie": DesiredCapabilities.INTERNETEXPLORER.copy(),
 }
-
-
-class Event:
-
-    _arguments: list = None
-    _function_name: str = None
-    _variable: str = None
-
-    @property
-    def variable(self):
-        return self._variable
-
-    @variable.setter
-    def variable(self, variable):
-        self._variable = variable
-
-    @property
-    def arguments(self):
-        return self._arguments
-
-    @arguments.setter
-    def arguments(self, arguments):
-        self._arguments = arguments
-
-    @property
-    def function_name(self):
-        return self._function_name
-
-    @function_name.setter
-    def function_name(self, function_name: str):
-        self._function_name = function_name
-
-    def __init__(self, event: str):
-        pass
-
-    def parse_event(self, event: str):
-        parts = event.split("=", 1)  # split once
-
-        variable_part = parts[0].strip()
-        function_part = parts[1].strip() if len(parts) > 1 else None
-
-    # functions = {
-    #     "e": self.driver.get_element,
-    #     "e.name": self.driver.get_element_by_name,
-    #     "e.id": self.driver.get_element_by_id,
-    #     "e.class_name": self.driver.get_element_by_class_name,
-    #     "e.selector": self.driver.get_element_by_selector,
-    #     "e.link_text": self.driver.get_element_by_link_text,
-    #     "e.partial_link_text": self.driver.get_element_by_partial_link_text,
-    #     "e.clear": self.driver.clear_element,
-    #     "c": self.driver.add_cookies,
-    #     "cookies": self.driver.get_cookies,
-    #     "delete_cookies": self.driver.delete_cookies,
-    #     "delay": self.driver.add_delay,
-    #     "wait": self.driver.add_implicit_wait,
-    #     "explicit_wait": self.driver.add_explicit_wait,
-    #     "js": self.driver.execute_script,
-    #     "keys": self.driver.send_keys,
-    #     "click": self.driver.click_element,
-    #     "dnd": self.driver.drag_and_drop,
-    #     "select": self.driver.select,
-    #     "deselect": self.driver.deselect,
-    # }
-
-    @classmethod
-    def get_function_name_and_arguments(cls, function_part: str):
-        function_pattern = r"([\w_\.]+)(?:\(\s*([^\(\)]*)\s*\))?"
-
-        match = re.match(function_pattern, function_part)
-
-        function_name = None
-        arguments = []
-
-        if match:
-            function_name = match.group(1)
-            arguments = match.group(2)
-
-            if not arguments:
-                arguments = []
-            else:
-                argument_list = []
-                argument = ""
-                inside_array = False
-
-                for char in arguments:
-                    if char == "[":
-                        inside_array = True
-                        argument += char
-                    elif char == "]":
-                        inside_array = False
-                        argument += char
-                    elif char == "," and not inside_array:
-                        argument_list.append(argument.strip())
-                        argument = ""
-                    else:
-                        argument += char
-
-                if argument:
-                    argument_list.append(argument.strip())
-
-                arguments = []
-                for arg in argument_list:
-                    arg = arg.strip().strip("'").strip('"')
-                    if arg.startswith("[") and arg.endswith("]"):
-                        elements = arg[1:-1].split(",")
-                        elements = [
-                            element.strip().strip("'").strip('"')
-                            for element in elements
-                        ]
-                        arguments.append(elements)
-                    else:
-                        arguments.append(arg)
-
-        return function_name, arguments
 
 
 class BrowserOptions:
@@ -372,13 +261,223 @@ class SeleniumDriver:
 
         return self.driver
 
-    def execute_events(self, base_result: dict, save_path: str | None = None):
+    def get(self, url: str):
+
+        if not self.driver:
+            self.driver = self.get_driver_instance()
+
+        self.driver.get(url)
+
+    def get_element(self, value: str, by: str = None):
+        if by is None:
+            by = "xpath"
+
+        element = self.driver.find_element(by=by, value=value)
+        return element
+
+    def get_locator(self, by: str, value: str):
+        return (by, value)
+
+    def get_element_by_id(self, id: str):
+        return self.get_element(by=By.ID, value=id)
+
+    def get_element_by_name(self, name: str):
+        return self.get_element(by=By.NAME, value=name)
+
+    def get_element_by_link_text(self, link_text: str):
+        return self.get_element(by=By.LINK_TEXT, value=link_text)
+
+    def get_element_by_partial_link_text(self, partial_link_text: str):
+        return self.get_element(by=By.PARTIAL_LINK_TEXT, value=partial_link_text)
+
+    def get_element_by_tag_name(self, tag_name: str):
+        return self.get_element(by=By.TAG_NAME, value=tag_name)
+
+    def get_element_by_class_name(self, class_name: str):
+        return self.get_element(by=By.TAG_NAME, value=class_name)
+
+    def get_element_by_selector(self, selector: str):
+        return self.get_element(by=By.CSS_SELECTOR, value=selector)
+
+    def send_keys(self, element: WebElement, keys: str):
+        if isinstance(element, WebElement):
+            element.send_keys(keys)
+
+    def click_element(self, element: WebElement):
+        if isinstance(element, WebElement):
+            element.click()
+
+    def clear_element(self, element: WebElement):
+        if isinstance(element, WebElement):
+            element.clear()
+
+    def add_cookies(self, cookies: list):
+
+        for cookie in cookies:
+            if isinstance(cookie, dict):
+                self.driver.add_cookie(cookie)
+        return cookies
+
+    def drag_and_drop(self, element: WebElement, target: WebElement):
+        action_chains = ActionChains(self.driver)
+        action_chains.drag_and_drop(element, target).perform()
+
+    def execute_script(self, script: str, asynchronous=False):
+        if os.path.exists(script):
+            script = read_json_file(script)
+
+        if asynchronous:
+            result = self.driver.execute_async_script(script)
+        else:
+            result = self.driver.execute_script(script)
+
+        return result
+
+    def add_explicit_wait(self, delay: int, ec_function: str, *args, **kwargs):
+        ec_function = EC.__dict__.get(ec_function)
+        result = None
+
+        if ec_function:
+            wait = WebDriverWait(self.driver, delay)
+            result = wait.until(ec_function(*args))
+        return result
+
+    def add_implicit_wait(self, delay: float):
+        self.driver.implicitly_wait(delay)
+
+    def add_delay(self, delay: float):
+        time.sleep(delay)
+
+    def get_cookies(self, cookie: str = None):
+        return (
+            self.driver.get_cookies() if not cookie else self.driver.get_cookie(cookie)
+        )
+
+    def delete_cookies(self, cookie: str = None):
+        return (
+            self.driver.delete_all_cookies()
+            if not cookie
+            else self.driver.delete_cookie(cookie)
+        )
+
+    def select(self, select_element: WebElement, value: int):
+        if isinstance(select_element, WebElement):
+            select = Select(select_element)
+            if isinstance(value, int):
+                select.select_by_index(value)
+            else:
+                select.select_by_value(value)
+
+    def deselect(self, select_element: WebElement):
+        if isinstance(select_element, WebElement):
+            select = Select(select_element)
+            select.deselect_all()
+
+    def switch_to(self, element: str, *args, **kwargs):
+        result = None
+
+        if hasattr(self.driver.switch_to, element):
+            attr = getattr(self.driver.switch_to, element)
+            if callable(attr):
+                result = attr(**kwargs)
+            else:
+                result = attr
+        return result
+
+    def get_network_traffic(self):
+        requests = []
+        responses = []
+
+        if hasattr(self.driver, "get_log"):
+
+            try:
+                logs = self.driver.get_log("performance")
+
+                for log in logs:
+                    message = json.loads(log["message"])
+                    message_data = message["message"]["params"]
+
+                    if "request" in message_data:
+                        request = message_data["request"]
+                        requests.append(request)
+                    elif "response" in message_data:
+                        response = message_data["response"]
+                        responses.append(response)
+            except Exception as e:
+                print(e)
+
+        return requests, responses
+
+    def get_requests(self):
+        return self.get_network_traffic()
+
+    # events stuff
+    def parse_event(self, event: str):
+        event_dict = {"action": None, "value": None}
+        parts = event.split("=", 1)  # split once
+
+        variable_part = parts[0].strip()
+        function_part = parts[1].strip() if len(parts) > 1 else None
+
+        return event_dict
+
+    def get_function_name_and_arguments(self, function_part: str):
+        function_pattern = r"([\w_\.]+)(?:\(\s*([^\(\)]*)\s*\))?"
+
+        match = re.match(function_pattern, function_part)
+
+        function_name = None
+        arguments = []
+
+        if match:
+            function_name = match.group(1)
+            arguments = match.group(2)
+
+            if not arguments:
+                arguments = []
+            else:
+                argument_list = []
+                argument = ""
+                inside_array = False
+
+                for char in arguments:
+                    if char == "[":
+                        inside_array = True
+                        argument += char
+                    elif char == "]":
+                        inside_array = False
+                        argument += char
+                    elif char == "," and not inside_array:
+                        argument_list.append(argument.strip())
+                        argument = ""
+                    else:
+                        argument += char
+
+                if argument:
+                    argument_list.append(argument.strip())
+
+                arguments = []
+                for arg in argument_list:
+                    arg = arg.strip().strip("'").strip('"')
+                    if arg.startswith("[") and arg.endswith("]"):
+                        elements = arg[1:-1].split(",")
+                        elements = [
+                            element.strip().strip("'").strip('"')
+                            for element in elements
+                        ]
+                        arguments.append(elements)
+                    else:
+                        arguments.append(arg)
+
+        return function_name, arguments
+
+    def execute_events(self, url: str = None, save_path: str | None = None):
         emitted_results = []
 
         def build_result(path):
             filename = os.path.basename(path)
             return {
-                "url": base_result["url"],
+                "url": url,
                 "status": 0,
                 "error": None,
                 "progress": "100%",
@@ -386,15 +485,16 @@ class SeleniumDriver:
                 "path": path,
             }
 
+        def handle_get(event):
+            url = event.get("value")
+            self.driver.get(url)
+
         def get_by(event):
             return BY_MAP.get(event.get("by", "css"), By.CSS_SELECTOR)
 
         def write_and_record(content, path):
             write_output(logger, content, path)
             emitted_results.append(build_result(path))
-
-        def handle_get(event):
-            self.driver.get(event["url"])
 
         def handle_quit(event):
             self.driver.quit()
@@ -491,6 +591,32 @@ class SeleniumDriver:
             self.driver.save_screenshot(path)
             emitted_results.append(build_result(path))
 
+        def handle_explicit_wait(event):
+            self.driver.add_explicit_wait(event.get("value"))
+
+        # functions = {
+        #     "e": self.driver.get_element,
+        #     "e.name": self.driver.get_element_by_name,
+        #     "e.id": self.driver.get_element_by_id,
+        #     "e.class_name": self.driver.get_element_by_class_name,
+        #     "e.selector": self.driver.get_element_by_selector,
+        #     "e.link_text": self.driver.get_element_by_link_text,
+        #     "e.partial_link_text": self.driver.get_element_by_partial_link_text,
+        #     "e.clear": self.driver.clear_element,
+        #     "c": self.driver.add_cookies,
+        #     "cookies": self.driver.get_cookies,
+        #     "delete_cookies": self.driver.delete_cookies,
+        #     "delay": self.driver.add_delay,
+        #     "wait": self.driver.add_implicit_wait,
+        # "explicit_wait": self.driver.add_explicit_wait,
+        #     "js": self.driver.execute_script,
+        #     "keys": self.driver.send_keys,
+        #     "click": self.driver.click_element,
+        #     "dnd": self.driver.drag_and_drop,
+        #     "select": self.driver.select,
+        #     "deselect": self.driver.deselect,
+        # }
+
         ACTIONS = {
             "get": handle_get,
             "quit": handle_quit,
@@ -503,11 +629,15 @@ class SeleniumDriver:
             "extract": handle_extract,
             "extract_all": handle_extract_all,
             "extract_structured": handle_extract_structured,
+            "explicit_wait": handle_explicit_wait,
             "save": handle_save,
             "screenshot": handle_screenshot,
         }
 
         for index, event in enumerate(self.events):
+
+            event = self.parse_event(event)
+
             action = event.get("action")
 
             if action not in ACTIONS:
@@ -518,7 +648,7 @@ class SeleniumDriver:
             except Exception as e:
                 emitted_results.append(
                     {
-                        "url": base_result["url"],
+                        "url": url,
                         "status": 1,
                         "error": f"[Event #{index}] Failed → {event}\nError: {str(e)}",
                         "progress": "100%",
@@ -574,7 +704,7 @@ def download(
     path = os.path.join(output_directory, output_filename) if output_filename else None
 
     try:
-        results = selenium_driver.execute_events(result, save_path=path)
+        results = selenium_driver.execute_events(url, save_path=path)
 
         if selenium_driver.driver:
             selenium_driver.driver.quit()
