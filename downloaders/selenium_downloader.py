@@ -183,6 +183,7 @@ class SeleniumDownloader:
     _driver_type = None
     _browser_type = None
     _events: list = None
+    _event_variables: dict = {}
     _browser_options = None
     _driver = None
 
@@ -224,6 +225,14 @@ class SeleniumDownloader:
     @events.setter
     def events(self, events):
         self._events = events
+
+    @property
+    def event_variables(self):
+        return self._event_variables
+
+    @event_variables.setter
+    def event_variables(self, event_variables: dict):
+        self._event_variables = event_variables
 
     @property
     def browser_options(self):
@@ -430,7 +439,6 @@ class SeleniumDownloader:
         if isinstance(event, dict):
             return event
 
-        event_dict = {"action": None, "value": None}
         parts = event.split("=", 1)  # split once
 
         variable_part = parts[0].strip()
@@ -440,8 +448,16 @@ class SeleniumDownloader:
             function_part = variable_part
             variable_part = None
 
+        function_name, arguments = self.get_function_name_and_arguments(function_part)
+
         print("VARIABLE PART", variable_part)
-        print("FUNCTION PART", function_part)
+        print("FUNCTION PART", function_name, arguments)
+
+        event_dict = {
+            "variable": variable_part,
+            "function": function_name,
+            "arguments": arguments,
+        }
 
         return event_dict
 
@@ -526,9 +542,6 @@ class SeleniumDownloader:
 
         def handle_sleep(event):
             time.sleep(event.get("seconds", 1))
-
-        def handle_execute_js(event):
-            self.driver.execute_script(event.get("script", ""))
 
         def handle_extract(event):
             if event.get("value"):
