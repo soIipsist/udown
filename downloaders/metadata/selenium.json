@@ -24,14 +24,12 @@
     "save(quotes_page_1.html)",
     {
       "action": "wait",
-      "by": "css",
-      "value": ".quote",
-      "timeout": 10
+      "arguments": 10
     },
 
     {
       "action": "save",
-      "filename": "quotes_page_2.html"
+      "arguments": "quotes_page_2.html"
     },
 
     {

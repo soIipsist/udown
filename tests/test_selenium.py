@@ -86,6 +86,16 @@ class TestSelenium(TestBase):
         print(event_dict)
         # self.assertTrue(event_dict.get("variable") == None)
 
+    def test_has_get_event(self):
+        events = ["get(hello)", ""]
+        self.assertTrue(has_get_event(events))
+
+        events = ["var", "var = xpath(var)"]
+        self.assertFalse(has_get_event(events))
+
+        events = [f"var = get('{url}')", "xpath(var)", f"get('{url}')"]
+        self.assertTrue(has_get_event(events))
+
 
 if __name__ == "__main__":
     test_methods = [
@@ -93,6 +103,7 @@ if __name__ == "__main__":
         # TestSelenium.test_download,
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
-        TestSelenium.test_parse_event
+        # TestSelenium.test_parse_event,
+        TestSelenium.test_has_get_event,
     ]
     run_test_methods(test_methods)

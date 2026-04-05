@@ -685,6 +685,14 @@ def get_selenium_options(options_path: str = None):
     return options
 
 
+def has_get_event(events):
+    return any(
+        (isinstance(e, str) and "get" in e)
+        or (isinstance(e, dict) and e.get("action") == "get")
+        for e in events
+    )
+
+
 def download(
     url: str,
     options_path: str | None = None,
@@ -697,7 +705,18 @@ def download(
     out_dir = Path(output_directory or ".")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    options = get_selenium_options(options_path)
+    if os.path.exists(url):  # use url argument as options path
+        options = get_selenium_options(url)
+    else:
+        options = get_selenium_options(options_path)
+
+        # insert get event, in case it doesn't already exist
+        events = options.get("events", [])
+        events: list
+
+        if not has_get_event(events):
+            events.insert(0, f"response = get({url})")
+            options["events"] = events
 
     if output_directory:
         if options["preferences"]:
@@ -709,7 +728,7 @@ def download(
                     "safebrowsing.enabled": True,
                 }
             )
-    selenium_driver = SeleniumDownloader(**options)
+    selenium_downloader = SeleniumDownloader(**options)
 
     result = {
         "url": url,
@@ -720,10 +739,10 @@ def download(
     path = os.path.join(output_directory, output_filename) if output_filename else None
 
     try:
-        results = selenium_driver.execute_events(url, save_path=path)
+        results = selenium_downloader.execute_events(url, save_path=path)
 
-        if selenium_driver.driver:
-            selenium_driver.driver.quit()
+        if selenium_downloader.driver:
+            selenium_downloader.driver.quit()
 
     except WebDriverException as e:
         logger.error(f"Selenium error: {e}")
