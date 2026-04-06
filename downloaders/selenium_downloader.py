@@ -187,6 +187,41 @@ class SeleniumDownloader:
     _event_outputs: dict = {}
     _browser_options = None
     _driver = None
+    _output_filename = None
+    _output_directory = None
+    _url = None
+
+    @property
+    def url(self):
+        return self._url
+
+    @url.setter
+    def url(self, url: str):
+        self._url = url
+
+    @property
+    def output_directory(self):
+        return self._output_directory
+
+    @output_directory.setter
+    def output_directory(self, output_directory: str):
+        self._output_directory = output_directory
+
+    @property
+    def output_path(self):
+        return (
+            os.path.join(self.output_directory, self.output_filename)
+            if self.output_filename
+            else self.output_directory
+        )
+
+    @property
+    def output_filename(self):
+        return self._output_filename
+
+    @output_filename.setter
+    def output_filename(self, output_filename: str):
+        self._output_filename = output_filename
 
     @property
     def browser_type(self):
@@ -257,11 +292,15 @@ class SeleniumDownloader:
         browser_type=webdriver.Chrome,
         browser_options=None,
         events: list = None,
+        url: str = None,
+        output_directory: str = None,
     ):
         self.driver_type = driver_type
         self.browser_type = browser_type
         self.browser_options = browser_options
         self.events = events
+        self.url = url
+        self.output_directory = output_directory
 
     def get_driver_instance(self):
 
@@ -590,7 +629,7 @@ class SeleniumDownloader:
             "path": path,
         }
 
-    def execute_events(self, url: str = None, save_path: str | None = None):
+    def execute_events(self, url: str = None):
         emitted_results = []
 
         ACTIONS = {
@@ -682,7 +721,6 @@ def download(
     url: str,
     options_path: str | None = None,
     output_directory: str | None = None,
-    output_filename: str = None,
 ) -> list[dict]:
 
     results = []
@@ -713,7 +751,10 @@ def download(
                     "safebrowsing.enabled": True,
                 }
             )
-    selenium_downloader = SeleniumDownloader(**options)
+
+    selenium_downloader = SeleniumDownloader(
+        **options, url=url, output_directory=output_directory
+    )
 
     result = {
         "url": url,
@@ -721,10 +762,8 @@ def download(
         "error": None,
     }
 
-    path = os.path.join(output_directory, output_filename) if output_filename else None
-
     try:
-        results = selenium_downloader.execute_events(url, save_path=path)
+        results = selenium_downloader.execute_events(url)
 
         if selenium_downloader.driver:
             selenium_downloader.driver.quit()
@@ -749,20 +788,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "-d", "--output_directory", type=str, default=None, help="Download directory"
     )
-    parser.add_argument(
-        "-f",
-        "--output_filename",
-        type=str,
-        default=None,
-        help="Download filename",
-    )
     args = parser.parse_args()
 
     results = download(
         url=args.url,
         options_path=args.options_path,
         output_directory=args.output_directory,
-        output_filename=args.output_filename,
     )
 
     pp.pprint(results)
