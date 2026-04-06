@@ -282,6 +282,25 @@ class SeleniumDownloader:
         if self.driver:
             self.driver.quit()
 
+    def extract(self, value: str = None, attribute: str = None, by: str = None):
+        if value:
+            el = self.get_element(value, by)
+            data = el.get_attribute(attribute) if attribute else el.text
+        else:
+            data = self.driver.page_source
+        return data
+
+    def extract_all(self, value: str = None, attribute: str = None, by: str = None):
+        if value:
+            elements = self.get_elements(value, by)
+            data = [
+                el.get_attribute(attribute) if attribute else el.text for el in elements
+            ]
+        else:
+            data = self.driver.page_source
+
+        return data
+
     def get_element(self, value: str, by: str = None):
         if by is None:
             by = "xpath"
@@ -298,6 +317,7 @@ class SeleniumDownloader:
     def get_elements(self, value: str, by: str = None):
         if by is None:
             by = "xpath"
+
         elements = []
 
         try:
@@ -580,67 +600,6 @@ class SeleniumDownloader:
             write_output(logger, content, path)
             emitted_results.append(build_result(path))
 
-        def handle_extract(event):
-            if event.get("value"):
-                el = self.driver.find_element(get_by(event), event["value"])
-                data = (
-                    el.get_attribute(event["attribute"])
-                    if event.get("attribute")
-                    else el.text
-                )
-            else:
-                data = self.driver.page_source
-
-            path = event.get("filename", save_path)
-            if not path:
-                return
-
-            write_and_record(data, path)
-
-        def handle_extract_all(event):
-            elements = self.driver.find_elements(get_by(event), event["value"])
-
-            if event.get("attribute"):
-                data = [el.get_attribute(event["attribute"]) for el in elements]
-            else:
-                data = [el.text for el in elements]
-
-            path = event.get("filename", save_path)
-            if not path:
-                return
-
-            write_and_record(data, path)
-
-        def handle_extract_structured(event):
-            parent_cfg = event["parent"]
-            fields = event.get("fields", {})
-
-            parent_by = BY_MAP.get(parent_cfg.get("by", "css"))
-            parents = self.driver.find_elements(parent_by, parent_cfg["value"])
-
-            structured_data = []
-
-            for parent in parents:
-                item = {}
-                for field_name, field_cfg in fields.items():
-                    field_by = BY_MAP.get(field_cfg.get("by", "css"))
-                    try:
-                        el = parent.find_element(field_by, field_cfg["value"])
-                        item[field_name] = (
-                            el.get_attribute(field_cfg["attribute"])
-                            if field_cfg.get("attribute")
-                            else el.text
-                        )
-                    except Exception:
-                        item[field_name] = None
-                structured_data.append(item)
-
-            path = event.get("filename", save_path)
-            if not path:
-                return
-
-            write_and_record(structured_data, path)
-
         ACTIONS = {
             "get": self.get,
             "quit": self.quit,
@@ -670,9 +629,8 @@ class SeleniumDownloader:
             "type": self.send_keys,
             "submit": self.submit_element,
             "sleep": self.sleep,
-            "extract": handle_extract,
-            "extract_all": handle_extract_all,
-            "extract_structured": handle_extract_structured,
+            "extract": self.extract,
+            "extract_all": self.extract_all,
             "save": self.save,
             "screenshot": self.take_screenshot,
         }
