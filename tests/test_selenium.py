@@ -86,6 +86,23 @@ class TestSelenium(TestBase):
         print(event_dict)
         # self.assertTrue(event_dict.get("variable") == None)
 
+    def test_parse_arguments(self):
+        events = [f"var = get({url})", "x = get(var)", "x(x)"]
+
+        for idx, event in enumerate(events):
+
+            event_dict = selenium_downloader.parse_event(event)
+            variable = event_dict.get("variable")
+            arguments = event_dict.get("arguments")
+
+            selenium_downloader.event_outputs.update({variable: arguments})
+
+            print("OLD", arguments)
+            # print(variable, arguments)
+            new_args = selenium_downloader.parse_arguments(arguments)
+
+            print("NEW", new_args)
+
     def test_has_get_event(self):
         events = ["get(hello)", ""]
         self.assertTrue(has_get_event(events))
@@ -107,7 +124,8 @@ if __name__ == "__main__":
         # TestSelenium.test_download,
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
-        TestSelenium.test_parse_event,
+        # TestSelenium.test_parse_event,
+        TestSelenium.test_parse_arguments,
         # TestSelenium.test_has_get_event,
         # TestSelenium.test_execute_events,
     ]

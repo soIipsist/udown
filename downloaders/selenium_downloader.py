@@ -1,4 +1,5 @@
 import argparse
+import ast
 import json
 import os
 from pathlib import Path
@@ -183,7 +184,7 @@ class SeleniumDownloader:
     _driver_type = None
     _browser_type = None
     _events: list = None
-    _event_variables: dict = {}
+    _event_outputs: dict = {}
     _browser_options = None
     _driver = None
 
@@ -227,14 +228,6 @@ class SeleniumDownloader:
         self._events = events
 
     @property
-    def event_variables(self):
-        return self._event_variables
-
-    @event_variables.setter
-    def event_variables(self, event_variables: dict):
-        self._event_variables = event_variables
-
-    @property
     def browser_options(self):
         return self._browser_options
 
@@ -249,6 +242,14 @@ class SeleniumDownloader:
             self.browser_type,
             self.browser_options,
         )
+
+    @property
+    def event_outputs(self):
+        return self._event_outputs
+
+    @event_outputs.setter
+    def event_outputs(self, event_outputs: dict):
+        self._event_outputs = event_outputs
 
     def __init__(
         self,
@@ -516,12 +517,15 @@ class SeleniumDownloader:
 
         return event_dict
 
-    def parse_arguments(self, arguments: list, event_dict: dict):
+    def parse_arguments(self, arguments: list):
         for idx, argument in enumerate(arguments):
-            if argument in event_dict:
-                argument = event_dict.get(argument)
+            if argument in self.event_outputs:
+                argument = self.event_outputs.get(argument, argument)
 
-            arguments[idx] = argument
+            try:
+                arguments[idx] = ast.literal_eval(argument)
+            except Exception as e:
+                arguments[idx] = argument
 
         return arguments
 
@@ -627,11 +631,10 @@ class SeleniumDownloader:
         }
 
         RESULT_ACTIONS = ["extract", "extract_all", "get", "save", "screenshot"]
-        event_variables = {}
 
         for index, event in enumerate(self.events):
 
-            event = self.parse_event(event, event_variables)
+            event = self.parse_event(event)
             variable = event.get("variable")
             action = event.get("action")
             arguments = event.get("arguments")
@@ -642,7 +645,7 @@ class SeleniumDownloader:
 
             try:
                 output = ACTIONS[action](*arguments)
-                event_variables.update({variable: output})
+                self.event_outputs.update({variable: output})
             except Exception as e:
                 emitted_results.append(
                     {
