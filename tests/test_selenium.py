@@ -15,7 +15,7 @@ url = "https://quotes.toscrape.com"
 options_path = os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
 options = read_json_file(options_path)
 # print(options)
-selenium_driver = SeleniumDownloader(**options)
+selenium_downloader = SeleniumDownloader(**options)
 
 
 class TestSelenium(TestBase):
@@ -32,17 +32,17 @@ class TestSelenium(TestBase):
     def test_get_browser_options(self):
         browser_options_metadata = options.get("browser_options")
         browser_options = BrowserOptions(
-            selenium_driver.driver_type,
-            selenium_driver.browser_type,
+            selenium_downloader.driver_type,
+            selenium_downloader.browser_type,
             browser_options_metadata,
         ).get_browser_options()
 
         if options.get("driver_type") == "undetected":
-            self.assertTrue(selenium_driver.driver_type == "undetected")
+            self.assertTrue(selenium_downloader.driver_type == "undetected")
             self.assertTrue(isinstance(browser_options, uc.ChromeOptions))
             print(browser_options)
         else:
-            self.assertTrue(selenium_driver.driver_type != "undetected")
+            self.assertTrue(selenium_downloader.driver_type != "undetected")
             print(browser_options)
 
     def test_get_driver_instance(self):
@@ -52,8 +52,8 @@ class TestSelenium(TestBase):
         # ec_function = "element_to_be_clickable"
         # print(EC.__dict__.get(ec_function))
 
-        selenium_driver.get_driver_instance()
-        self.assertIsNotNone(selenium_driver.driver)
+        selenium_downloader.get_driver_instance()
+        self.assertIsNotNone(selenium_downloader.driver)
 
         # cookies = selenium_driver.get_cookies()
 
@@ -77,7 +77,7 @@ class TestSelenium(TestBase):
 
     def test_parse_event(self):
         event = f"var = get({url})"
-        event_dict = selenium_driver.parse_event(event)
+        event_dict = selenium_downloader.parse_event(event)
 
         self.assertTrue(event_dict.get("variable") == "var")
 
@@ -96,6 +96,10 @@ class TestSelenium(TestBase):
         events = [f"var = get('{url}')", "xpath(var)", f"get('{url}')"]
         self.assertTrue(has_get_event(events))
 
+    def test_execute_events(self):
+
+        selenium_downloader.execute_events()
+
 
 if __name__ == "__main__":
     test_methods = [
@@ -104,6 +108,7 @@ if __name__ == "__main__":
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
         # TestSelenium.test_parse_event,
-        TestSelenium.test_has_get_event,
+        # TestSelenium.test_has_get_event,
+        TestSelenium.test_execute_events,
     ]
     run_test_methods(test_methods)

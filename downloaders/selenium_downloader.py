@@ -295,6 +295,18 @@ class SeleniumDownloader:
 
         return element
 
+    def get_elements(self, value: str, by: str = None):
+        if by is None:
+            by = "xpath"
+        elements = []
+
+        try:
+            elements = self.driver.find_elements(by=by, value=value)
+        except Exception as e:
+            print(e)
+
+        return elements
+
     def get_locator(self, by: str, value: str):
         return (by, value)
 
@@ -322,6 +334,30 @@ class SeleniumDownloader:
     def get_element_by_selector(self, selector: str):
         return self.get_element(by=By.CSS_SELECTOR, value=selector)
 
+    def get_elements_by_xpath(self, xpath: str):
+        return self.get_elements(by=By.XPATH, value=xpath)
+
+    def get_elements_by_id(self, id: str):
+        return self.get_elements(by=By.ID, value=id)
+
+    def get_elements_by_name(self, name: str):
+        return self.get_elements(by=By.NAME, value=name)
+
+    def get_elements_by_link_text(self, link_text: str):
+        return self.get_elements(by=By.LINK_TEXT, value=link_text)
+
+    def get_elements_by_partial_link_text(self, partial_link_text: str):
+        return self.get_elements(by=By.PARTIAL_LINK_TEXT, value=partial_link_text)
+
+    def get_elements_by_tag_name(self, tag_name: str):
+        return self.get_elements(by=By.TAG_NAME, value=tag_name)
+
+    def get_elements_by_class_name(self, class_name: str):
+        return self.get_elements(by=By.TAG_NAME, value=class_name)
+
+    def get_elements_by_selector(self, selector: str):
+        return self.get_elements(by=By.CSS_SELECTOR, value=selector)
+
     def send_keys(self, element: WebElement, keys: str):
         if element and isinstance(element, WebElement):
             element.send_keys(keys)
@@ -329,6 +365,13 @@ class SeleniumDownloader:
     def click_element(self, element: WebElement):
         if element and isinstance(element, WebElement):
             element.click()
+
+    def submit_element(self, element: WebElement):
+        if element and isinstance(element, WebElement):
+            element.submit()
+
+    def sleep(self, seconds: float):
+        time.sleep(seconds)
 
     def clear_element(self, element: WebElement):
         if element and isinstance(element, WebElement):
@@ -345,6 +388,11 @@ class SeleniumDownloader:
         action_chains = ActionChains(self.driver)
         action_chains.drag_and_drop(element, target).perform()
 
+    def take_screenshot(self, path: str = None):
+        if not path:
+            path = "screenshot.png"
+        self.driver.save_screenshot(path)
+
     def execute_script(self, script: str, asynchronous=False):
         if os.path.exists(script):
             script = read_file(script, logger=logger)
@@ -356,13 +404,14 @@ class SeleniumDownloader:
 
         return result
 
-    def add_explicit_wait(self, delay: int, ec_function: str = None, *args, **kwargs):
-        ec_function = EC.__dict__.get(ec_function)
+    def add_explicit_wait(
+        self, delay: int = 10, ec_function: str = None, *args, **kwargs
+    ):
+        ec_function = EC.__dict__.get(ec_function, "presence_of_element_located")
         result = None
 
-        if ec_function:
-            wait = WebDriverWait(self.driver, delay)
-            result = wait.until(ec_function(*args))
+        wait = WebDriverWait(self.driver, delay)
+        result = wait.until(ec_function(*args))
         return result
 
     def add_implicit_wait(self, delay: float):
@@ -407,6 +456,11 @@ class SeleniumDownloader:
                 result = attr
         return result
 
+    def save(self, path: str):
+        if not path:
+            path = "page.html"
+        write_output(logger, self.driver.page_source, path, False)
+
     def get_network_traffic(self):
         requests = []
         responses = []
@@ -430,9 +484,6 @@ class SeleniumDownloader:
                 print(e)
 
         return requests, responses
-
-    def get_requests(self):
-        return self.get_network_traffic()
 
     # events stuff
     def parse_event(self, event: str):
@@ -529,17 +580,6 @@ class SeleniumDownloader:
             write_output(logger, content, path)
             emitted_results.append(build_result(path))
 
-        def handle_wait(event):
-            WebDriverWait(self.driver, event.get("timeout", 10)).until(
-                EC.presence_of_element_located((get_by(event), event["value"]))
-            )
-
-        def handle_submit(event):
-            self.driver.find_element(get_by(event), event["value"]).submit()
-
-        def handle_sleep(event):
-            time.sleep(event.get("seconds", 1))
-
         def handle_extract(event):
             if event.get("value"):
                 el = self.driver.find_element(get_by(event), event["value"])
@@ -601,19 +641,9 @@ class SeleniumDownloader:
 
             write_and_record(structured_data, path)
 
-        def handle_save(event):
-            path = event.get("filename", "page.html")
-            write_and_record(self.driver.page_source, path)
-
-        def handle_screenshot(event):
-            path = event.get("path", "screenshot.png")
-            self.driver.save_screenshot(path)
-            emitted_results.append(build_result(path))
-
-        def handle_explicit_wait(event):
-            self.driver.add_explicit_wait(event.get("value"))
-
         ACTIONS = {
+            "get": self.get,
+            "quit": self.quit,
             "e": self.get_element,
             "e.name": self.get_element_by_name,
             "e.id": self.get_element_by_id,
@@ -624,30 +654,27 @@ class SeleniumDownloader:
             "e.clear": self.clear_element,
             "c": self.add_cookies,
             "cookies": self.get_cookies,
+            "add_cookies": self.add_cookies,
             "delete_cookies": self.delete_cookies,
             "delay": self.add_delay,
-            "wait": self.add_implicit_wait,
-            "explicit_wait": self.add_explicit_wait,
             "js": self.execute_script,
             "keys": self.send_keys,
             "click": self.click_element,
             "dnd": self.drag_and_drop,
             "select": self.select,
             "deselect": self.deselect,
-            "get": self.get,
-            "quit": self.quit,
-            "wait": handle_wait,
+            "wait": self.add_implicit_wait,
+            "implicit_wait": self.add_implicit_wait,
+            "explicit_wait": self.add_explicit_wait,
             "click": self.click_element,
             "type": self.send_keys,
-            "submit": handle_submit,
-            "sleep": handle_sleep,
-            "execute_js": self.execute_script,
+            "submit": self.submit_element,
+            "sleep": self.sleep,
             "extract": handle_extract,
             "extract_all": handle_extract_all,
             "extract_structured": handle_extract_structured,
-            "explicit_wait": handle_explicit_wait,
-            "save": handle_save,
-            "screenshot": handle_screenshot,
+            "save": self.save,
+            "screenshot": self.take_screenshot,
         }
 
         for index, event in enumerate(self.events):
