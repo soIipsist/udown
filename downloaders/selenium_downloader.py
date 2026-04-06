@@ -301,27 +301,18 @@ class SeleniumDownloader:
 
         return data
 
-    def get_element(self, value: str, by: str = None):
+    def get_elements(self, value: str, by: str = None, return_multiple: bool = False):
         if by is None:
             by = "xpath"
 
-        element = None
+        elements = None
 
         try:
-            element = self.driver.find_element(by=by, value=value)
-        except Exception as e:
-            print(e)
-
-        return element
-
-    def get_elements(self, value: str, by: str = None):
-        if by is None:
-            by = "xpath"
-
-        elements = []
-
-        try:
-            elements = self.driver.find_elements(by=by, value=value)
+            elements = (
+                self.driver.find_elements(by=by, value=value)
+                if return_multiple
+                else self.driver.find_element(by=by, value=value)
+            )
         except Exception as e:
             print(e)
 
@@ -330,53 +321,49 @@ class SeleniumDownloader:
     def get_locator(self, by: str, value: str):
         return (by, value)
 
-    def get_element_by_xpath(self, xpath: str):
-        return self.get_element(by=By.XPATH, value=xpath)
+    def get_elements_by_xpath(self, xpath: str, return_multiple: bool = False):
+        return self.get_elements(
+            by=By.XPATH, value=xpath, return_multiple=return_multiple
+        )
 
-    def get_element_by_id(self, id: str):
-        return self.get_element(by=By.ID, value=id)
+    def get_elements_by_id(self, id: str, return_multiple: bool = False):
+        return self.get_elements(by=By.ID, value=id, return_multiple=return_multiple)
 
-    def get_element_by_name(self, name: str):
-        return self.get_element(by=By.NAME, value=name)
+    def get_elements_by_name(self, name: str, return_multiple: bool = False):
+        return self.get_elements(
+            by=By.NAME, value=name, return_multiple=return_multiple
+        )
 
-    def get_element_by_link_text(self, link_text: str):
-        return self.get_element(by=By.LINK_TEXT, value=link_text)
+    def get_elements_by_link_text(self, link_text: str, return_multiple: bool = False):
+        return self.get_elements(
+            by=By.LINK_TEXT, value=link_text, return_multiple=return_multiple
+        )
 
-    def get_element_by_partial_link_text(self, partial_link_text: str):
-        return self.get_element(by=By.PARTIAL_LINK_TEXT, value=partial_link_text)
+    def get_elements_by_partial_link_text(
+        self, partial_link_text: str, return_multiple: bool = False
+    ):
+        return self.get_elements(
+            by=By.PARTIAL_LINK_TEXT,
+            value=partial_link_text,
+            return_multiple=return_multiple,
+        )
 
-    def get_element_by_tag_name(self, tag_name: str):
-        return self.get_element(by=By.TAG_NAME, value=tag_name)
+    def get_elements_by_tag_name(self, tag_name: str, return_multiple: bool = False):
+        return self.get_elements(
+            by=By.TAG_NAME, value=tag_name, return_multiple=return_multiple
+        )
 
-    def get_element_by_class_name(self, class_name: str):
-        return self.get_element(by=By.TAG_NAME, value=class_name)
+    def get_elements_by_class_name(
+        self, class_name: str, return_multiple: bool = False
+    ):
+        return self.get_elements(
+            by=By.CLASS_NAME, value=class_name, return_multiple=return_multiple
+        )
 
-    def get_element_by_selector(self, selector: str):
-        return self.get_element(by=By.CSS_SELECTOR, value=selector)
-
-    def get_elements_by_xpath(self, xpath: str):
-        return self.get_elements(by=By.XPATH, value=xpath)
-
-    def get_elements_by_id(self, id: str):
-        return self.get_elements(by=By.ID, value=id)
-
-    def get_elements_by_name(self, name: str):
-        return self.get_elements(by=By.NAME, value=name)
-
-    def get_elements_by_link_text(self, link_text: str):
-        return self.get_elements(by=By.LINK_TEXT, value=link_text)
-
-    def get_elements_by_partial_link_text(self, partial_link_text: str):
-        return self.get_elements(by=By.PARTIAL_LINK_TEXT, value=partial_link_text)
-
-    def get_elements_by_tag_name(self, tag_name: str):
-        return self.get_elements(by=By.TAG_NAME, value=tag_name)
-
-    def get_elements_by_class_name(self, class_name: str):
-        return self.get_elements(by=By.TAG_NAME, value=class_name)
-
-    def get_elements_by_selector(self, selector: str):
-        return self.get_elements(by=By.CSS_SELECTOR, value=selector)
+    def get_elements_by_selector(self, selector: str, return_multiple: bool = False):
+        return self.get_elements(
+            by=By.CSS_SELECTOR, value=selector, return_multiple=return_multiple
+        )
 
     def send_keys(self, element: WebElement, keys: str):
         if element and isinstance(element, WebElement):
@@ -529,6 +516,15 @@ class SeleniumDownloader:
 
         return event_dict
 
+    def parse_arguments(self, arguments: list, event_dict: dict):
+        for idx, argument in enumerate(arguments):
+            if argument in event_dict:
+                argument = event_dict.get(argument)
+
+            arguments[idx] = argument
+
+        return arguments
+
     def get_action_and_arguments(self, action_part: str):
         action_pattern = r"([\w_\.]+)(?:\(\s*([^\(\)]*)\s*\))?"
 
@@ -579,38 +575,33 @@ class SeleniumDownloader:
 
         return action, arguments
 
+    def build_result(self, url: str = None, path: str = None):
+        filename = os.path.basename(path)
+        return {
+            "url": url,
+            "status": 0,
+            "error": None,
+            "progress": "100%",
+            "output_filename": (filename if filename else None),
+            "path": path,
+        }
+
     def execute_events(self, url: str = None, save_path: str | None = None):
         emitted_results = []
-
-        def build_result(path):
-            filename = os.path.basename(path)
-            return {
-                "url": url,
-                "status": 0,
-                "error": None,
-                "progress": "100%",
-                "output_filename": (filename if filename else None),
-                "path": path,
-            }
-
-        def get_by(event):
-            return BY_MAP.get(event.get("by", "css"), By.CSS_SELECTOR)
-
-        def write_and_record(content, path):
-            write_output(logger, content, path)
-            emitted_results.append(build_result(path))
 
         ACTIONS = {
             "get": self.get,
             "quit": self.quit,
-            "e": self.get_element,
-            "e.name": self.get_element_by_name,
-            "e.id": self.get_element_by_id,
-            "e.class_name": self.get_element_by_class_name,
-            "e.selector": self.get_element_by_selector,
-            "e.link_text": self.get_element_by_link_text,
-            "e.partial_link_text": self.get_element_by_partial_link_text,
-            "e.clear": self.clear_element,
+            "e": self.get_elements,
+            "element": self.get_elements,
+            "xpath": self.get_elements_by_xpath,
+            "name": self.get_elements_by_name,
+            "class_name": self.get_elements_by_class_name,
+            "id": self.get_elements_by_id,
+            "selector": self.get_elements_by_selector,
+            "link_text": self.get_elements_by_link_text,
+            "partial_link_text": self.get_elements_by_partial_link_text,
+            "clear": self.clear_element,
             "c": self.add_cookies,
             "cookies": self.get_cookies,
             "add_cookies": self.add_cookies,
@@ -635,17 +626,23 @@ class SeleniumDownloader:
             "screenshot": self.take_screenshot,
         }
 
+        RESULT_ACTIONS = ["extract", "extract_all", "get", "save", "screenshot"]
+        event_variables = {}
+
         for index, event in enumerate(self.events):
 
-            event = self.parse_event(event)
-
+            event = self.parse_event(event, event_variables)
+            variable = event.get("variable")
             action = event.get("action")
+            arguments = event.get("arguments")
 
             if action not in ACTIONS:
-                raise ValueError(f"[Event #{index}] Unknown action: {action}")
+                logger.error(f"[Event #{index}] Unknown action: {action}")
+                continue
 
             try:
-                ACTIONS[action](*event)
+                output = ACTIONS[action](*arguments)
+                event_variables.update({variable: output})
             except Exception as e:
                 emitted_results.append(
                     {
