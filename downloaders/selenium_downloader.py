@@ -190,6 +190,24 @@ class SeleniumDownloader:
     _output_filename = None
     _output_directory = None
     _url = None
+    _results: list = None
+    _result = None
+
+    @property
+    def result(self):
+        return self._result
+
+    @result.setter
+    def result(self, result):
+        self._result = result
+
+    @property
+    def results(self):
+        return self._results
+
+    @results.setter
+    def results(self, results: list):
+        self._results = results
 
     @property
     def url(self):
@@ -437,8 +455,10 @@ class SeleniumDownloader:
 
     def take_screenshot(self, path: str = None):
         if not path:
-            path = "screenshot.png"
+            self.output_filename = "screenshot.png"
         self.driver.save_screenshot(path)
+
+        # self.results.append
 
     def execute_script(self, script: str, asynchronous=False):
         if os.path.exists(script):
@@ -618,19 +638,17 @@ class SeleniumDownloader:
 
         return action, arguments
 
-    def build_result(self, url: str = None, path: str = None):
-        filename = os.path.basename(path)
+    def build_result(self):
         return {
-            "url": url,
+            "url": self.url,
             "status": 0,
             "error": None,
             "progress": "100%",
-            "output_filename": (filename if filename else None),
-            "path": path,
+            "output_filename": self.output_filename,
+            "path": self.output_path,
         }
 
-    def execute_events(self, url: str = None):
-        emitted_results = []
+    def execute_events(self):
 
         ACTIONS = {
             "get": self.get,
@@ -669,8 +687,6 @@ class SeleniumDownloader:
             "screenshot": self.take_screenshot,
         }
 
-        RESULT_ACTIONS = ["extract", "extract_all", "get", "save", "screenshot"]
-
         for index, event in enumerate(self.events):
 
             event = self.parse_event(event)
@@ -683,20 +699,26 @@ class SeleniumDownloader:
                 continue
 
             try:
+                arguments = self.parse_arguments(arguments)
                 output = ACTIONS[action](*arguments)
                 self.event_outputs.update({variable: output})
-            except Exception as e:
-                emitted_results.append(
-                    {
-                        "url": url,
-                        "status": 1,
-                        "error": f"[Event #{index}] Failed → {event}\nError: {str(e)}",
-                        "progress": "100%",
-                        "path": None,
-                    }
-                )
 
-        return emitted_results
+            except WebDriverException as e:
+                logger.error(f"Selenium error: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}")
+
+                result = {
+                    "url": self.url,
+                    "status": 1,
+                    "error": f"[Event #{index}] Failed → {event}\nError: {str(e)}",
+                    "progress": "100%",
+                    "path": None,
+                }
+
+            self.result = None
+
+        return self.results
 
 
 def get_selenium_options(options_path: str = None):
@@ -756,27 +778,10 @@ def download(
         **options, url=url, output_directory=output_directory
     )
 
-    result = {
-        "url": url,
-        "status": None,
-        "error": None,
-    }
+    results = selenium_downloader.execute_events()
 
-    try:
-        results = selenium_downloader.execute_events(url)
-
-        if selenium_downloader.driver:
-            selenium_downloader.driver.quit()
-
-    except WebDriverException as e:
-        logger.error(f"Selenium error: {e}")
-        result["status"] = 1
-        result["error"] = str(e)
-
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        result["status"] = 1
-        result["error"] = str(e)
+    if selenium_downloader.driver:
+        selenium_downloader.driver.quit()
 
     return results
 
