@@ -125,8 +125,8 @@ if __name__ == "__main__":
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
         # TestSelenium.test_parse_event,
-        TestSelenium.test_parse_arguments,
+        # TestSelenium.test_parse_arguments,
         # TestSelenium.test_has_get_event,
-        # TestSelenium.test_execute_events,
+        TestSelenium.test_execute_events,
     ]
     run_test_methods(test_methods)

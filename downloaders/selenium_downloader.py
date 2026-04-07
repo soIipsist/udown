@@ -334,21 +334,40 @@ class SeleniumDownloader:
         if not self.driver:
             self.driver = self.get_driver_instance()
 
+        self.url = url
+        self.result = self.build_result()
         self.driver.get(url)
 
     def quit(self):
         if self.driver:
             self.driver.quit()
 
-    def extract(self, value: str = None, attribute: str = None, by: str = None):
+    def extract(
+        self,
+        value: str = None,
+        attribute: str = None,
+        by: str = None,
+        output_filename: str = "output.json",
+    ):
         if value:
             el = self.get_element(value, by)
             data = el.get_attribute(attribute) if attribute else el.text
         else:
             data = self.driver.page_source
+
+        self.output_filename = output_filename
+        write_output(logger, data, self.output_path, False)
+
+        self.result = self.build_result()
         return data
 
-    def extract_all(self, value: str = None, attribute: str = None, by: str = None):
+    def extract_all(
+        self,
+        value: str = None,
+        attribute: str = None,
+        by: str = None,
+        output_filename: str = "output.json",
+    ):
         if value:
             elements = self.get_elements(value, by)
             data = [
@@ -357,6 +376,10 @@ class SeleniumDownloader:
         else:
             data = self.driver.page_source
 
+        self.output_filename = output_filename
+        write_output(logger, data, self.output_path, False)
+
+        self.result = self.build_result()
         return data
 
     def get_elements(self, value: str, by: str = None, return_multiple: bool = False):
@@ -453,12 +476,10 @@ class SeleniumDownloader:
         action_chains = ActionChains(self.driver)
         action_chains.drag_and_drop(element, target).perform()
 
-    def take_screenshot(self, path: str = None):
-        if not path:
-            self.output_filename = "screenshot.png"
-        self.driver.save_screenshot(path)
-
-        # self.results.append
+    def take_screenshot(self, filename: str = None):
+        self.output_filename = "screenshot.png" if not filename else filename
+        self.driver.save_screenshot(self.output_path)
+        self.result = self.build_result()
 
     def execute_script(self, script: str, asynchronous=False):
         if os.path.exists(script):
@@ -523,10 +544,18 @@ class SeleniumDownloader:
                 result = attr
         return result
 
-    def save(self, path: str):
-        if not path:
-            path = "page.html"
-        write_output(logger, self.driver.page_source, path, False)
+    def save(self, data=None, output_filename: str = None):
+
+        if not output_filename:
+            output_filename = "output.json"
+
+        if not data:
+            if not output_filename:
+                self.output_filename = "page.html"
+            data = self.driver.page_source
+
+        self.result = self.build_result()
+        write_output(logger, data, output_filename, False)
 
     def get_network_traffic(self):
         requests = []
@@ -705,18 +734,23 @@ class SeleniumDownloader:
 
             except WebDriverException as e:
                 logger.error(f"Selenium error: {e}")
+                if self.result:
+                    self.result["status"] = 1
+                    self.result["error"] = (
+                        f"[Event #{index}] Failed → {event}\nError: {str(e)}"
+                    )
             except Exception as e:
                 logger.error(f"Unexpected error: {e}")
 
-                result = {
-                    "url": self.url,
-                    "status": 1,
-                    "error": f"[Event #{index}] Failed → {event}\nError: {str(e)}",
-                    "progress": "100%",
-                    "path": None,
-                }
+                if self.result:
+                    self.result["status"] = 1
+                    self.result["error"] = (
+                        f"[Event #{index}] Failed → {event}\nError: {str(e)}"
+                    )
 
-            self.result = None
+            if self.result:
+                self.results.append(self.result)
+            self.result = None  # reset result for each event
 
         return self.results
 
