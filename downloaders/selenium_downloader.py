@@ -190,7 +190,7 @@ class SeleniumDownloader:
     _output_filename = None
     _output_directory = None
     _url = None
-    _results: list = None
+    _results: list = []
     _result = None
 
     @property
@@ -219,6 +219,8 @@ class SeleniumDownloader:
 
     @property
     def output_directory(self):
+        if not self._output_directory:
+            return os.getcwd()
         return self._output_directory
 
     @output_directory.setter
@@ -547,15 +549,19 @@ class SeleniumDownloader:
     def save(self, data=None, output_filename: str = None):
 
         if not output_filename:
-            output_filename = "output.json"
+            ext = "html" if not data else "json"
+            output_filename = f"output.{ext}"
+
+        self.output_filename = output_filename
 
         if not data:
-            if not output_filename:
-                self.output_filename = "page.html"
             data = self.driver.page_source
 
         self.result = self.build_result()
-        write_output(logger, data, output_filename, False)
+
+        if isinstance(data, WebElement):
+            data = data.text
+        write_output(logger, data, self.output_path, False)
 
     def get_network_traffic(self):
         requests = []

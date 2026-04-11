@@ -115,7 +115,18 @@ class TestSelenium(TestBase):
 
     def test_execute_events(self):
 
-        selenium_downloader.execute_events()
+        # events = [f"get({url})", "save()", "quit()"]
+        # selenium_downloader.events = events
+        # results = selenium_downloader.execute_events()
+
+        # self.assertTrue(len(results) == 2)
+        # selenium_downloader.get(url)
+        # selenium_downloader.save(selenium_downloader.driver.page_source, "index.html")
+        # selenium_downloader.quit()
+
+        events = [f"get({url})", "el = e(//h1, xpath, True)", "save(el)", "quit()"]
+        selenium_downloader.events = events
+        results = selenium_downloader.execute_events()
 
 
 if __name__ == "__main__":
