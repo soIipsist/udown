@@ -559,9 +559,25 @@ class SeleniumDownloader:
 
         self.result = self.build_result()
 
-        if isinstance(data, WebElement):
-            data = data.text
+        data = self.parse_data(data)
         write_output(logger, data, self.output_path, False)
+
+        return data
+
+    def parse_data(self, data=None):
+        def parse_item(item):
+            if isinstance(item, WebElement):
+                item = item.text
+
+            return item
+
+        if isinstance(data, list):
+            for idx, item in enumerate(data):
+                data[idx] = parse_item(item)
+        else:
+            data = parse_item(data)
+
+        return data
 
     def get_network_traffic(self):
         requests = []
