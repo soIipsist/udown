@@ -566,10 +566,14 @@ class SeleniumDownloader:
         if not output_filename:
             ext = "html" if not data else "json"
             output_filename = f"output.{ext}"
+        else:
+            # get extension
+            ext = os.path.splitext(output_filename)[1]
+            ext = ext.lstrip(".")
 
         self.output_filename = output_filename
 
-        if not data:
+        if not data and ext == "html":
             data = self.driver.page_source
 
         self.result = self.build_result()
@@ -579,18 +583,19 @@ class SeleniumDownloader:
 
         return data
 
-    def parse_data(self, data=None):
-        def parse_item(item):
-            if isinstance(item, WebElement):
-                item = item.text
+    def parse_item(self, item):
+        if isinstance(item, WebElement):
+            item = item.text
 
-            return item
+        return item
+
+    def parse_data(self, data=None):
 
         if isinstance(data, list):
             for idx, item in enumerate(data):
-                data[idx] = parse_item(item)
+                data[idx] = self.parse_item(item)
         else:
-            data = parse_item(data)
+            data = self.parse_item(data)
 
         logger.info(f"Parsed data: {data}")
         return data

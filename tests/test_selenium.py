@@ -141,7 +141,14 @@ class TestSelenium(TestBase):
             "button = e(/html/body/div/form/input[2], xpath)",
             "keys(username, hello)",
             "keys(password, world)",
+            "save('', output1.html)",
             "click(button)",
+            "sleep(10)",
+            "delete_cookies(session)",
+            "cookies = cookies()",
+            "save('', output2.html)",
+            "save(cookies, cookies.json)",
+            "quit()",
         ]
         selenium_downloader.events = events
         results = selenium_downloader.execute_events()
