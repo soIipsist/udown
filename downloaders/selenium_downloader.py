@@ -399,6 +399,7 @@ class SeleniumDownloader:
         except Exception as e:
             print(e)
 
+        logger.info(f"Extracted elements: {elements}")
         return elements
 
     def get_locator(self, by: str, value: str):
@@ -450,14 +451,17 @@ class SeleniumDownloader:
 
     def send_keys(self, element: WebElement, keys: str):
         if element and isinstance(element, WebElement):
+            logger.info(f"Sent keys to element: {element}")
             element.send_keys(keys)
 
     def click_element(self, element: WebElement):
         if element and isinstance(element, WebElement):
+            logger.info(f"Clicked element: {element}")
             element.click()
 
     def submit_element(self, element: WebElement):
         if element and isinstance(element, WebElement):
+            logger.info(f"Submitted element: {element}")
             element.submit()
 
     def sleep(self, seconds: float):
@@ -465,6 +469,7 @@ class SeleniumDownloader:
 
     def clear_element(self, element: WebElement):
         if element and isinstance(element, WebElement):
+            logger.info(f"Cleared element: {element}")
             element.clear()
 
     def add_cookies(self, cookies: list):
@@ -472,6 +477,9 @@ class SeleniumDownloader:
         for cookie in cookies:
             if isinstance(cookie, dict):
                 self.driver.add_cookie(cookie)
+
+        logger.info(f"Cookies: {cookies}")
+
         return cookies
 
     def drag_and_drop(self, element: WebElement, target: WebElement):
@@ -483,9 +491,13 @@ class SeleniumDownloader:
         self.driver.save_screenshot(self.output_path)
         self.result = self.build_result()
 
+        logger.info(f"Saved screenshot: {self.output_path}")
+
     def execute_script(self, script: str, asynchronous=False):
         if os.path.exists(script):
             script = read_file(script, logger=logger)
+
+        logger.info(f"Executing script: {script}")
 
         if asynchronous:
             result = self.driver.execute_async_script(script)
@@ -497,6 +509,7 @@ class SeleniumDownloader:
     def add_explicit_wait(
         self, delay: int = 10, ec_function: str = None, *args, **kwargs
     ):
+        logger.info(f"Explicit wait: {ec_function}, {delay}")
         ec_function = EC.__dict__.get(ec_function, "presence_of_element_located")
         result = None
 
@@ -505,9 +518,11 @@ class SeleniumDownloader:
         return result
 
     def add_implicit_wait(self, delay: float):
+        logger.info(f"Implicit wait: {delay}")
         self.driver.implicitly_wait(delay)
 
     def add_delay(self, delay: float):
+        logger.info(f"Adding delay: {delay}")
         time.sleep(delay)
 
     def get_cookies(self, cookie: str = None):
@@ -577,6 +592,7 @@ class SeleniumDownloader:
         else:
             data = parse_item(data)
 
+        logger.info(f"Parsed data: {data}")
         return data
 
     def get_network_traffic(self):
@@ -600,6 +616,12 @@ class SeleniumDownloader:
                         responses.append(response)
             except Exception as e:
                 print(e)
+
+        if requests:
+            logger.info(f"Requests: {requests}")
+
+        if responses:
+            logger.info(f"Responses: {responses}")
 
         return requests, responses
 
@@ -759,7 +781,7 @@ class SeleniumDownloader:
                 if self.result:
                     self.result["status"] = 1
                     self.result["error"] = (
-                        f"[Event #{index}] Failed → {event}\nError: {str(e)}"
+                        f"[Event #{index}] Failed → {event}\nError: {e}"
                     )
             except Exception as e:
                 logger.error(f"Unexpected error: {e}")
@@ -767,7 +789,7 @@ class SeleniumDownloader:
                 if self.result:
                     self.result["status"] = 1
                     self.result["error"] = (
-                        f"[Event #{index}] Failed → {event}\nError: {str(e)}"
+                        f"[Event #{index}] Failed → {event}\nError: {e}"
                     )
 
             if self.result:

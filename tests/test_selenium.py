@@ -12,6 +12,7 @@ os.sys.path.insert(0, str(parent_directory))
 pp = PrettyPrinter(indent=2)
 
 url = "https://quotes.toscrape.com"
+url_2 = "https://quotes.toscrape.com/login"
 options_path = os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
 options = read_json_file(options_path)
 # print(options)
@@ -124,9 +125,22 @@ class TestSelenium(TestBase):
         # selenium_downloader.save(selenium_downloader.driver.page_source, "index.html")
         # selenium_downloader.quit()
 
-        events = [f"get({url})", "el = e(//h1, xpath, True)", "save(el)", "quit()"]
+        events = [
+            f"get({url})",
+            "el = e(//span, xpath, True)",
+            "save(el)",
+            "quit()",
+        ]
         selenium_downloader.events = events
         results = selenium_downloader.execute_events()
+
+        # events = [
+        #     f"get({url_2})",
+        #     "el = e(//span, xpath)",
+        #     "click(el)",
+        #     "quit()",
+        # ]
+        print(results)
 
 
 if __name__ == "__main__":
