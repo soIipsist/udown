@@ -125,21 +125,27 @@ class TestSelenium(TestBase):
         # selenium_downloader.save(selenium_downloader.driver.page_source, "index.html")
         # selenium_downloader.quit()
 
+        # events = [
+        #     f"get({url})",
+        #     "el = e(//span, xpath, True)",
+        #     "save(el)",
+        #     "quit()",
+        # ]
+        # selenium_downloader.events = events
+        # results = selenium_downloader.execute_events()
+
         events = [
-            f"get({url})",
-            "el = e(//span, xpath, True)",
-            "save(el)",
-            "quit()",
+            f"get({url_2})",
+            'username = e(//*[@id="username"], xpath)',
+            'password = e(//*[@id="password"], xpath)',
+            "button = e(/html/body/div/form/input[2], xpath)",
+            "keys(username, hello)",
+            "keys(password, world)",
+            "click(button)",
         ]
         selenium_downloader.events = events
         results = selenium_downloader.execute_events()
 
-        # events = [
-        #     f"get({url_2})",
-        #     "el = e(//span, xpath)",
-        #     "click(el)",
-        #     "quit()",
-        # ]
         print(results)
 
 
