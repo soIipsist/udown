@@ -18,22 +18,5 @@
         }
       }
     }
-  },
-  "events": [
-    "get('https://quotes.toscrape.com')",
-    "save(quotes_page_1.html)",
-    {
-      "action": "wait",
-      "arguments": 10
-    },
-
-    {
-      "action": "save",
-      "arguments": "quotes_page_2.html"
-    },
-
-    {
-      "action": "quit"
-    }
-  ]
+  }
 }

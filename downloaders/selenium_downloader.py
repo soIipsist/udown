@@ -337,7 +337,6 @@ class SeleniumDownloader:
             self.driver = self.get_driver_instance()
 
         self.url = url
-        self.result = self.build_result()
         self.driver.get(url)
 
     def quit(self):
@@ -765,6 +764,9 @@ class SeleniumDownloader:
             "screenshot": self.take_screenshot,
         }
 
+        if not self.events:
+            return self.results
+
         for index, event in enumerate(self.events):
 
             event = self.parse_event(event)
@@ -814,16 +816,8 @@ def get_selenium_options(options_path: str = None):
     return options
 
 
-def has_get_event(events):
-    return any(
-        (isinstance(e, str) and "get" in e)
-        or (isinstance(e, dict) and e.get("action") == "get")
-        for e in events
-    )
-
-
 def download(
-    url: str,
+    url_or_path: str,
     options_path: str | None = None,
     output_directory: str | None = None,
 ) -> list[dict]:
@@ -833,24 +827,22 @@ def download(
     out_dir = Path(output_directory or ".")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    if os.path.exists(url):  # use url argument as options path
-        options = get_selenium_options(url)
+    if os.path.exists(url_or_path):  # use url argument as options path
+        options = get_selenium_options(url_or_path)
     else:
         options = get_selenium_options(options_path)
 
-        # insert get event, in case it doesn't already exist
-        events = options.get("events", [])
+        # save page source to output_directory
+        events = [f"get({url_or_path})", "save()", "quit()"]
         events: list
 
-        if not has_get_event(events):
-            events.insert(0, f"response = get({url})")
-            options["events"] = events
+        options["events"] = events
 
     if output_directory:
-        if options["preferences"]:
+        if options.get("preferences"):
             options["preferences"].update(
                 {
-                    "download.default_directory": str(output_directory.resolve()),
+                    "download.default_directory": str(out_dir.resolve()),
                     "download.prompt_for_download": False,
                     "download.directory_upgrade": True,
                     "safebrowsing.enabled": True,
@@ -858,14 +850,10 @@ def download(
             )
 
     selenium_downloader = SeleniumDownloader(
-        **options, url=url, output_directory=output_directory
+        **options, url=url_or_path, output_directory=output_directory
     )
 
     results = selenium_downloader.execute_events()
-
-    if selenium_downloader.driver:
-        selenium_downloader.driver.quit()
-
     return results
 
 
@@ -879,7 +867,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     results = download(
-        url=args.url,
+        url_or_path=args.url,
         options_path=args.options_path,
         output_directory=args.output_directory,
     )

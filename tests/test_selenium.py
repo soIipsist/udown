@@ -27,9 +27,6 @@ class TestSelenium(TestBase):
         options = get_selenium_options(None)
         print(options)
 
-    def test_download(self):
-        download(url, options_path=options_path, output_filename="index.html")
-
     def test_get_browser_options(self):
         browser_options_metadata = options.get("browser_options")
         browser_options = BrowserOptions(
@@ -104,16 +101,6 @@ class TestSelenium(TestBase):
 
             print("NEW", new_args)
 
-    def test_has_get_event(self):
-        events = ["get(hello)", ""]
-        self.assertTrue(has_get_event(events))
-
-        events = ["var", "var = xpath(var)"]
-        self.assertFalse(has_get_event(events))
-
-        events = [f"var = get('{url}')", "xpath(var)", f"get('{url}')"]
-        self.assertTrue(has_get_event(events))
-
     def test_execute_events(self):
 
         # events = [f"get({url})", "save()", "quit()"]
@@ -155,16 +142,26 @@ class TestSelenium(TestBase):
 
         print(results)
 
+    def test_download_with_path(self):
+        path = os.path.join(os.getcwd(), "sel1.json")
+        results = download(path, output_directory=None)
+        print(results)
+
+    def test_download_with_url(self):
+        results = download(url, output_directory="/Users/p/Downloads/")
+        print(results)
+
 
 if __name__ == "__main__":
     test_methods = [
         # TestSelenium.test_get_options,
-        # TestSelenium.test_download,
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
         # TestSelenium.test_parse_event,
         # TestSelenium.test_parse_arguments,
         # TestSelenium.test_has_get_event,
-        TestSelenium.test_execute_events,
+        # TestSelenium.test_execute_events,
+        # TestSelenium.test_download_with_url,
+        TestSelenium.test_download_with_path,
     ]
     run_test_methods(test_methods)
