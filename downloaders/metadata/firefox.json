@@ -1,0 +1,21 @@
+{
+  "browser_type": "firefox",
+  "browser_options": {
+    "use_default_capabilities": false,
+    "experimental_options": {},
+    "arguments": [
+      "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/120.0 Safari/537.36",
+      "--ignore-certificate-errors",
+      "--disable-gpu",
+      "--allow-running-insecure-content"
+    ],
+    "capabilities": {
+      "moz:firefoxOptions": {
+        "prefs": {
+          "security.insecure_field_warning.contextual.enabled": false,
+          "dom.security.https_only_mode": false
+        }
+      }
+    }
+  }
+}

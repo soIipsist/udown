@@ -1,0 +1,22 @@
+{
+  "browser_type": "edge",
+  "browser_options": {
+    "use_default_capabilities": false,
+    "experimental_options": {
+      "detach": true
+    },
+    "arguments": [
+      "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36",
+      "--ignore-certificate-errors",
+      "--disable-gpu",
+      "--allow-running-insecure-content"
+    ],
+    "capabilities": {
+      "ms:edgeOptions": {
+        "perfLoggingPrefs": {
+          "enableNetwork": true
+        }
+      }
+    }
+  }
+}

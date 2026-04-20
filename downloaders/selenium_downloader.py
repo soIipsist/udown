@@ -816,7 +816,7 @@ def get_selenium_options(options_path: str = None, default_options_path: str = N
         options_path = (
             default_options_path
             if default_options_path
-            else os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
+            else os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         )
 
     if is_valid_url(options_path):
@@ -824,7 +824,7 @@ def get_selenium_options(options_path: str = None, default_options_path: str = N
         options_path = (
             default_options_path
             if default_options_path
-            else os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
+            else os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         )
         update_events = True
 
