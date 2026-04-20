@@ -2,6 +2,7 @@ import ast
 import json
 from datetime import datetime, timedelta
 import re
+from urllib.parse import urlsplit
 
 
 def parse_date(date: str):
@@ -70,3 +71,14 @@ def read_json_file(json_file, errors=None, logger=None):
             return json_object
     except Exception as e:
         logger.error(str(e))
+
+
+def is_valid_url(url: str) -> bool:
+    """Check if a given string is a valid URL (has scheme and netloc)."""
+    if not url:
+        return False
+    try:
+        parsed = urlsplit(url)
+        return bool(parsed.scheme and parsed.netloc)
+    except Exception:
+        return False

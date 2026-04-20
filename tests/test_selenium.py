@@ -23,9 +23,17 @@ class TestSelenium(TestBase):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_get_options(self):
-        options = get_selenium_options(None)
+    def test_get_selenium_options(self):
+        options = get_selenium_options(default_options_path=None)
         print(options)
+
+        path = os.path.join(os.getcwd(), "quotes.json")
+        options = get_selenium_options(path)
+        # print(options)
+
+        options = get_selenium_options("https://quotes.toscrape.com")
+
+        # print(options)
 
     def test_get_browser_options(self):
         browser_options_metadata = options.get("browser_options")
@@ -143,7 +151,7 @@ class TestSelenium(TestBase):
         print(results)
 
     def test_download_with_path(self):
-        path = os.path.join(os.getcwd(), "sel1.json")
+        path = os.path.join(os.getcwd(), "quotes.json")
         results = download(path, output_directory=None)
         print(results)
 
@@ -154,7 +162,7 @@ class TestSelenium(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        # TestSelenium.test_get_options,
+        TestSelenium.test_get_selenium_options,
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
         # TestSelenium.test_parse_event,
@@ -162,6 +170,6 @@ if __name__ == "__main__":
         # TestSelenium.test_has_get_event,
         # TestSelenium.test_execute_events,
         # TestSelenium.test_download_with_url,
-        TestSelenium.test_download_with_path,
+        # TestSelenium.test_download_with_path,
     ]
     run_test_methods(test_methods)

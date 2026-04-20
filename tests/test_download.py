@@ -7,11 +7,8 @@ current_file = Path(__file__).resolve()
 parent_directory = current_file.parents[2]
 os.sys.path.insert(0, str(parent_directory))
 
-from src.downloader import (
-    Downloader,
-    default_downloaders,
-)
-from src.download import Download, DownloadStatus, download_action
+from src.downloader import Downloader
+from src.download import Download, download_action
 from tests.test_downloader import (
     playlist_urls,
     video_urls,

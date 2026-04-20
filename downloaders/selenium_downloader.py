@@ -6,7 +6,7 @@ from pathlib import Path
 from pprint import PrettyPrinter
 from downloaders.ytdlp import read_json_file
 from src.options import DOWNLOADER_METADATA_DIR
-from utils import read_file
+from utils import read_file, is_valid_url
 from utils.logger import setup_logger, write_output
 import re
 from selenium import webdriver
@@ -19,6 +19,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import DesiredCapabilities
 import undetected_chromedriver as uc
+
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="selenium_downloader", log_dir="/udown/selenium")
@@ -806,19 +807,42 @@ class SeleniumDownloader:
         return self.results
 
 
-def get_selenium_options(options_path: str = None):
-    if not options_path or not os.path.exists(options_path):
-        options_path = os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
+def get_selenium_options(options_path: str = None, default_options_path: str = None):
 
-    logger.info(f"Using selenium options from path: {options_path}")
+    update_events = False
+    url = None
+
+    if not options_path:  # use default selenium options
+        options_path = (
+            default_options_path
+            if default_options_path
+            else os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
+        )
+
+    if is_valid_url(options_path):
+        url = options_path
+        options_path = (
+            default_options_path
+            if default_options_path
+            else os.path.join(DOWNLOADER_METADATA_DIR, "selenium.json")
+        )
+        update_events = True
+
     options = read_json_file(options_path)
+    logger.info(f"Using selenium options from path: {options_path}")
+
+    if update_events:
+        # save page source to output_directory
+        events = [f"get({url})", "save()", "quit()"]
+        events: list
+        options["events"] = events
 
     return options
 
 
 def download(
     url_or_path: str,
-    options_path: str | None = None,
+    default_options_path: str | None = None,
     output_directory: str | None = None,
 ) -> list[dict]:
 
@@ -827,16 +851,7 @@ def download(
     out_dir = Path(output_directory or ".")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    if os.path.exists(url_or_path):  # use url argument as options path
-        options = get_selenium_options(url_or_path)
-    else:
-        options = get_selenium_options(options_path)
-
-        # save page source to output_directory
-        events = [f"get({url_or_path})", "save()", "quit()"]
-        events: list
-
-        options["events"] = events
+    options = get_selenium_options(url_or_path, default_options_path)
 
     if output_directory:
         if options.get("preferences"):
@@ -860,7 +875,7 @@ def download(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generic Selenium downloader")
     parser.add_argument("url", type=str, help="URL to scrape")
-    parser.add_argument("-o", "--options_path", default=None, type=str)
+    parser.add_argument("-o", "--default_options_path", default=None, type=str)
     parser.add_argument(
         "-d", "--output_directory", type=str, default=None, help="Download directory"
     )
@@ -868,7 +883,7 @@ if __name__ == "__main__":
 
     results = download(
         url_or_path=args.url,
-        options_path=args.options_path,
+        default_options_path=args.default_options_path,
         output_directory=args.output_directory,
     )
 
