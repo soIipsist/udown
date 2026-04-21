@@ -358,7 +358,7 @@ class SeleniumDownloader:
     ):
         structured_data = {}
 
-        elements = self.get_elements(value, by)
+        elements = self.get_elements(value, by, True)
         data = [
             el.get_attribute(attribute) if attribute else el.text for el in elements
         ]
@@ -368,7 +368,7 @@ class SeleniumDownloader:
             for key in keys:
 
                 try:
-                    item[key] = element
+                    item[key] = self.parse_data(element)
                 except Exception:
                     item[key] = None
 

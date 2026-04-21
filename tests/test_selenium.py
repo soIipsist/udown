@@ -143,7 +143,7 @@ class TestSelenium(TestBase):
         print(results)
 
     def test_download_with_path(self):
-        path = os.path.join(os.getcwd(), "secure.json")
+        path = os.path.join(os.getcwd(), "quotes.json")
         results = download(
             path, default_options_path=options_path, output_directory=None
         )
