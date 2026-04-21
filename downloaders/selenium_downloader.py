@@ -351,30 +351,20 @@ class SeleniumDownloader:
     def extract_structured(
         self,
         value: str,
-        keys: list = ["values"],
+        key: str = "value",
         attribute: str = None,
         by: str = None,
         output_filename: str = "output.json",
+        append: bool = False,
     ):
         structured_data = {}
 
         elements = self.get_elements(value, by, True)
-        data = [
+        elements = [
             el.get_attribute(attribute) if attribute else el.text for el in elements
         ]
-
-        for element in data:
-            item = {}
-            for key in keys:
-
-                try:
-                    item[key] = self.parse_data(element)
-                except Exception:
-                    item[key] = None
-
-                structured_data.update(item)
-
-        return self.save(structured_data, output_filename)
+        structured_data.update({key: self.parse_data(elements)})
+        return self.save(structured_data, output_filename, append)
 
     def extract_all(
         self,
@@ -574,7 +564,7 @@ class SeleniumDownloader:
                 result = attr
         return result
 
-    def save(self, data=None, output_filename: str = None):
+    def save(self, data=None, output_filename: str = None, append: bool = False):
 
         if not output_filename:
             ext = "html" if not data else "json"
@@ -592,7 +582,7 @@ class SeleniumDownloader:
         self.result = self.build_result()
 
         data = self.parse_data(data)
-        write_output(logger, data, self.output_path, False)
+        write_output(logger, data, self.output_path, append)
 
         return data
 
