@@ -162,9 +162,12 @@ class TestSelenium(TestBase):
 
     def test_undetected(self):
         uc.TARGET_VERSION = 78
+        version_main = None
 
         options = uc.ChromeOptions()
-        driver = uc.Chrome(options=options)
+        # options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        driver = uc.Chrome(options=options, version_main=version_main)
 
         driver.get("https://nowsecure.nl")
         driver.save_screenshot("driver.png")
