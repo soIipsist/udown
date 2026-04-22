@@ -3,7 +3,7 @@
   "browser_options": {
     "experimental_options": {},
     "arguments": [
-      "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/120.0 Safari/537.36",
+      "user-agent=Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0",
       "--ignore-certificate-errors",
       "--disable-gpu",
       "--allow-running-insecure-content"

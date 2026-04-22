@@ -13,7 +13,7 @@ pp = PrettyPrinter(indent=2)
 
 url = "https://quotes.toscrape.com"
 url_2 = "https://quotes.toscrape.com/login"
-options_path = os.path.join(DOWNLOADER_METADATA_DIR, "firefox.json")
+options_path = os.path.join(DOWNLOADER_METADATA_DIR, "edge.json")
 options = read_json_file(options_path)
 # print(options)
 selenium_downloader = SeleniumDownloader(**options)
@@ -151,7 +151,9 @@ class TestSelenium(TestBase):
 
     def test_download_with_path(self):
         path = os.path.join(os.getcwd(), "quotes.json")
-        results = download(path, output_directory=None)
+        results = download(
+            path, default_options_path=options_path, output_directory=None
+        )
         print(results)
 
     def test_download_with_url(self):
@@ -161,7 +163,7 @@ class TestSelenium(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        TestSelenium.test_get_selenium_options,
+        # TestSelenium.test_get_selenium_options,
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
         # TestSelenium.test_parse_event,
@@ -169,6 +171,6 @@ if __name__ == "__main__":
         # TestSelenium.test_has_get_event,
         # TestSelenium.test_execute_events,
         # TestSelenium.test_download_with_url,
-        # TestSelenium.test_download_with_path,
+        TestSelenium.test_download_with_path,
     ]
     run_test_methods(test_methods)

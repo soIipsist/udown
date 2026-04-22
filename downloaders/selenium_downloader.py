@@ -597,7 +597,12 @@ class SeleniumDownloader:
         else:
             data = self.parse_item(data)
 
-        logger.info(f"Parsed data: {data}")
+        words = str(data).split()
+        preview = " ".join(words[:100])
+        if len(words) > 100:
+            preview += "..."
+
+        logger.info(f"Parsed data: {preview}")
         return data
 
     def get_network_traffic(self):
