@@ -1,7 +1,6 @@
 {
   "browser_type": "edge",
   "browser_options": {
-    "use_default_capabilities": false,
     "experimental_options": {
       "detach": true
     },

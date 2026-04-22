@@ -809,29 +809,27 @@ class SeleniumDownloader:
 
 def get_selenium_options(options_path: str, default_options_path: str = None):
 
-    update_events = False
-    url = None
+    events = None
+    default_options: dict = {}
 
     if not default_options_path:
         default_options_path = get_option(
             "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         )
 
+    default_options = read_json_file(default_options_path)
+    logger.info(f"Using default options from path: {default_options_path}")
+
     if is_valid_url(options_path):
-        url = options_path
-        options_path = default_options_path
-        update_events = True
-
-    options = read_json_file(options_path)
-    logger.info(f"Using selenium options from path: {options_path}")
-
-    if update_events:
-        # save page source to output_directory
-        events = [f"get({url})", "save()", "quit()"]
+        events = [f"get({options_path})", "save()", "quit()"]
         events: list
-        options["events"] = events
+        default_options["events"] = events
+    else:
+        # combine
+        options = read_json_file(options_path)
+        default_options.update(options)
 
-    return options
+    return default_options
 
 
 def download(
