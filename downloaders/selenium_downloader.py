@@ -76,7 +76,6 @@ class BrowserOptions:
         self.browser_options_type = browser_option_types.get(
             browser_type, webdriver.ChromeOptions
         )
-
         self.browser_args = browser_args
 
     @property

@@ -446,6 +446,27 @@ default_downloaders = [
         "url, downloader_path, output_directory",
     ),
     Downloader(
+        "firefox",
+        os.path.join(DOWNLOADER_METADATA_DIR, "firefox.json"),
+        "downloaders.selenium_downloader",
+        "download",
+        "url, downloader_path, output_directory",
+    ),
+    Downloader(
+        "edge",
+        os.path.join(DOWNLOADER_METADATA_DIR, "edge.json"),
+        "downloaders.selenium_downloader",
+        "download",
+        "url, downloader_path, output_directory",
+    ),
+    Downloader(
+        "undetected",
+        os.path.join(DOWNLOADER_METADATA_DIR, "undetected.json"),
+        "downloaders.selenium_downloader",
+        "download",
+        "url, downloader_path, output_directory",
+    ),
+    Downloader(
         "torrent",
         os.path.join(DOWNLOADER_METADATA_DIR, "torrent_default.json"),
         "downloaders.torrent",
