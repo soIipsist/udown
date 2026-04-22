@@ -162,16 +162,25 @@ class TestSelenium(TestBase):
 
     def test_undetected(self):
         uc.TARGET_VERSION = 78
-        version_main = None
+        version_main = 147
 
         options = uc.ChromeOptions()
+
         # options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        driver = uc.Chrome(options=options, version_main=version_main)
+        # options.add_argument("--disable-dev-shm-usage")
+        driver = uc.Chrome(version_main=version_main)
+        logger.info(driver.service.path)
 
         driver.get("https://nowsecure.nl")
         driver.save_screenshot("driver.png")
         options.headless = False
+
+    def test_undetected_with_options(self):
+        path = os.path.join(os.getcwd(), "secure.json")
+        results = download(
+            path, default_options_path=options_path, output_directory=None
+        )
+        print(results)
 
 
 if __name__ == "__main__":
@@ -185,6 +194,7 @@ if __name__ == "__main__":
         # TestSelenium.test_execute_events,
         # TestSelenium.test_download_with_url,
         # TestSelenium.test_download_with_path,
-        TestSelenium.test_undetected,
+        # TestSelenium.test_undetected,
+        TestSelenium.test_undetected_with_options
     ]
     run_test_methods(test_methods)

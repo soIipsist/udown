@@ -20,6 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import DesiredCapabilities
 import undetected_chromedriver as uc
 
+uc.TARGET_VERSION = 78
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="selenium_downloader", log_dir="/udown/selenium")
@@ -328,7 +329,9 @@ class SeleniumDownloader:
         browser_options = self.browser_options_instance.get_browser_options()
 
         if not self.driver:
-            self.driver = self.get_driver_type()(options=browser_options)
+            driver_type = self.get_driver_type()
+            # print(driver_type)
+            self.driver = driver_type(options=browser_options)
 
         return self.driver
 
