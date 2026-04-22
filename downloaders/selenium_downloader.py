@@ -40,6 +40,7 @@ BY_MAP = {
 
 
 driver_types = {
+    "uc": uc.Chrome,
     "chrome": webdriver.Chrome,
     "edge": webdriver.Edge,
     "firefox": webdriver.Firefox,
@@ -48,6 +49,7 @@ driver_types = {
 }
 
 browser_option_types = {
+    "uc": uc.options.ChromeOptions,
     "chrome": webdriver.ChromeOptions,
     "edge": webdriver.EdgeOptions,
     "firefox": webdriver.FirefoxOptions,
@@ -69,13 +71,11 @@ class BrowserOptions:
     _browser_options_obj = None
     _default_capabilities = None
 
-    def __init__(self, driver_type=None, browser_type="chrome", browser_args=None):
-        if driver_type == "undetected":
-            self.browser_options_type = uc.options.ChromeOptions
-        else:
-            self.browser_options_type = browser_option_types.get(
-                browser_type, webdriver.ChromeOptions
-            )
+    def __init__(self, browser_type="chrome", browser_args=None):
+
+        self.browser_options_type = browser_option_types.get(
+            browser_type, webdriver.ChromeOptions
+        )
 
         self.browser_args = browser_args
 
@@ -183,7 +183,6 @@ class BrowserOptions:
 
 
 class SeleniumDownloader:
-    _driver_type = None
     _browser_type = None
     _events: list = None
     _event_outputs: dict = {}
@@ -261,20 +260,8 @@ class SeleniumDownloader:
     def driver(self, driver):
         self._driver = driver
 
-    @property
-    def driver_type(self):
-        return self._driver_type
-
-    @driver_type.setter
-    def driver_type(self, driver_type):
-        self._driver_type = driver_type
-
     def get_driver_type(self):
-        return (
-            uc.Chrome
-            if self.driver_type == "undetected"
-            else driver_types.get(self.browser_type, webdriver.Chrome)
-        )
+        return driver_types.get(self.browser_type, webdriver.Chrome)
 
     @property
     def events(self):
@@ -295,7 +282,6 @@ class SeleniumDownloader:
     @property
     def browser_options_instance(self) -> BrowserOptions:
         return BrowserOptions(
-            self.driver_type,
             self.browser_type,
             self.browser_options,
         )
@@ -310,14 +296,12 @@ class SeleniumDownloader:
 
     def __init__(
         self,
-        driver_type=None,
         browser_type=webdriver.Chrome,
         browser_options=None,
         events: list = None,
         url: str = None,
         output_directory: str = None,
     ):
-        self.driver_type = driver_type
         self.browser_type = browser_type
         self.browser_options = browser_options
         self.events = events
@@ -330,7 +314,6 @@ class SeleniumDownloader:
 
         if not self.driver:
             driver_type = self.get_driver_type()
-            # print(driver_type)
             self.driver = driver_type(options=browser_options)
 
         return self.driver

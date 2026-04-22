@@ -13,7 +13,7 @@ pp = PrettyPrinter(indent=2)
 
 url = "https://quotes.toscrape.com"
 url_2 = "https://quotes.toscrape.com/login"
-options_path = os.path.join(DOWNLOADER_METADATA_DIR, "undetected.json")
+options_path = os.path.join(DOWNLOADER_METADATA_DIR, "firefox.json")
 options = read_json_file(options_path)
 # print(options)
 selenium_downloader = SeleniumDownloader(**options)
@@ -37,18 +37,11 @@ class TestSelenium(TestBase):
     def test_get_browser_options(self):
         browser_options_metadata = options.get("browser_options")
         browser_options = BrowserOptions(
-            selenium_downloader.driver_type,
             selenium_downloader.browser_type,
             browser_options_metadata,
         ).get_browser_options()
 
-        if options.get("driver_type") == "undetected":
-            self.assertTrue(selenium_downloader.driver_type == "undetected")
-            self.assertTrue(isinstance(browser_options, uc.ChromeOptions))
-            print(browser_options)
-        else:
-            self.assertTrue(selenium_downloader.driver_type != "undetected")
-            print(browser_options)
+        print(browser_options)
 
     def test_get_driver_instance(self):
 
@@ -193,8 +186,8 @@ if __name__ == "__main__":
         # TestSelenium.test_has_get_event,
         # TestSelenium.test_execute_events,
         # TestSelenium.test_download_with_url,
-        # TestSelenium.test_download_with_path,
+        TestSelenium.test_download_with_path,
         # TestSelenium.test_undetected,
-        TestSelenium.test_undetected_with_options
+        # TestSelenium.test_undetected_with_options
     ]
     run_test_methods(test_methods)

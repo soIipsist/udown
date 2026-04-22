@@ -1,5 +1,4 @@
 {
-  "driver_type": "undetected",
-  "browser_type": "chrome",
+  "browser_type": "uc",
   "browser_options": {}
 }
