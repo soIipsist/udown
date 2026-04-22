@@ -13,7 +13,7 @@ pp = PrettyPrinter(indent=2)
 
 url = "https://quotes.toscrape.com"
 url_2 = "https://quotes.toscrape.com/login"
-options_path = os.path.join(DOWNLOADER_METADATA_DIR, "edge.json")
+options_path = os.path.join(DOWNLOADER_METADATA_DIR, "undetected.json")
 options = read_json_file(options_path)
 # print(options)
 selenium_downloader = SeleniumDownloader(**options)
@@ -150,7 +150,7 @@ class TestSelenium(TestBase):
         print(results)
 
     def test_download_with_path(self):
-        path = os.path.join(os.getcwd(), "quotes.json")
+        path = os.path.join(os.getcwd(), "secure.json")
         results = download(
             path, default_options_path=options_path, output_directory=None
         )
@@ -159,6 +159,16 @@ class TestSelenium(TestBase):
     def test_download_with_url(self):
         results = download(url, output_directory="/Users/p/Downloads/")
         print(results)
+
+    def test_undetected(self):
+        uc.TARGET_VERSION = 78
+
+        options = uc.ChromeOptions()
+        driver = uc.Chrome(options=options)
+
+        driver.get("https://nowsecure.nl")
+        driver.save_screenshot("driver.png")
+        options.headless = False
 
 
 if __name__ == "__main__":
@@ -171,6 +181,7 @@ if __name__ == "__main__":
         # TestSelenium.test_has_get_event,
         # TestSelenium.test_execute_events,
         # TestSelenium.test_download_with_url,
-        TestSelenium.test_download_with_path,
+        # TestSelenium.test_download_with_path,
+        TestSelenium.test_undetected,
     ]
     run_test_methods(test_methods)
