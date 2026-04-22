@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from pprint import PrettyPrinter
 from downloaders.ytdlp import read_json_file
-from src.options import DOWNLOADER_METADATA_DIR
+from src.options import DOWNLOADER_METADATA_DIR, get_option
 from utils import read_file, is_valid_url
 from utils.logger import setup_logger, write_output
 import re
@@ -807,25 +807,19 @@ class SeleniumDownloader:
         return self.results
 
 
-def get_selenium_options(options_path: str = None, default_options_path: str = None):
+def get_selenium_options(options_path: str, default_options_path: str = None):
 
     update_events = False
     url = None
 
-    if not options_path:  # use default selenium options
-        options_path = (
-            default_options_path
-            if default_options_path
-            else os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
+    if not default_options_path:
+        default_options_path = get_option(
+            "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         )
 
     if is_valid_url(options_path):
         url = options_path
-        options_path = (
-            default_options_path
-            if default_options_path
-            else os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
-        )
+        options_path = default_options_path
         update_events = True
 
     options = read_json_file(options_path)
@@ -875,7 +869,14 @@ def download(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generic Selenium downloader")
     parser.add_argument("url", type=str, help="URL to scrape")
-    parser.add_argument("-o", "--default_options_path", default=None, type=str)
+    parser.add_argument(
+        "-o",
+        "--default_options_path",
+        default=get_option(
+            "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
+        ),
+        type=str,
+    )
     parser.add_argument(
         "-d", "--output_directory", type=str, default=None, help="Download directory"
     )

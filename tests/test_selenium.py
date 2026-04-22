@@ -24,7 +24,9 @@ class TestSelenium(TestBase):
         super().setUp()
 
     def test_get_selenium_options(self):
-        options = get_selenium_options(default_options_path=options_path)
+        options = get_selenium_options(
+            options_path=options_path, default_options_path=options_path
+        )
         print(options)
 
         path = os.path.join(os.getcwd(), "quotes.json")
