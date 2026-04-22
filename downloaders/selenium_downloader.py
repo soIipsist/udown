@@ -27,16 +27,16 @@ logger = setup_logger(name="selenium_downloader", log_dir="/udown/selenium")
 
 driver_instance = None
 
-BY_MAP = {
-    "css": By.CSS_SELECTOR,
-    "xpath": By.XPATH,
-    "id": By.ID,
-    "name": By.NAME,
-    "class": By.CLASS_NAME,
-    "tag": By.TAG_NAME,
-    "link_text": By.LINK_TEXT,
-    "partial_link_text": By.PARTIAL_LINK_TEXT,
-}
+# BY_MAP = {
+#     "css": By.CSS_SELECTOR,
+#     "xpath": By.XPATH,
+#     "id": By.ID,
+#     "name": By.NAME,
+#     "class": By.CLASS_NAME,
+#     "tag": By.TAG_NAME,
+#     "link_text": By.LINK_TEXT,
+#     "partial_link_text": By.PARTIAL_LINK_TEXT,
+# }
 
 
 driver_types = {
@@ -347,6 +347,34 @@ class SeleniumDownloader:
 
         self.result = self.build_result()
         return data
+
+    def extract_structured(
+        self,
+        value: str,
+        keys: list = ["values"],
+        attribute: str = None,
+        by: str = None,
+        output_filename: str = "output.json",
+    ):
+        structured_data = {}
+
+        elements = self.get_elements(value, by)
+        data = [
+            el.get_attribute(attribute) if attribute else el.text for el in elements
+        ]
+
+        for element in data:
+            item = {}
+            for key in keys:
+
+                try:
+                    item[key] = element
+                except Exception:
+                    item[key] = None
+
+                structured_data.update(item)
+
+        return self.save(structured_data, output_filename)
 
     def extract_all(
         self,
@@ -751,6 +779,7 @@ class SeleniumDownloader:
             "sleep": self.sleep,
             "extract": self.extract,
             "extract_all": self.extract_all,
+            "extract_structured": self.extract_structured,
             "save": self.save,
             "screenshot": self.take_screenshot,
         }
