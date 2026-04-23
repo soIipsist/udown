@@ -32,8 +32,29 @@ def get_defaults(parser, args):
     return defaults
 
 
-def get_extra_args(args_dict: dict, unknown_args):
-    return args_dict
+def get_extra_args(unknown_args):
+    result = {}
+    key = None
+
+    for item in unknown_args:
+        # --key=value support
+        if item.startswith("--") and "=" in item:
+            k, v = item[2:].split("=", 1)
+            result[k] = v
+            key = None
+
+        # flag (e.g. --foo)
+        elif item.startswith("-"):
+            key = item.lstrip("-")
+            result[key] = True  # default if no value follows
+
+        # value (e.g. "bar" after --foo)
+        else:
+            if key:
+                result[key] = item
+                key = None
+
+    return result
 
 
 def main():
@@ -91,11 +112,12 @@ def main():
     ui = args_dict.get("ui", True)
     command = args_dict.pop("command")
 
-    print(args_dict)
-    print(unknown)
-
-    if args_dict.get("extra_args"):
-        args_dict["extra_args"] = get_extra_args()
+    if unknown:
+        parsed = get_extra_args(unknown)
+        args_dict["extra_args"] = {
+            **(args_dict.get("extra_args") or {}),
+            **parsed,
+        }
 
     output = func(**args_dict)
 
