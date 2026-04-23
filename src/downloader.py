@@ -107,6 +107,7 @@ class Downloader(SQLiteItem):
         module: str = None,
         downloader_func: str = None,
         downloader_args: str = None,
+        **args,
     ):
         column_names = [
             "downloader_type",
