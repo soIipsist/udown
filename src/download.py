@@ -187,7 +187,15 @@ class Download(SQLiteItem):
 
     @output_directory.setter
     def output_directory(self, output_directory):
-        self._output_directory = output_directory
+        if output_directory is None:
+            self._output_directory = None
+            return
+
+        path = os.path.expandvars(output_directory)
+        path = os.path.expanduser(path)
+        path = os.path.abspath(path)
+
+        self._output_directory = path
 
     @property
     def output_filename(self):
@@ -380,7 +388,8 @@ class Download(SQLiteItem):
                 output_directory=base_output_directory,
             )
 
-        if os.path.exists(url) and not url.endswith(".torrent"):
+        # parse only if .txt
+        if os.path.exists(url) and url.endswith(".txt"):
             with open(url, "r") as file:
                 for line in file:
                     line = line.strip()
