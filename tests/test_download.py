@@ -106,16 +106,6 @@ class TestDownload(TestBase):
             download: Download
             results = download.download()
 
-    def test_get_extra_args(self):
-        extra_args_str = "output_directory=hi hello=[1,2,3] red h=23 lol user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36'"
-
-        download = Download(url=wget_urls[0], extra_args=extra_args_str)
-        kwargs, positional = download.get_extra_args()
-        print(kwargs)
-        print(positional)
-
-        print(kwargs.get("user_agent"))
-
     def check_download_parts(self, parts, download: Download):
         print(parts)
         for part in parts:
@@ -180,7 +170,6 @@ if __name__ == "__main__":
     test_methods = [
         # TestDownload.test_list_downloads,
         # TestDownload.test_download_all,
-        TestDownload.test_get_extra_args,
         # TestDownload.test_parse_download_string,
         # TestDownload.test_parse_download_from_file,
     ]

@@ -192,6 +192,10 @@ class Downloader(SQLiteItem):
         func_params = list(func_signature.parameters.values())
 
         args_dict = {}
+        extra_args = getattr(download, "extra_args", {}) or {}
+
+        if extra_args:
+            logger.info(f"Extra args:\n{extra_args}")
 
         if not self.downloader_args:
             for param in func_params:
@@ -207,18 +211,9 @@ class Downloader(SQLiteItem):
             for k, v in (key.split("=", 1) for key in keys if "=" in key)
         }
 
-        extra_kwargs, extra_positionals = download.get_extra_args()
-
-        if extra_kwargs:
-            logger.info(f"Extra kwargs:\n{extra_kwargs}")
-        if extra_positionals:
-            logger.info(f"Extra positional args:\n{extra_positionals}")
-
-        pos_iter = iter(extra_positionals)
-
         for idx, param in enumerate(func_params):
-            if param.name in extra_kwargs:
-                args_dict[param.name] = extra_kwargs[param.name]
+            if param.name in extra_args:
+                args_dict[param.name] = extra_args[param.name]
                 continue
 
             key = keys[idx] if idx < len(keys) else None
@@ -239,12 +234,6 @@ class Downloader(SQLiteItem):
 
                 args_dict[param.name] = args_val
                 continue
-
-            try:
-                args_dict[param.name] = next(pos_iter)
-                continue
-            except StopIteration:
-                pass
 
             if param.default is not inspect.Parameter.empty:
                 args_dict[param.name] = param.default

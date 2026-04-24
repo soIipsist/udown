@@ -134,31 +134,6 @@ class Download(SQLiteItem):
     def extra_args(self, extra_args: str):
         self._extra_args = extra_args
 
-    def get_extra_args(self):
-        positional = []
-        kwargs = {}
-
-        if not self.extra_args:
-            return kwargs, positional
-
-        # parts = re.split(r",(?![^\[]*\])", self.extra_args)
-        parts = shlex.split(self.extra_args)
-
-        for part in parts:
-            part = part.strip()
-
-            if "=" in part:
-                key, value = part.split("=", 1)
-                key, value = key.strip(), value.strip()
-
-                parsed_value = parse_value(value)
-                kwargs.update({key: parsed_value})
-            else:
-                parsed_value = parse_value(part)
-                positional.append(parsed_value)
-
-        return kwargs, positional
-
     @property
     def source_url(self):
         return self._source_url
@@ -521,7 +496,6 @@ def download_command(subparsers):
     download_cmd.add_argument("-te", "--time_elapsed", default=None, type=str)
 
     download_cmd.add_argument("-p", "--proxy", default=get_option("PROXY"), type=str)
-    download_cmd.add_argument("-e", "--extra_args", default=None, type=str)
     download_cmd.add_argument("-pr", "--progress", default=None, type=str)
     download_cmd.add_argument(
         "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
