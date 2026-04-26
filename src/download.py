@@ -73,7 +73,7 @@ class Download(SQLiteItem):
         output_path: Optional[str] = None,
         source_url: Optional[str] = None,
         proxy: Optional[str] = None,
-        extra_args: Optional[str] = None,
+        extra_args: Optional[dict] = None,
         progress: Optional[str] = None,
     ):
         column_names = [

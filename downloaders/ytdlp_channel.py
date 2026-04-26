@@ -40,7 +40,10 @@ def download(
             downloader_type=downloader,
             output_directory=os.environ.get("DOWNLOAD_DIRECTORY"),
             proxy=proxy,
-            extra_args=f"sleep_interval={sleep_interval}, max_sleep_interval={max_sleep_interval}",
+            extra_args={
+                "sleep_interval": sleep_interval,
+                "max_sleep_interval": max_sleep_interval,
+            },
         )
         for video_url in video_urls
     ]

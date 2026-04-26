@@ -105,7 +105,7 @@ def get_ytdlp_format(ytdlp_format: str = "ytdlp_video"):
 
 
 def get_postprocessors(options: dict, ytdlp_format: str, extension: str):
-    postprocessors: list = options.get("postprocessors", [])
+    postprocessors: list = list(options.get("postprocessors", []))
 
     embed_subtitle = {"already_have_subtitle": False, "key": "FFmpegEmbedSubtitle"}
     extract_audio = {"key": "FFmpegExtractAudio", "preferredcodec": extension}
@@ -127,6 +127,10 @@ def get_postprocessor_args(options: dict, postprocessor_args: list = []):
     options_postprocessor_args: list = options.get("postprocessor_args", [])
     options_postprocessor_args.extend(postprocessor_args)
     return options_postprocessor_args
+
+
+def ensure_int(value):
+    return int(value) if value is not None else None
 
 
 def get_options(
@@ -159,11 +163,15 @@ def get_options(
     if proxy:
         options["proxy"] = proxy
 
-    if sleep_interval:
-        options["sleep_interval"] = sleep_interval
+    options["sleep_interval"] = ensure_int(
+        sleep_interval if sleep_interval is not None else options.get("sleep_interval")
+    )
 
-    if max_sleep_interval:
-        options["max_sleep_interval"] = max_sleep_interval
+    options["max_sleep_interval"] = ensure_int(
+        max_sleep_interval
+        if max_sleep_interval is not None
+        else options.get("max_sleep_interval")
+    )
 
     if ytdlp_format == "ytdlp_video":  # default ytdlp_video options
 
@@ -351,6 +359,10 @@ def download(
         try:
             with yt_dlp.YoutubeDL(options) as ytdl:
                 info = ytdl.extract_info(url, download=True)
+
+                if not info:
+                    logger.error("No info returned from yt-dlp")
+                    continue
 
                 # Determine if it's a playlist or a single video
                 is_playlist = info.get("entries") is not None
