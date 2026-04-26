@@ -9,8 +9,13 @@ logger = setup_logger(name="wget", log_dir="/udown/wget")
 PROGRESS_RE = re.compile(r"(\d+)%")
 
 
-def build_wget_cmd(url, output_directory=None, output_filename=None):
+def build_wget_cmd(
+    url, output_directory=None, output_filename=None, user_agent: str = None
+):
     cmd = ["wget", "--progress=bar:force"]
+
+    if user_agent:
+        cmd += ["--user-agent", user_agent]
 
     if output_filename:
         output_path = (
@@ -49,6 +54,7 @@ def download(
     output_directory: str = None,
     output_filename: str = None,
     proxy: str = None,
+    user_agent: str = None,
 ):
 
     if isinstance(urls, str):
@@ -58,7 +64,7 @@ def download(
 
     for url in urls:
         logger.info(f"URL: {url}")
-        cmd = build_wget_cmd(url, output_directory, output_filename)
+        cmd = build_wget_cmd(url, output_directory, output_filename, user_agent)
 
         proc = subprocess.Popen(
             cmd,
@@ -127,6 +133,13 @@ if __name__ == "__main__":
         default=get_option("PROXY"),
         help="Proxy URL (http://, https://, socks5://, socks5h://)",
     )
+    parser.add_argument(
+        "-u",
+        "--user_agent",
+        type=str,
+        default=get_option("USER_AGENT"),
+        help="Custom User-Agent",
+    )
 
     args = vars(parser.parse_args())
 
@@ -134,4 +147,5 @@ if __name__ == "__main__":
     output_directory = args.get("output_directory")
     output_filename = args.get("output_filename")
     proxy = args.get("proxy")
-    results = download(urls, output_directory, output_filename, proxy)
+    user_agent = args.get("user_agent")
+    results = download(urls, output_directory, output_filename, proxy, user_agent)
