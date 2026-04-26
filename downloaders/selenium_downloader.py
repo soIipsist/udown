@@ -71,14 +71,51 @@ class BrowserOptions:
     _browser_options_obj = None
     _default_capabilities = None
     _browser_type = None
+    _proxy: str = None
+    _user_agent: str = None
+    _output_directory: str = None
 
-    def __init__(self, browser_type="chrome", browser_args=None):
+    def __init__(
+        self,
+        browser_type="chrome",
+        browser_args=None,
+        output_directory: str = None,
+        proxy: str = None,
+        user_agent: str = None,
+    ):
 
         self.browser_type = browser_type
         self.browser_options_type = browser_option_types.get(
             browser_type, webdriver.ChromeOptions
         )
         self.browser_args = browser_args
+        self.output_directory = output_directory
+        self.proxy = proxy
+        self.user_agent = user_agent
+
+    @property
+    def output_directory(self):
+        return self._output_directory
+
+    @output_directory.setter
+    def output_directory(self, output_directory: str):
+        self._output_directory = output_directory
+
+    @property
+    def proxy(self):
+        return self._proxy
+
+    @proxy.setter
+    def proxy(self, proxy: str):
+        self._proxy = proxy
+
+    @property
+    def user_agent(self):
+        return self._user_agent
+
+    @user_agent.setter
+    def user_agent(self, user_agent: str):
+        self._user_agent = user_agent
 
     @property
     def browser_type(self):
@@ -177,6 +214,7 @@ class BrowserOptions:
     def get_browser_options(self):
         self.browser_options_obj = self.browser_options_type()
 
+        # update output_directory
         if self.output_directory:
             if self.browser_args.get("preferences"):
                 self.browser_args["preferences"].update(
@@ -189,6 +227,8 @@ class BrowserOptions:
                         "safebrowsing.enabled": True,
                     }
                 )
+
+        # update proxy
 
         preferences = self.browser_args.get("preferences")
         capabilities = self.browser_args.get("capabilities")
@@ -216,6 +256,7 @@ class SeleniumDownloader:
     _results: list = []
     _result = None
     _proxy: str = None
+    _user_agent: str = None
 
     @property
     def proxy(self):
@@ -224,6 +265,14 @@ class SeleniumDownloader:
     @proxy.setter
     def proxy(self, proxy: str):
         self._proxy = proxy
+
+    @property
+    def user_agent(self):
+        return self._user_agent
+
+    @user_agent.setter
+    def user_agent(self, user_agent: str):
+        self._user_agent = user_agent
 
     @property
     def result(self):
@@ -251,12 +300,10 @@ class SeleniumDownloader:
 
     @property
     def output_directory(self):
-        if not self._output_directory:
-            return os.getcwd()
         return self._output_directory
 
     @output_directory.setter
-    def output_directory(self, output_directory: str):
+    def output_directory(self, output_directory: Path):
         self._output_directory = output_directory
 
     @property
@@ -315,6 +362,9 @@ class SeleniumDownloader:
         return BrowserOptions(
             self.browser_type,
             self.browser_options,
+            self.output_directory,
+            self.proxy,
+            self.user_agent,
         )
 
     @property
@@ -331,8 +381,9 @@ class SeleniumDownloader:
         browser_options=None,
         events: list = None,
         url: str = None,
-        output_directory: str = None,
+        output_directory: Path = None,
         proxy: str = None,
+        user_agent: str = None,
     ):
         self.browser_type = browser_type
         self.browser_options = browser_options
@@ -340,6 +391,7 @@ class SeleniumDownloader:
         self.url = url
         self.output_directory = output_directory
         self.proxy = proxy
+        self.user_agent = user_agent
 
     def get_driver_instance(self):
 
@@ -879,7 +931,8 @@ def download(
     url_or_path: str,
     default_options_path: str | None = None,
     output_directory: str | None = None,
-    proxy: str | None = None,
+    proxy: str | None = get_option("PROXY"),
+    user_agent: str | None = get_option("USER_AGENT"),
 ) -> list[dict]:
 
     results = []
@@ -889,19 +942,12 @@ def download(
 
     options = get_selenium_options(url_or_path, default_options_path)
 
-    if output_directory:
-        if options.get("preferences"):
-            options["preferences"].update(
-                {
-                    "download.default_directory": str(out_dir.resolve()),
-                    "download.prompt_for_download": False,
-                    "download.directory_upgrade": True,
-                    "safebrowsing.enabled": True,
-                }
-            )
-
     selenium_downloader = SeleniumDownloader(
-        **options, url=url_or_path, output_directory=output_directory, proxy=proxy
+        **options,
+        url=url_or_path,
+        output_directory=out_dir,
+        proxy=proxy,
+        user_agent=user_agent,
     )
 
     results = selenium_downloader.execute_events()
@@ -929,6 +975,13 @@ if __name__ == "__main__":
         default=get_option("PROXY"),
         help="Proxy URL (http://, https://, socks5:// etc.)",
     )
+    parser.add_argument(
+        "-u",
+        "--user_agent",
+        type=str,
+        default=get_option("USER_AGENT"),
+        help="Custom User-Agent",
+    )
     args = parser.parse_args()
 
     results = download(
@@ -936,6 +989,7 @@ if __name__ == "__main__":
         default_options_path=args.default_options_path,
         output_directory=args.output_directory,
         proxy=args.proxy,
+        user_agent=args.user_agent,
     )
 
     pp.pprint(results)
