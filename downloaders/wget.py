@@ -2,6 +2,7 @@ import argparse
 import os
 import subprocess
 import re
+from src.options import get_option
 from utils.logger import setup_logger
 
 logger = setup_logger(name="wget", log_dir="/udown/wget")
@@ -25,10 +26,35 @@ def build_wget_cmd(url, output_directory=None, output_filename=None):
     return cmd
 
 
-def download(urls: list, output_directory: str = None, output_filename: str = None):
+def build_env(proxy: str = None):
+    env = os.environ.copy()
+
+    if not proxy:
+        return env
+
+    proxy = proxy.strip()
+
+    env["http_proxy"] = proxy
+    env["https_proxy"] = proxy
+    env["ftp_proxy"] = proxy
+
+    if proxy.startswith("socks"):
+        env["all_proxy"] = proxy
+
+    return env
+
+
+def download(
+    urls: list,
+    output_directory: str = None,
+    output_filename: str = None,
+    proxy: str = None,
+):
 
     if isinstance(urls, str):
         urls = [urls]
+
+    env = build_env(proxy)
 
     for url in urls:
         logger.info(f"URL: {url}")
@@ -40,6 +66,7 @@ def download(urls: list, output_directory: str = None, output_filename: str = No
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
+            env=env,
         )
 
         try:
@@ -94,10 +121,17 @@ if __name__ == "__main__":
         default=None,
         help="Output filename",
     )
+    parser.add_argument(
+        "-p",
+        "--proxy",
+        default=get_option("PROXY"),
+        help="Proxy URL (http://, https://, socks5://, socks5h://)",
+    )
 
     args = vars(parser.parse_args())
 
     urls = args.get("urls")
     output_directory = args.get("output_directory")
     output_filename = args.get("output_filename")
-    results = download(urls, output_directory, output_filename)
+    proxy = args.get("proxy")
+    results = download(urls, output_directory, output_filename, proxy)

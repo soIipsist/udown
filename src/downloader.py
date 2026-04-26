@@ -391,7 +391,7 @@ default_downloaders = [
         None,
         "downloaders.wget",
         "download",
-        "url, output_directory, output_filename",
+        "url, output_directory, output_filename, proxy=proxy",
     ),
     Downloader(
         "urllib",
