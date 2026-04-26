@@ -211,7 +211,7 @@ def get_entry_url(source_url: str, entry: dict, is_playlist: bool) -> str:
     return url
 
 
-def get_entry_filename(entry: dict, uses_ffmpeg: bool = False):
+def get_entry_filename(entry: dict, uses_ffmpeg: bool = False, prefix: str = None):
     title = entry.get("title")
 
     if not title:
@@ -229,6 +229,9 @@ def get_entry_filename(entry: dict, uses_ffmpeg: bool = False):
                 ext = new_ext
 
     filename = f"{title}.{ext}"
+
+    if prefix:
+        filename = f"{prefix}{filename}"
 
     return filename
 
@@ -377,7 +380,7 @@ def download(
                         continue
 
                     entry_url = get_entry_url(url, entry, is_playlist)
-                    entry_filename = get_entry_filename(entry, uses_ffmpeg)
+                    entry_filename = get_entry_filename(entry, uses_ffmpeg, prefix)
 
                     if not entry_url:
                         error = f"Missing URL at index {idx}. Skipping."
