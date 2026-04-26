@@ -68,6 +68,7 @@ def get_outtmpl(
     if output_directory:
         outtmpl = f"{output_directory}/{outtmpl}"
 
+    logger.info(f"Outtmpl: {outtmpl}")
     return outtmpl
 
 
@@ -78,11 +79,12 @@ def get_video_format(options: dict, ytdlp_format: str, custom_format: str = None
         return custom_format
 
     if not video_format:
-        if ytdlp_format == "ytdlp_audio":
+        if ytdlp_format == "ytdlp_audio" or ytdlp_format == "audio":
             video_format = "bestaudio/best"
         else:
             video_format = "bestvideo+bestaudio"
 
+    logger.info(f"Video format: {video_format}")
     return video_format
 
 
@@ -91,7 +93,7 @@ def get_ytdlp_format(ytdlp_format: str = "ytdlp_video"):
     if ytdlp_format and ytdlp_format.endswith(".txt"):
         ytdlp_format = os.path.basename(ytdlp_format).removesuffix(".txt")
 
-    valid_formats = ["ytdlp_audio", "ytdlp_video"]
+    valid_formats = ["ytdlp_audio", "ytdlp_video", "audio", "video"]
 
     file_formats = {
         "music": "ytdlp_audio",
@@ -101,7 +103,12 @@ def get_ytdlp_format(ytdlp_format: str = "ytdlp_video"):
 
     ytdlp_format = file_formats.get(ytdlp_format, ytdlp_format)
 
-    return ytdlp_format if ytdlp_format in valid_formats else "ytdlp_video"
+    if ytdlp_format not in valid_formats:
+        ytdlp_format = "ytdlp_video"
+
+    logger.info(f"YTDLP format: {ytdlp_format}")
+
+    return ytdlp_format
 
 
 def get_postprocessors(options: dict, ytdlp_format: str, extension: str):
@@ -117,6 +124,7 @@ def get_postprocessors(options: dict, ytdlp_format: str, extension: str):
         if extract_audio not in postprocessors:
             postprocessors.append(extract_audio)
 
+    logger.info(f"Postprocessors: {postprocessors}")
     return postprocessors
 
 
