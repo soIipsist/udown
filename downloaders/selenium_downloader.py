@@ -73,13 +73,13 @@ class BrowserOptions:
     _browser_type = None
     _proxy: str = None
     _user_agent: str = None
-    _output_directory: str = None
+    _output_directory: Path = None
 
     def __init__(
         self,
         browser_type="chrome",
         browser_args=None,
-        output_directory: str = None,
+        output_directory: Path = None,
         proxy: str = None,
         user_agent: str = None,
     ):
@@ -98,7 +98,7 @@ class BrowserOptions:
         return self._output_directory
 
     @output_directory.setter
-    def output_directory(self, output_directory: str):
+    def output_directory(self, output_directory: Path):
         self._output_directory = output_directory
 
     @property
@@ -211,23 +211,53 @@ class BrowserOptions:
         for name, value in preferences.items():
             self.browser_options_obj.set_preference(name, value)
 
+    def set_output_directory(self):
+        if not self.output_directory:
+            return
+
+        if not self.browser_args.get("preferences"):
+            self.browser_args["preferences"] = {}
+
+        if self.browser_type in {"chrome", "edge", "uc"}:
+
+            self.browser_args["preferences"].update(
+                {
+                    "download.default_directory": str(self.output_directory.resolve()),
+                    "download.prompt_for_download": False,
+                    "download.directory_upgrade": True,
+                    "safebrowsing.enabled": False,
+                    "safebrowsing.disable_download_protection": True,
+                }
+            )
+        elif self.browser_type == "firefox":
+            self.browser_args["preferences"].update(
+                {
+                    "browser.download.dir": str(self.output_directory.resolve()),
+                    "browser.download.folderList": 2,  # use custom dir
+                    "browser.download.useDownloadDir": True,
+                    "browser.helperApps.neverAsk.saveToDisk": (
+                        "application/pdf,"
+                        "application/octet-stream,"
+                        "application/vnd.ms-excel,"
+                        "text/csv,"
+                        "application/zip"
+                    ),
+                    "pdfjs.disabled": True,  # force download PDFs
+                }
+            )
+        elif self.browser_type == "safari":
+
+            logger.error(
+                "Safari does not support programmatic download directory control"
+            )
+
+        elif self.browser_type == "ie":
+            logger.error("IE does not support download directory configuration")
+
     def get_browser_options(self):
         self.browser_options_obj = self.browser_options_type()
 
-        # update output_directory
-        if self.output_directory:
-            if self.browser_args.get("preferences"):
-                self.browser_args["preferences"].update(
-                    {
-                        "download.default_directory": str(
-                            self.output_directory.resolve()
-                        ),
-                        "download.prompt_for_download": False,
-                        "download.directory_upgrade": True,
-                        "safebrowsing.enabled": True,
-                    }
-                )
-
+        self.set_output_directory()
         # update proxy
 
         preferences = self.browser_args.get("preferences")
