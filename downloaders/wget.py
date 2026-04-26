@@ -53,8 +53,8 @@ def download(
     urls: list,
     output_directory: str = None,
     output_filename: str = None,
-    proxy: str = None,
-    user_agent: str = None,
+    proxy: str = get_option("PROXY"),
+    user_agent: str = get_option("USER_AGENT"),
 ):
 
     if isinstance(urls, str):

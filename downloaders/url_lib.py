@@ -27,8 +27,8 @@ def download(
     urls: list | str,
     output_directory: str = None,
     output_filename: str = None,
-    user_agent: str = None,
-    proxy: str = None,
+    user_agent: str = get_option("USER_AGENT"),
+    proxy: str = get_option("PROXY"),
     headers: dict = None,
 ) -> list[dict]:
     """
