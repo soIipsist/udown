@@ -181,27 +181,33 @@ class TestSelenium(TestBase):
         )
         print(results)
 
-    def test_output_directory(self):
-        # output_directory = os.path.expanduser("~/Downloads/")
-        output_directory = None
-        path = os.path.join(os.getcwd(), "file.json")
+    def test_set_output_directory(self):
+        output_directory = os.path.expanduser("~/Downloads/")
+        # output_directory = None
+        selenium_downloader.output_directory = output_directory
+        browser_options: BrowserOptions = selenium_downloader.browser_options_instance
+        browser_options.set_output_directory()
 
-        results = download(
-            path, default_options_path=options_path, output_directory=output_directory
-        )
-        print(results)
+        print(browser_options.browser_args)
 
-    def test_proxy(self):
-        output_directory = None
-        path = os.path.join(os.getcwd(), "proxy.json")
+    def test_set_proxy(self):
+        proxy = "http://"
+        # output_directory = None
+        selenium_downloader.proxy = proxy
+        browser_options: BrowserOptions = selenium_downloader.browser_options_instance
+        browser_options.set_proxy()
 
-        results = download(
-            path, default_options_path=options_path, output_directory=output_directory
-        )
-        print(results)
+        print(browser_options.browser_args)
 
-    def test_user_agent(self):
-        pass
+    def test_set_user_agent(self):
+        user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36"
+
+        selenium_downloader.user_agent = user_agent
+
+        browser_options: BrowserOptions = selenium_downloader.browser_options_instance
+        browser_options.set_user_agent()
+
+        print(browser_options.browser_args)
 
 
 if __name__ == "__main__":
@@ -217,7 +223,8 @@ if __name__ == "__main__":
         # TestSelenium.test_download_with_path,
         # TestSelenium.test_undetected,
         # TestSelenium.test_undetected_with_options,
-        # TestSelenium.test_output_directory
-        TestSelenium.test_proxy
+        # TestSelenium.test_set_output_directory,
+        # TestSelenium.test_set_proxy,
+        TestSelenium.test_set_user_agent,
     ]
     run_test_methods(test_methods)
