@@ -73,13 +73,13 @@ class BrowserOptions:
     _browser_type = None
     _proxy: str = None
     _user_agent: str = None
-    _output_directory: Path = None
+    _output_directory: str = None
 
     def __init__(
         self,
         browser_type="chrome",
         browser_args=None,
-        output_directory: Path = None,
+        output_directory: str = None,
         proxy: str = None,
         user_agent: str = None,
     ):
@@ -98,7 +98,7 @@ class BrowserOptions:
         return self._output_directory
 
     @output_directory.setter
-    def output_directory(self, output_directory: Path):
+    def output_directory(self, output_directory: str):
         self._output_directory = output_directory
 
     @property
@@ -218,21 +218,26 @@ class BrowserOptions:
         if not self.browser_args.get("preferences"):
             self.browser_args["preferences"] = {}
 
+        if not self.browser_args.get("experimental_options"):
+            self.browser_args["experimental_options"] = {}
+
         if self.browser_type in {"chrome", "edge", "uc"}:
 
-            self.browser_args["preferences"].update(
+            self.browser_args["experimental_options"].update(
                 {
-                    "download.default_directory": str(self.output_directory.resolve()),
-                    "download.prompt_for_download": False,
-                    "download.directory_upgrade": True,
-                    "safebrowsing.enabled": False,
-                    "safebrowsing.disable_download_protection": True,
+                    "prefs": {
+                        "download.default_directory": self.output_directory,
+                        "download.prompt_for_download": False,
+                        "download.directory_upgrade": True,
+                        "safebrowsing.enabled": False,
+                        "safebrowsing.disable_download_protection": True,
+                    }
                 }
             )
         elif self.browser_type == "firefox":
             self.browser_args["preferences"].update(
                 {
-                    "browser.download.dir": str(self.output_directory.resolve()),
+                    "browser.download.dir": self.output_directory,
                     "browser.download.folderList": 2,  # use custom dir
                     "browser.download.useDownloadDir": True,
                     "browser.helperApps.neverAsk.saveToDisk": (
@@ -254,11 +259,14 @@ class BrowserOptions:
         elif self.browser_type == "ie":
             logger.error("IE does not support download directory configuration")
 
+    def set_proxy(self):
+        pass
+
     def get_browser_options(self):
         self.browser_options_obj = self.browser_options_type()
 
         self.set_output_directory()
-        # update proxy
+        self.set_proxy()
 
         preferences = self.browser_args.get("preferences")
         capabilities = self.browser_args.get("capabilities")
@@ -333,7 +341,7 @@ class SeleniumDownloader:
         return self._output_directory
 
     @output_directory.setter
-    def output_directory(self, output_directory: Path):
+    def output_directory(self, output_directory: str):
         self._output_directory = output_directory
 
     @property
@@ -411,7 +419,7 @@ class SeleniumDownloader:
         browser_options=None,
         events: list = None,
         url: str = None,
-        output_directory: Path = None,
+        output_directory: str = None,
         proxy: str = None,
         user_agent: str = None,
     ):
@@ -970,12 +978,15 @@ def download(
     out_dir = Path(output_directory or ".")
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    if not output_directory:
+        output_directory = os.getcwd()
+
     options = get_selenium_options(url_or_path, default_options_path)
 
     selenium_downloader = SeleniumDownloader(
         **options,
         url=url_or_path,
-        output_directory=out_dir,
+        output_directory=output_directory,
         proxy=proxy,
         user_agent=user_agent,
     )
@@ -996,7 +1007,11 @@ if __name__ == "__main__":
         type=str,
     )
     parser.add_argument(
-        "-d", "--output_directory", type=str, default=None, help="Download directory"
+        "-d",
+        "--output_directory",
+        type=str,
+        default=os.getcwd(),
+        help="Download directory",
     )
     parser.add_argument(
         "-p",

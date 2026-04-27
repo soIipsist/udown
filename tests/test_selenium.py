@@ -149,6 +149,12 @@ class TestSelenium(TestBase):
         )
         print(results)
 
+        # from selenium import webdriver
+        # from undetected_chromedriver import ChromeOptions
+
+        # options = webdriver.FirefoxOptions()
+        # print(hasattr(options, "set_preference"))
+
     def test_download_with_url(self):
         results = download(url, output_directory="/Users/p/Downloads/")
         print(results)
@@ -175,6 +181,16 @@ class TestSelenium(TestBase):
         )
         print(results)
 
+    def test_output_directory(self):
+        output_directory = os.path.expanduser("~/Downloads/")
+
+        path = os.path.join(os.getcwd(), "file.json")
+
+        results = download(
+            path, default_options_path=options_path, output_directory=output_directory
+        )
+        print(results)
+
 
 if __name__ == "__main__":
     test_methods = [
@@ -186,8 +202,9 @@ if __name__ == "__main__":
         # TestSelenium.test_has_get_event,
         # TestSelenium.test_execute_events,
         # TestSelenium.test_download_with_url,
-        TestSelenium.test_download_with_path,
+        # TestSelenium.test_download_with_path,
         # TestSelenium.test_undetected,
-        # TestSelenium.test_undetected_with_options
+        # TestSelenium.test_undetected_with_options,
+        TestSelenium.test_output_directory
     ]
     run_test_methods(test_methods)
