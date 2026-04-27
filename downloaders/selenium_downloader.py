@@ -204,12 +204,6 @@ class BrowserOptions:
         if not self.output_directory:
             return
 
-        if not self.browser_args.get("preferences"):
-            self.browser_args["preferences"] = {}
-
-        if not self.browser_args.get("experimental_options"):
-            self.browser_args["experimental_options"] = {}
-
         if self.browser_type in {"chrome", "edge", "uc"}:
 
             self.browser_args["experimental_options"].update(
@@ -252,12 +246,6 @@ class BrowserOptions:
         if not self.proxy:
             return
 
-        if not self.browser_args.get("arguments"):
-            self.browser_args["arguments"] = []
-
-        if not self.browser_args.get("preferences"):
-            self.browser_args["preferences"] = {}
-
         if self.browser_type in {"chrome", "edge", "uc"}:
             self.browser_args["arguments"].append(f"--proxy-server={self.proxy}")
 
@@ -279,23 +267,41 @@ class BrowserOptions:
         else:
             logger.error(f"Proxy not supported for {self.browser_type}")
 
+    def set_user_agent(self):
+        if not self.user_agent:
+            return
+
+        if self.browser_type in {"chrome", "edge", "uc"}:
+            self.browser_args["arguments"].append(f"--user-agent={self.user_agent}")
+
+        elif self.browser_type == "firefox":
+            self.browser_args["preferences"].update(
+                {"general.useragent.override": self.user_agent}
+            )
+        else:
+            logger.warning(f"User-Agent not supported for {self.browser_type}")
+
     def get_browser_options(self):
         self.browser_options_obj = self.browser_options_type()
 
+        if not self.browser_args.get("preferences"):
+            self.browser_args["preferences"] = {}
+
+        if not self.browser_args.get("experimental_options"):
+            self.browser_args["experimental_options"] = {}
+
+        if not self.browser_args.get("arguments"):
+            self.browser_args["arguments"] = []
+
         self.set_output_directory()
         self.set_proxy()
+        self.set_user_agent()
 
-        preferences = self.browser_args.get("preferences")
-        capabilities = self.browser_args.get("capabilities")
-        experimental_options = self.browser_args.get("experimental_options")
-        additional_options = self.browser_args.get("additional_options")
-        arguments = self.browser_args.get("arguments")
-
-        self.set_capabilities(capabilities)
-        self.add_experimental_options(experimental_options)
-        self.set_preferences(preferences)
-        self.add_additional_options(additional_options)
-        self.add_arguments(arguments)
+        self.set_capabilities(self.browser_args.get("capabilities"))
+        self.add_experimental_options(self.browser_args.get("experimental_options"))
+        self.set_preferences(self.browser_args.get("preferences"))
+        self.add_additional_options(self.browser_args.get("additional_options"))
+        self.add_arguments(self.browser_args.get("arguments"))
         return self.browser_options_obj
 
 
