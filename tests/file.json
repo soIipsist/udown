@@ -1,0 +1,3 @@
+{
+  "events": ["get('https://httpbin.org/bytes/1024')"]
+}

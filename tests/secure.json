@@ -1,0 +1,3 @@
+{
+  "events": ["get('https://google.com')", "screenshot('hello.png')"]
+}

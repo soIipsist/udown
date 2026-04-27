@@ -13,7 +13,7 @@ pp = PrettyPrinter(indent=2)
 
 url = "https://quotes.toscrape.com"
 url_2 = "https://quotes.toscrape.com/login"
-options_path = os.path.join(DOWNLOADER_METADATA_DIR, "firefox.json")
+options_path = os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
 options = read_json_file(options_path)
 # print(options)
 selenium_downloader = SeleniumDownloader(**options)
@@ -182,7 +182,8 @@ class TestSelenium(TestBase):
         print(results)
 
     def test_output_directory(self):
-        output_directory = os.path.expanduser("~/Downloads/")
+        # output_directory = os.path.expanduser("~/Downloads/")
+        output_directory = None
 
         path = os.path.join(os.getcwd(), "file.json")
 

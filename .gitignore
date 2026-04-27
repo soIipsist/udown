@@ -222,7 +222,7 @@ tests/*.jpg
 tests/*.jpeg
 tests/*.png
 tests/*.bin
-tests/*.json
+tests/output.json
 tests/*.txt
 tests/*.html
 tests/*.torrent

@@ -1,0 +1,7 @@
+{
+  "events": [
+    "get('https://quotes.toscrape.com')",
+    "extract_structured(//span)",
+    "quit()"
+  ]
+}

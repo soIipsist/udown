@@ -27,17 +27,6 @@ logger = setup_logger(name="selenium_downloader", log_dir="/udown/selenium")
 
 driver_instance = None
 
-# BY_MAP = {
-#     "css": By.CSS_SELECTOR,
-#     "xpath": By.XPATH,
-#     "id": By.ID,
-#     "name": By.NAME,
-#     "class": By.CLASS_NAME,
-#     "tag": By.TAG_NAME,
-#     "link_text": By.LINK_TEXT,
-#     "partial_link_text": By.PARTIAL_LINK_TEXT,
-# }
-
 
 driver_types = {
     "uc": uc.Chrome,
