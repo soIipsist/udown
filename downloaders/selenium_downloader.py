@@ -249,7 +249,35 @@ class BrowserOptions:
             logger.error("IE does not support download directory configuration")
 
     def set_proxy(self):
-        pass
+        if not self.proxy:
+            return
+
+        if not self.browser_args.get("arguments"):
+            self.browser_args["arguments"] = []
+
+        if not self.browser_args.get("preferences"):
+            self.browser_args["preferences"] = {}
+
+        if self.browser_type in {"chrome", "edge", "uc"}:
+            self.browser_args["arguments"].append(f"--proxy-server={self.proxy}")
+
+        elif self.browser_type == "firefox":
+
+            proxy = self.proxy.replace("http://", "").replace("https://", "")
+
+            host, port = proxy.split(":")
+
+            self.browser_args["preferences"].update(
+                {
+                    "network.proxy.type": 1,
+                    "network.proxy.http": host,
+                    "network.proxy.http_port": int(port),
+                    "network.proxy.ssl": host,
+                    "network.proxy.ssl_port": int(port),
+                }
+            )
+        else:
+            logger.error(f"Proxy not supported for {self.browser_type}")
 
     def get_browser_options(self):
         self.browser_options_obj = self.browser_options_type()

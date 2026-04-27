@@ -184,13 +184,24 @@ class TestSelenium(TestBase):
     def test_output_directory(self):
         # output_directory = os.path.expanduser("~/Downloads/")
         output_directory = None
-
         path = os.path.join(os.getcwd(), "file.json")
 
         results = download(
             path, default_options_path=options_path, output_directory=output_directory
         )
         print(results)
+
+    def test_proxy(self):
+        output_directory = None
+        path = os.path.join(os.getcwd(), "proxy.json")
+
+        results = download(
+            path, default_options_path=options_path, output_directory=output_directory
+        )
+        print(results)
+
+    def test_user_agent(self):
+        pass
 
 
 if __name__ == "__main__":
@@ -206,6 +217,7 @@ if __name__ == "__main__":
         # TestSelenium.test_download_with_path,
         # TestSelenium.test_undetected,
         # TestSelenium.test_undetected_with_options,
-        TestSelenium.test_output_directory
+        # TestSelenium.test_output_directory
+        TestSelenium.test_proxy
     ]
     run_test_methods(test_methods)
