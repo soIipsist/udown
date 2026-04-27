@@ -26,7 +26,7 @@ from downloaders.ytdlp import (
     logger,
 )
 
-from src.options import DOWNLOADER_METADATA_DIR
+from src.settings import DOWNLOADER_METADATA_DIR
 
 #     "https://www.youtube.com/playlist?list=PL3A_1s_Z8MQbYIvki-pbcerX8zrF4U8zQ"
 # playlist_urls = [

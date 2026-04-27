@@ -4,7 +4,7 @@ from pprint import PrettyPrinter
 import urllib3
 from urllib.parse import urlparse
 from pathlib import Path
-from src.options import get_option
+from src.settings import get_setting
 from utils.logger import setup_logger
 from urllib3.contrib.socks import SOCKSProxyManager
 
@@ -27,8 +27,8 @@ def download(
     urls: list | str,
     output_directory: str = None,
     output_filename: str = None,
-    user_agent: str = get_option("USER_AGENT"),
-    proxy: str = get_option("PROXY"),
+    user_agent: str = get_setting("USER_AGENT"),
+    proxy: str = get_setting("PROXY"),
     headers: dict = None,
 ) -> list[dict]:
     """
@@ -139,10 +139,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--user_agent",
         type=str,
-        default=get_option("USER_AGENT"),
+        default=get_setting("USER_AGENT"),
         help="Custom User-Agent",
     )
-    parser.add_argument("--proxy", type=str, default=get_option("PROXY"), help="Proxy")
+    parser.add_argument("--proxy", type=str, default=get_setting("PROXY"), help="Proxy")
 
     args = parser.parse_args()
 

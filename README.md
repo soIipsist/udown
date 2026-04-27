@@ -112,28 +112,28 @@ udown downloaders -t ytdlp_video
 udown downloaders add -n mycustom -t ytdlp_audio -d downloader_path.json
 ```
 
-### Options command
+### Settings command
 
-View and modify `udown` options.
+View and modify `udown` settings.
 
 ```bash)
-udown options
+udown settings
 ```
 
 #### Examples
 
 ```python)
-# List all available options (no UI)
-udown options -ui 0
+# List all available settings (no UI)
+udown settings -ui 0
 
 # Set value of an option
-udown options set --key "USE_TUI" --value "0"
+udown settings set --key "USE_TUI" --value "0"
 
 # Get value of an option
-udown options get --key "USE_TUI"
+udown settings get --key "USE_TUI"
 
-# Reset all options
-udown options reset
+# Reset all settings
+udown settings reset
 ```
 
 ## Configuration via environment variables

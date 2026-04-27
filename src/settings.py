@@ -66,7 +66,7 @@ def load_config():
     return _config_cache
 
 
-def get_option(key=None, default=None):
+def get_setting(key=None, default=None):
     if not key:
         return None
 
@@ -80,7 +80,7 @@ def get_option(key=None, default=None):
     return value
 
 
-def set_option(key, value):
+def set_setting(key, value):
     global _config_cache
 
     config = load_config()
@@ -92,56 +92,56 @@ def set_option(key, value):
     _config_cache = config
 
 
-def reset_options():
+def reset_settings():
     try:
         copy(DEFAULT_CONFIG_PATH, CONFIG_PATH)
-        print("Successfully reset all options.")
+        print("Successfully reset all settings.")
 
     except Exception as e:
         print(e)
 
 
-def all_options():
+def all_settings():
     """Returns all config values."""
     return dict(load_config())
 
 
-def options_action(
+def settings_action(
     action: str, key: str = None, value: str = None, ui: bool = False, **args
 ):
-    options = all_options()
+    settings = all_settings()
 
     if action == "get":
-        value = get_option(key)
-        if key in options:
+        value = get_setting(key)
+        if key in settings:
             print(f"{key} : {value}")
         return value
     elif action == "set":
-        return set_option(key, value)
+        return set_setting(key, value)
     elif action == "reset":
-        reset_options()
+        reset_settings()
     else:
         if ui:
             from .tui_main import UDownApp
 
-            UDownApp(options, table_type="options").run()
+            UDownApp(settings, table_type="settings").run()
 
-        return options
+        return settings
 
 
-def options_command(subparsers):
-    options_cmd = subparsers.add_parser("options", help="List options")
+def settings_command(subparsers):
+    settings_cmd = subparsers.add_parser("settings", help="List settings")
 
-    options_cmd.add_argument(
+    settings_cmd.add_argument(
         "action",
         type=str,
         choices=["list", "get", "set", "reset"],
         default="list",
         nargs="?",
     )
-    options_cmd.add_argument("key", type=str, default=None, nargs="?")
-    options_cmd.add_argument("value", type=str, default=None, nargs="?")
-    options_cmd.add_argument(
-        "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+    settings_cmd.add_argument("key", type=str, default=None, nargs="?")
+    settings_cmd.add_argument("value", type=str, default=None, nargs="?")
+    settings_cmd.add_argument(
+        "-ui", "--ui", default=get_setting("USE_TUI", True), type=str_to_bool
     )
-    return options_cmd
+    return settings_cmd

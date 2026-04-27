@@ -6,7 +6,7 @@ from textual.widgets import Input
 from textual.widgets import Header, Footer
 from .tui_downloaders import DownloadersTable
 from .tui_downloads import DownloadsTable
-from .tui_options import OptionsTable
+from .tui_settings import SettingsTable
 from utils.logger import setup_logger
 
 logger = setup_logger(name="ui", log_dir="/udown/ui")
@@ -45,7 +45,7 @@ class UDownApp(App):
 
         self.downloader_types = downloader_types
 
-        if self.table_type == "options":
+        if self.table_type == "settings":
             self.BINDINGS = [
                 ("q", "quit", "Quit"),
             ]
@@ -76,8 +76,8 @@ class UDownApp(App):
             table = DownloadsTable(self.items)
         elif self.table_type == "downloaders":
             table = DownloadersTable(self.items)
-        elif self.table_type == "options":
-            table = OptionsTable(self.items)
+        elif self.table_type == "settings":
+            table = SettingsTable(self.items)
         else:
             return
 

@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 import re
-from src.options import get_option
+from src.settings import get_setting
 from utils.logger import setup_logger
 
 logger = setup_logger(name="wget", log_dir="/udown/wget")
@@ -53,8 +53,8 @@ def download(
     urls: list,
     output_directory: str = None,
     output_filename: str = None,
-    proxy: str = get_option("PROXY"),
-    user_agent: str = get_option("USER_AGENT"),
+    proxy: str = get_setting("PROXY"),
+    user_agent: str = get_setting("USER_AGENT"),
 ):
 
     if isinstance(urls, str):
@@ -130,14 +130,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "-p",
         "--proxy",
-        default=get_option("PROXY"),
+        default=get_setting("PROXY"),
         help="Proxy URL (http://, https://, socks5://, socks5h://)",
     )
     parser.add_argument(
         "-u",
         "--user_agent",
         type=str,
-        default=get_option("USER_AGENT"),
+        default=get_setting("USER_AGENT"),
         help="Custom User-Agent",
     )
 

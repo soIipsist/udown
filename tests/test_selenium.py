@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from downloaders.selenium_downloader import *
 from test_base import *
-from src.options import DOWNLOADER_METADATA_DIR
+from src.settings import DOWNLOADER_METADATA_DIR
 
 current_file = Path(__file__).resolve()
 parent_directory = current_file.parents[2]

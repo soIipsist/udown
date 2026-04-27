@@ -15,7 +15,7 @@ from .downloader import (
     complete_downloader_type,
 )
 from utils import str_to_bool, parse_value, parse_date
-from .options import get_option
+from .settings import get_setting
 from utils.sqlite_item import SQLiteItem
 from utils.sqlite_conn import (
     download_values,
@@ -391,13 +391,13 @@ class Download(SQLiteItem):
 
 
 def download_action(**args):
-    action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
+    action = args.pop("action", get_setting("DOWNLOAD_ACTION", "list"))
     url = args.get("url") or None
     ui = args.pop("ui", True)
     defaults = args.pop("_defaults", {})
     filter_keys = Download().get_filter_keys_from_args(args, defaults)
 
-    conjunction_type = args.pop("conjunction_type", get_option("DOWNLOAD_OP", "AND"))
+    conjunction_type = args.pop("conjunction_type", get_setting("DOWNLOAD_OP", "AND"))
 
     if action is None:
         action = "download" if url else "list"
@@ -465,13 +465,13 @@ def download_command(subparsers):
     download_cmd.add_argument(
         "-a",
         "--action",
-        default=get_option("DOWNLOAD_ACTION", None),
+        default=get_setting("DOWNLOAD_ACTION", None),
         choices=["download", "add", "insert", "delete", "list"],
     )
     type_arg = download_cmd.add_argument(
         "-t",
         "--downloader_type",
-        default=get_option("DOWNLOADER_TYPE", None),
+        default=get_setting("DOWNLOADER_TYPE", None),
         type=str,
     )
     type_arg.completer = complete_downloader_type
@@ -486,7 +486,7 @@ def download_command(subparsers):
     download_cmd.add_argument(
         "-d",
         "--output_directory",
-        default=get_option("DOWNLOAD_DIRECTORY"),
+        default=get_setting("DOWNLOAD_DIRECTORY"),
         type=str,
     )
     download_cmd.add_argument("-f", "--output_filename", default=None, type=str)
@@ -495,15 +495,15 @@ def download_command(subparsers):
     download_cmd.add_argument("-ed", "--end_date", default=None, type=parse_date)
     download_cmd.add_argument("-te", "--time_elapsed", default=None, type=str)
 
-    download_cmd.add_argument("-p", "--proxy", default=get_option("PROXY"), type=str)
+    download_cmd.add_argument("-p", "--proxy", default=get_setting("PROXY"), type=str)
     download_cmd.add_argument("-pr", "--progress", default=None, type=str)
     download_cmd.add_argument(
-        "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+        "-ui", "--ui", default=get_setting("USE_TUI", True), type=str_to_bool
     )
     download_cmd.add_argument(
         "-c",
         "--conjunction_type",
-        default=get_option("DOWNLOAD_OP", "AND"),
+        default=get_setting("DOWNLOAD_OP", "AND"),
         type=str,
         choices=["AND", "OR"],
     )

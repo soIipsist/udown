@@ -6,7 +6,7 @@ import sys
 from src.download import download_command, download_action, complete_downloader_type
 from src.downloader import downloader_command, downloader_action, pp
 from src.update import update_command, update_action
-from src.options import options_action, options_command, get_option
+from src.settings import settings_action, get_setting, settings_command
 from utils import parse_date, str_to_bool
 
 
@@ -67,7 +67,7 @@ def main():
     type_arg = parser.add_argument(
         "-t",
         "--downloader_type",
-        default=get_option("DOWNLOADER_TYPE", None),
+        default=get_setting("DOWNLOADER_TYPE", None),
         type=str,
     )
 
@@ -77,7 +77,7 @@ def main():
     parser.add_argument("-ed", "--end_date", default=None, type=parse_date)
     parser.add_argument("-te", "--time_elapsed", default=None, type=str)
     parser.add_argument(
-        "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+        "-ui", "--ui", default=get_setting("USE_TUI", True), type=str_to_bool
     )
     type_arg.completer = complete_downloader_type
 
@@ -89,8 +89,8 @@ def main():
     downloader_parser = downloader_command(subparsers)
     downloader_parser.set_defaults(func=downloader_action)
 
-    options_parser = options_command(subparsers)
-    options_parser.set_defaults(func=options_action)
+    settings_parser = settings_command(subparsers)
+    settings_parser.set_defaults(func=settings_action)
 
     update_parser = update_command(subparsers)
     update_parser.set_defaults(func=update_action)

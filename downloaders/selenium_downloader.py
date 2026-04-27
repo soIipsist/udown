@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from pprint import PrettyPrinter
 from downloaders.ytdlp import read_json_file
-from src.options import DOWNLOADER_METADATA_DIR, get_option
+from src.settings import DOWNLOADER_METADATA_DIR, get_setting
 from utils import read_file, is_valid_url
 from utils.logger import setup_logger, write_output
 import re
@@ -969,7 +969,7 @@ def get_selenium_options(options_path: str, default_options_path: str = None):
     default_options: dict = {}
 
     if not default_options_path:
-        default_options_path = get_option(
+        default_options_path = get_setting(
             "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         )
 
@@ -992,8 +992,8 @@ def download(
     url_or_path: str,
     default_options_path: str | None = None,
     output_directory: str | None = None,
-    proxy: str | None = get_option("PROXY"),
-    user_agent: str | None = get_option("USER_AGENT"),
+    proxy: str | None = get_setting("PROXY"),
+    user_agent: str | None = get_setting("USER_AGENT"),
 ) -> list[dict]:
 
     results = []
@@ -1024,7 +1024,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-o",
         "--default_options_path",
-        default=get_option(
+        default=get_setting(
             "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         ),
         type=str,
@@ -1040,14 +1040,14 @@ if __name__ == "__main__":
         "-p",
         "--proxy",
         type=str,
-        default=get_option("PROXY"),
+        default=get_setting("PROXY"),
         help="Proxy URL (http://, https://, socks5:// etc.)",
     )
     parser.add_argument(
         "-u",
         "--user_agent",
         type=str,
-        default=get_option("USER_AGENT"),
+        default=get_setting("USER_AGENT"),
         help="Custom User-Agent",
     )
     args = parser.parse_args()

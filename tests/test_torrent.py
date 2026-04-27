@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from downloaders.torrent import *
 from test_base import *
-from src.options import DOWNLOADER_METADATA_DIR
+from src.settings import DOWNLOADER_METADATA_DIR
 from utils.logger import write_output
 
 current_file = Path(__file__).resolve()

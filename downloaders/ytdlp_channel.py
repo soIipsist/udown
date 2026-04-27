@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from pprint import PrettyPrinter
 from src.download import Download
 from src.downloader import Downloader, get_downloader_types
-from src.options import get_option
+from src.settings import get_setting
 
 pp = PrettyPrinter(indent=2)
 downloader_types = get_downloader_types()
@@ -19,7 +19,7 @@ def download(
 ):
 
     if downloader is None:
-        downloader = get_option("DOWNLOADER_TYPE", "ytdlp_video")
+        downloader = get_setting("DOWNLOADER_TYPE", "ytdlp_video")
         downloader = Downloader(downloader)
 
     downloader = Downloader(downloader_type=downloader).select_first()
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-d",
         "--downloader",
-        default=get_option("DOWNLOADER_TYPE", "ytdlp_video"),
+        default=get_setting("DOWNLOADER_TYPE", "ytdlp_video"),
         choices=downloader_types,
     )
     parser.add_argument("-i", "--sleep_interval", default="2")

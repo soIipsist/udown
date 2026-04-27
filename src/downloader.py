@@ -4,8 +4,8 @@ import json
 import os
 from pprint import PrettyPrinter
 from utils import str_to_bool
-from .options import (
-    get_option,
+from .settings import (
+    get_setting,
     PROJECT_DIR,
     DOWNLOADER_METADATA_DIR,
     ALLOWED_MODULES,
@@ -18,7 +18,7 @@ import inspect
 
 
 pp = PrettyPrinter(indent=2)
-database_path = get_option("DATABASE_PATH", os.path.join(PROJECT_DIR, "downloads.db"))
+database_path = get_setting("DATABASE_PATH", os.path.join(PROJECT_DIR, "downloads.db"))
 
 # create connection and tables
 db_exists = os.path.exists(database_path)
@@ -523,9 +523,9 @@ def list_downloaders(d, downloader_type):
 def downloader_action(
     **args,
 ):
-    action = args.pop("action", get_option("DOWNLOAD_ACTION", "list"))
+    action = args.pop("action", get_setting("DOWNLOAD_ACTION", "list"))
     ui = args.pop("ui", True)
-    conjunction_type = args.pop("conjunction_type", get_option("DOWNLOADER_OP", "AND"))
+    conjunction_type = args.pop("conjunction_type", get_setting("DOWNLOADER_OP", "AND"))
     defaults = args.pop("_defaults", {})
 
     downloaders = []
@@ -573,7 +573,7 @@ def downloader_command(subparsers):
         "action",
         type=str,
         choices=["add", "insert", "delete", "list", "reset"],
-        default=get_option("DOWNLOADER_ACTION", None),
+        default=get_setting("DOWNLOADER_ACTION", None),
         nargs="?",
     )
 
@@ -587,12 +587,12 @@ def downloader_command(subparsers):
     downloader_cmd.add_argument("-m", "--module", type=str, default=None)
     downloader_cmd.add_argument("-args", "--downloader_args", type=str, default=None)
     downloader_cmd.add_argument(
-        "-ui", "--ui", default=get_option("USE_TUI", True), type=str_to_bool
+        "-ui", "--ui", default=get_setting("USE_TUI", True), type=str_to_bool
     )
     downloader_cmd.add_argument(
         "-c",
         "--conjunction_type",
-        default=get_option("DOWNLOADER_OP", "AND"),
+        default=get_setting("DOWNLOADER_OP", "AND"),
         type=str,
         choices=["AND", "OR"],
     )

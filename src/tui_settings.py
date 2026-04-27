@@ -9,7 +9,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Input, Select, Button, Static
 
 
-class EditOption(ModalScreen):
+class EditSetting(ModalScreen):
 
     BINDINGS = [
         ("q", "dismiss", "Close"),
@@ -41,28 +41,28 @@ class EditOption(ModalScreen):
         if event.button.id == "save":
             value = self.query_one("#editor").value
 
-            from src.options import set_option, all_options
+            from src.settings import set_setting, all_settings
 
             if value is Select.BLANK:
                 value = self.choices[0][1]
 
-            set_option(self.key, value)
-            self.app.items = all_options()
+            set_setting(self.key, value)
+            self.app.items = all_settings()
             self.app.reload_items()
 
         self.dismiss()
 
 
-class OptionsTable(DataTable):
+class SettingsTable(DataTable):
 
-    def __init__(self, options):
+    def __init__(self, settings):
         super().__init__()
-        self._all_options = dict(options)  # original data
-        self.options = dict(options)  # currently displayed data
+        self._all_settings = dict(settings)  # original data
+        self.settings = dict(settings)  # currently displayed data
 
     def set_items(self, items):
-        self._all_options = dict(items)
-        self.options = dict(items)
+        self._all_settings = dict(items)
+        self.settings = dict(items)
         self.load()
 
     def on_mount(self):
@@ -74,11 +74,11 @@ class OptionsTable(DataTable):
         query = query.strip().lower()
 
         if not query:
-            self.options = dict(self._all_options)
+            self.settings = dict(self._all_settings)
         else:
-            self.options = {
+            self.settings = {
                 k: v
-                for k, v in self._all_options.items()
+                for k, v in self._all_settings.items()
                 if query in str(k).lower() or query in str(v).lower()
             }
 
@@ -86,7 +86,7 @@ class OptionsTable(DataTable):
 
     def load(self):
         self.clear()
-        for key, value in self.options.items():
+        for key, value in self.settings.items():
             self.add_row(key, value)
 
     def on_key(self, event: events.Key) -> None:
@@ -110,4 +110,4 @@ class OptionsTable(DataTable):
         else:
             choices = None
 
-        self.app.push_screen(EditOption(key, value, choices))
+        self.app.push_screen(EditSetting(key, value, choices))

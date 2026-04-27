@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 import shlex
 import shutil
-from src.options import DOWNLOADER_METADATA_DIR
+from src.settings import DOWNLOADER_METADATA_DIR
 from test_base import *
 
 current_file = Path(__file__).resolve()

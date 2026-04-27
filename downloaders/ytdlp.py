@@ -4,7 +4,7 @@ import os
 import json
 from pprint import PrettyPrinter
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
-from src.options import get_option
+from src.settings import get_setting
 from utils import read_json_file
 from utils.logger import setup_logger
 
@@ -60,10 +60,10 @@ def get_outtmpl(
 
     if not output_directory:
         if ytdlp_format == "ytdlp_audio":
-            output_directory = get_option("YTDLP_AUDIO_DIRECTORY")
+            output_directory = get_setting("YTDLP_AUDIO_DIRECTORY")
 
         elif ytdlp_format == "ytdlp_video":
-            output_directory = get_option("YTDLP_VIDEO_DIRECTORY")
+            output_directory = get_setting("YTDLP_VIDEO_DIRECTORY")
 
     if output_directory:
         outtmpl = f"{output_directory}/{outtmpl}"
@@ -476,21 +476,21 @@ if __name__ == "__main__":
     parser.add_argument(
         "-f",
         "--ytdlp_format",
-        default=get_option("YTDLP_FORMAT", "ytdlp_video"),
+        default=get_setting("YTDLP_FORMAT", "ytdlp_video"),
         choices=["ytdlp_video", "ytdlp_audio"],
     )
     parser.add_argument(
         "-d",
         "--output_directory",
         type=str,
-        default=get_option("YTDLP_OUTPUT_DIRECTORY"),
+        default=get_setting("YTDLP_OUTPUT_DIRECTORY"),
     )
-    parser.add_argument("-p", "--prefix", default=get_option("YTDLP_PREFIX"), type=str)
+    parser.add_argument("-p", "--prefix", default=get_setting("YTDLP_PREFIX"), type=str)
     parser.add_argument("-e", "--extension", default=None)
     parser.add_argument("-cf", "--custom_format", default=None)
     parser.add_argument("-ppa", "--postprocessor_args", default=None, nargs="+")
     parser.add_argument(
-        "-o", "--options_path", default=get_option("YTDLP_OPTIONS_PATH", "")
+        "-o", "--options_path", default=get_setting("YTDLP_OPTIONS_PATH", "")
     )
 
     parser.add_argument("-P", "--proxy", default=None)
