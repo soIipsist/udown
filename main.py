@@ -37,22 +37,30 @@ def get_extra_args(unknown_args):
     key = None
 
     for item in unknown_args:
-        # --key=value support
         if item.startswith("--") and "=" in item:
             k, v = item[2:].split("=", 1)
-            result[k] = v
+            result[k] = (
+                v
+                if k not in result
+                else result[k] + [v] if isinstance(result[k], list) else [result[k], v]
+            )
             key = None
 
-        # flag (e.g. --foo)
         elif item.startswith("-"):
             key = item.lstrip("-")
-            result[key] = True  # default if no value follows
+            if key not in result:
+                result[key] = []
 
-        # value (e.g. "bar" after --foo)
         else:
             if key:
-                result[key] = item
-                key = None
+                result[key].append(item)
+
+    for k, v in result.items():
+        if isinstance(v, list):
+            if len(v) == 0:
+                result[k] = True
+            elif len(v) == 1:
+                result[k] = v[0]
 
     return result
 

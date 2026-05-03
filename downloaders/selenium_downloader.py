@@ -966,6 +966,11 @@ class SeleniumDownloader:
 def get_default_options(
     options_path: str, browser_options_path: str = None, events: list = None
 ):
+    if events is None:
+        events = []
+    elif not isinstance(events, list):
+        events = [events]
+
     default_options: dict = {}
 
     if not browser_options_path:
@@ -1055,7 +1060,7 @@ if __name__ == "__main__":
         default=get_setting("USER_AGENT"),
         help="Custom User-Agent",
     )
-    parser.add_argument("-e", "--events", type=list, nargs="+", default=None)
+    parser.add_argument("-e", "--events", type=str, nargs="+", default=None)
     args = parser.parse_args()
 
     results = download(
