@@ -23,15 +23,15 @@ class TestSelenium(TestBase):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_get_selenium_options(self):
-        options = get_selenium_options(options_path)
+    def test_get_default_options(self):
+        options = get_default_options(options_path)
         # print(options)
 
         path = os.path.join(os.getcwd(), "quotes.json")
-        options = get_selenium_options(path, options_path)
+        options = get_default_options(path, options_path)
         # print(options)
 
-        options = get_selenium_options("https://quotes.toscrape.com")
+        options = get_default_options("https://quotes.toscrape.com")
         print(options)
 
     def test_get_browser_options(self):
@@ -212,7 +212,7 @@ class TestSelenium(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        # TestSelenium.test_get_selenium_options,
+        # TestSelenium.test_get_default_options,
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
         # TestSelenium.test_parse_event,

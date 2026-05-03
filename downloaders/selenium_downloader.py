@@ -963,18 +963,18 @@ class SeleniumDownloader:
         return self.results
 
 
-def get_selenium_options(options_path: str, default_options_path: str = None):
+def get_default_options(options_path: str, browser_options_path: str = None):
 
     events = None
     default_options: dict = {}
 
-    if not default_options_path:
-        default_options_path = get_setting(
+    if not browser_options_path:
+        browser_options_path = get_setting(
             "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         )
 
-    default_options = read_json_file(default_options_path)
-    logger.info(f"Using default options from path: {default_options_path}")
+    default_options = read_json_file(browser_options_path)
+    logger.info(f"Using default browser options from path: {browser_options_path}")
 
     if is_valid_url(options_path):
         events = [f"get({options_path})", "save()", "quit()"]
@@ -990,7 +990,7 @@ def get_selenium_options(options_path: str, default_options_path: str = None):
 
 def download(
     url_or_path: str,
-    default_options_path: str | None = None,
+    browser_options_path: str | None = None,
     output_directory: str | None = None,
     proxy: str | None = get_setting("PROXY"),
     user_agent: str | None = get_setting("USER_AGENT"),
@@ -1004,7 +1004,7 @@ def download(
     if not output_directory:
         output_directory = os.getcwd()
 
-    options = get_selenium_options(url_or_path, default_options_path)
+    options = get_default_options(url_or_path, browser_options_path)
 
     selenium_downloader = SeleniumDownloader(
         **options,
@@ -1023,7 +1023,7 @@ if __name__ == "__main__":
     parser.add_argument("url", type=str, help="URL to scrape")
     parser.add_argument(
         "-o",
-        "--default_options_path",
+        "--browser_options_path",
         default=get_setting(
             "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         ),
@@ -1054,7 +1054,7 @@ if __name__ == "__main__":
 
     results = download(
         url_or_path=args.url,
-        default_options_path=args.default_options_path,
+        browser_options_path=args.browser_options_path,
         output_directory=args.output_directory,
         proxy=args.proxy,
         user_agent=args.user_agent,
