@@ -963,9 +963,9 @@ class SeleniumDownloader:
         return self.results
 
 
-def get_default_options(options_path: str, browser_options_path: str = None):
-
-    events = None
+def get_default_options(
+    options_path: str, browser_options_path: str = None, events: list = None
+):
     default_options: dict = {}
 
     if not browser_options_path:
@@ -977,9 +977,13 @@ def get_default_options(options_path: str, browser_options_path: str = None):
     logger.info(f"Using default browser options from path: {browser_options_path}")
 
     if is_valid_url(options_path):
-        events = [f"get({options_path})", "save()", "quit()"]
-        events: list
-        default_options["events"] = events
+        if not events:
+            events = [f"get({options_path})", "save()", "quit()"]
+        else:
+            events.insert(0, f"get({options_path})")
+
+        existing_events = default_options.get("events", [])
+        default_options["events"] = existing_events + list(events)
     else:
         # combine
         options = read_json_file(options_path)
@@ -994,6 +998,7 @@ def download(
     output_directory: str | None = None,
     proxy: str | None = get_setting("PROXY"),
     user_agent: str | None = get_setting("USER_AGENT"),
+    events: list | None = None,
 ) -> list[dict]:
 
     results = []
@@ -1004,7 +1009,7 @@ def download(
     if not output_directory:
         output_directory = os.getcwd()
 
-    options = get_default_options(url_or_path, browser_options_path)
+    options = get_default_options(url_or_path, browser_options_path, events)
 
     selenium_downloader = SeleniumDownloader(
         **options,
@@ -1050,6 +1055,7 @@ if __name__ == "__main__":
         default=get_setting("USER_AGENT"),
         help="Custom User-Agent",
     )
+    parser.add_argument("-e", "--events", type=list, nargs="+", default=None)
     args = parser.parse_args()
 
     results = download(
@@ -1058,6 +1064,7 @@ if __name__ == "__main__":
         output_directory=args.output_directory,
         proxy=args.proxy,
         user_agent=args.user_agent,
+        events=args.events,
     )
 
     pp.pprint(results)
