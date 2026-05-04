@@ -20,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import DesiredCapabilities
 import undetected_chromedriver as uc
 
-uc.TARGET_VERSION = 78
+# uc.TARGET_VERSION = 78
 
 pp = PrettyPrinter(indent=2)
 logger = setup_logger(name="selenium_downloader", log_dir="/udown/selenium")
@@ -204,7 +204,7 @@ class BrowserOptions:
         if not self.output_directory:
             return
 
-        if self.browser_type in {"chrome", "edge", "uc"}:
+        if self.browser_type in {"chrome", "edge"}:
 
             self.browser_args["experimental_options"].update(
                 {
@@ -615,6 +615,7 @@ class SeleniumDownloader:
             element.submit()
 
     def sleep(self, seconds: float):
+        logger.info(f"Sleep: {seconds}")
         time.sleep(seconds)
 
     def clear_element(self, element: WebElement):
@@ -927,6 +928,8 @@ class SeleniumDownloader:
             return self.results
 
         for index, event in enumerate(self.events):
+
+            logger.info(f"Executing event[{index}]: {event}.")
 
             event = self.parse_event(event)
             variable = event.get("variable")

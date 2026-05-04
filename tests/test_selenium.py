@@ -160,8 +160,9 @@ class TestSelenium(TestBase):
         print(results)
 
     def test_undetected(self):
-        uc.TARGET_VERSION = 78
-        version_main = 147
+        # uc.TARGET_VERSION = 78
+        # version_main = 147
+        version_main = None
 
         options = uc.ChromeOptions()
 
