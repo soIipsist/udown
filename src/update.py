@@ -7,6 +7,7 @@ default_packages = [
     UDOWN_GIT,
     "yt-dlp",
     "selenium",
+    "undetected-chromedriver",
     "beautifulsoup4",
     "requests",
     "urllib3",
