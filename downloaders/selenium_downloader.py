@@ -204,7 +204,7 @@ class BrowserOptions:
         if not self.output_directory:
             return
 
-        if self.browser_type in {"chrome", "edge"}:
+        if self.browser_type in {"chrome", "edge", "uc"}:
 
             self.browser_args["experimental_options"].update(
                 {
@@ -460,7 +460,12 @@ class SeleniumDownloader:
 
         if not self.driver:
             driver_type = self.get_driver_type()
-            self.driver = driver_type(options=browser_options)
+            driver_args = {"options": browser_options}
+
+            if driver_type == uc.Chrome:
+                driver_args.update({"enable_cdp_events": True})
+
+            self.driver = driver_type(**driver_args)
 
         return self.driver
 
