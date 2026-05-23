@@ -18,9 +18,9 @@ def download(
     max_sleep_interval: str = "5",
 ):
 
-    results = get_channel_info(channel_id)
+    channel_info = get_channel_info(channel_id)
     video_urls = [
-        f"https://www.youtube.com/watch?v={entry['id']}" for entry in results["entries"]
+        f"https://www.youtube.com/watch?v={entry['id']}" for entry in channel_info["entries"]
     ]
 
     downloads = [

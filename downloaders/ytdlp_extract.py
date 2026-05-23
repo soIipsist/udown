@@ -26,9 +26,9 @@ def extract(
     path = os.path.join(output_directory, output_filename)
     result = {"url": url, "status": 0, "path": path}
 
-    results = get_channel_info(url)
+    channel_info = get_channel_info(url)
     video_urls = [
-        f"https://www.youtube.com/watch?v={entry['id']}" for entry in results["entries"]
+        f"https://www.youtube.com/watch?v={entry['id']}" for entry in channel_info["entries"]
     ]
     write_output(logger, video_urls, path, append=False)
 
