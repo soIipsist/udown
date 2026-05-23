@@ -294,9 +294,7 @@ def get_video_urls_from_channel(
             f"https://www.youtube.com/watch?v={entry['id']}"
             for entry in channel_info["entries"]
         ]
-    else:
-        print(channel_info)
-
+   
     return video_urls
 
 def check_ffmpeg(options: dict) -> bool:

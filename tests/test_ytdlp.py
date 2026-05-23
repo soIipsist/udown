@@ -268,10 +268,10 @@ class TestYtdlp(TestBase):
         logger.info(results)
 
     def test_get_video_urls_from_channel(self):
-        channel_id = "@DanielNaroditskyGM"
-        channel_id = "https://www.youtube.com/@DanielNaroditskyGM"
+        # channel_id = "@DanielNaroditskyGM"
+        # channel_id = "https://www.youtube.com/@DanielNaroditskyGM"
         # channel_id = "https://www.youtube.com/@DanielNaroditskyGM/videos"
-        # channel_id= "https://www.youtube.com/playlist?list=PLT1F2nOxLHOfzUTCQ7rCaiS5gbfaEkpDj"
+        channel_id= "https://www.youtube.com/playlist?list=PLT1F2nOxLHOfzUTCQ7rCaiS5gbfaEkpDj"
 
         url, channel_info = get_channel_info(channel_id)
         video_urls = get_video_urls_from_channel(url, channel_info)
