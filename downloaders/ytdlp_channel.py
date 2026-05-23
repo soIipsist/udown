@@ -1,5 +1,5 @@
 import os
-from downloaders.ytdlp import get_channel_info
+from downloaders.ytdlp import get_channel_info, get_video_urls_from_channel
 from argparse import ArgumentParser
 from pprint import PrettyPrinter
 from src.download import Download
@@ -18,10 +18,8 @@ def download(
     max_sleep_interval: str = "5",
 ):
 
-    channel_info = get_channel_info(channel_id)
-    video_urls = [
-        f"https://www.youtube.com/watch?v={entry['id']}" for entry in channel_info["entries"]
-    ]
+    channel_url, channel_info = get_channel_info(channel_id)
+    video_urls = get_video_urls_from_channel(channel_url, channel_info)
 
     downloads = [
         Download(

@@ -14,6 +14,7 @@ os.sys.path.insert(0, str(parent_directory))
 from downloaders.ytdlp import (
     YTDLPProgressState,
     download,
+    get_channel_info,
     get_options,
     get_urls,
     read_json_file,
@@ -266,6 +267,17 @@ class TestYtdlp(TestBase):
         )
         logger.info(results)
 
+    def test_get_video_urls_from_channel(self):
+        channel_id = "@DanielNaroditskyGM"
+        channel_id = "https://www.youtube.com/@DanielNaroditskyGM"
+        channel_id = "https://www.youtube.com/@DanielNaroditskyGM/videos"
+
+        url, channel_info = get_channel_info(channel_id)
+        video_urls = get_video_urls_from_channel(url, channel_info)
+
+        print(video_urls)
+
+        
 
 if __name__ == "__main__":
     test_methods = [
@@ -278,7 +290,8 @@ if __name__ == "__main__":
         # TestYtdlp.test_get_outtmpl,
         # TestYtdlp.test_get_entry_url,
         # TestYtdlp.test_get_entry_filename,
-        TestYtdlp.test_download_entries,
+        # TestYtdlp.test_download_entries,
         # TestYtdlp.test_check_ffmpeg,
+        TestYtdlp.test_get_video_urls_from_channel
     ]
     run_test_methods(test_methods)

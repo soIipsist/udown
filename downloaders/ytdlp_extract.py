@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from downloaders.ytdlp import get_channel_info
+from downloaders.ytdlp import get_channel_info, get_video_urls_from_channel
 from argparse import ArgumentParser
 from pprint import PrettyPrinter
 from src.downloader import get_downloader_types
@@ -26,10 +26,9 @@ def extract(
     path = os.path.join(output_directory, output_filename)
     result = {"url": url, "status": 0, "path": path}
 
-    channel_info = get_channel_info(url)
-    video_urls = [
-        f"https://www.youtube.com/watch?v={entry['id']}" for entry in channel_info["entries"]
-    ]
+    channel_url, channel_info = get_channel_info(url)
+    video_urls = get_video_urls_from_channel(channel_url, channel_info)
+    
     write_output(logger, video_urls, path, append=False)
 
     return [result]

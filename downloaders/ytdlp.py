@@ -280,18 +280,19 @@ def get_channel_info(channel_id_or_url: str):
         if not channel_id_or_url.startswith("https")
         else channel_id_or_url
     )
-    results = extract_ytdlp_info(url)
-    return results
+    channel_info = extract_ytdlp_info(url)
+    return url, channel_info
 
 def get_video_urls_from_channel(channel_id_or_url:str, channel_info:dict):
     video_urls = []
-    
+
+    print(channel_id_or_url)
     if "/videos" in channel_id_or_url:
         video_urls = [
             f"https://www.youtube.com/watch?v={entry['id']}" for entry in channel_info["entries"]
         ]
     else:
-        print(channel_info)
+        pass
 
     return video_urls
 
