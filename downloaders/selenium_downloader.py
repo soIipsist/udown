@@ -988,6 +988,15 @@ def get_default_options(
         browser_options_path = get_setting(
             "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         )
+    else:
+        if not os.path.exists(browser_options_path):
+            if not browser_options_path.endswith(".json"):
+                browser_options_path += ".json"
+
+            browser_options_path = os.path.join(
+                DOWNLOADER_METADATA_DIR,
+                browser_options_path
+            )
 
     default_options = read_json_file(browser_options_path)
     logger.info(f"Using default browser options from path: {browser_options_path}")
