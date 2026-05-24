@@ -281,6 +281,7 @@ def get_channel_info(channel_id_or_url: str):
         else channel_id_or_url
     )
     channel_info = extract_ytdlp_info(url)
+
     return url, channel_info
 
 def get_video_urls_from_channel(

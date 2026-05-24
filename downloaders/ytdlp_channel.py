@@ -12,7 +12,7 @@ downloader_types = get_downloader_types()
 
 def download(
     channel_id: str,
-    downloader_type: str = get_setting("DOWNLOADER_TYPE", "ytdlp_video"),
+    downloader: str = get_setting("DOWNLOADER_TYPE", "ytdlp_video"),
     proxy: str = None,
     sleep_interval: str = "2",
     max_sleep_interval: str = "5",
@@ -21,10 +21,12 @@ def download(
     channel_url, channel_info = get_channel_info(channel_id)
     video_urls = get_video_urls_from_channel(channel_url, channel_info)
 
+    results = []
+
     downloads = [
         Download(
             url=video_url,
-            downloader_type=downloader_type,
+            downloader_type=downloader,
             output_directory=os.environ.get("DOWNLOAD_DIRECTORY"),
             proxy=proxy,
             extra_args={
@@ -34,16 +36,22 @@ def download(
         )
         for video_url in video_urls
     ]
+    try:
+        for download in downloads:
+            result = download.download()
+        results.append({"url": channel_id, "status": 0})
+    except Exception as e:
+        print(e)
+    
 
-    return downloader_type.start_downloads(downloads)
-
+    return results
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("channel_id", type=str)
     parser.add_argument(
         "-d",
-        "--downloader_type",
+        "--downloader",
         default=get_setting("DOWNLOADER_TYPE", "ytdlp_video"),
         choices=downloader_types,
     )
@@ -53,7 +61,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     download(
         args.channel_id,
-        args.downloader_type,
+        args.downloader,
         args.proxy,
         args.sleep_interval,
         args.max_sleep_interval,
