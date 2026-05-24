@@ -312,6 +312,8 @@ class Download(SQLiteItem):
     def insert(self):
         if not self.downloader_type:
             self.downloader_type = "ytdlp_video"
+        if not self.download_status:
+            self.download_status = DownloadStatus.STARTED
         return super().insert()
 
     @classmethod
@@ -396,6 +398,7 @@ def download_action(**args):
     filter_keys = Download().get_filter_keys_from_args(args, defaults)
 
     conjunction_type = args.pop("conjunction_type", get_setting("DOWNLOAD_OP", "AND"))
+    # downloader_type = args.get("downloader_type")
 
     if action is None:
         action = "download" if url else "list"
