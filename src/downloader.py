@@ -386,6 +386,13 @@ default_downloaders = [
         "extract",
         "url, output_directory, output_filename",
     ),
+     Downloader(
+        "ytdlp_channel",
+        None,
+        "downloaders.ytdlp_channel",
+        "download",
+        "url",
+    ),
     Downloader(
         "wget",
         None,
@@ -399,13 +406,6 @@ default_downloaders = [
         "downloaders.url_lib",
         "download",
         "url, output_directory, output_filename, proxy=proxy",
-    ),
-    Downloader(
-        "ytdlp_channel",
-        None,
-        "downloaders.ytdlp_channel",
-        "download",
-        "url",
     ),
     Downloader(
         "transmission",

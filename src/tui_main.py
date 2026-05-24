@@ -138,6 +138,9 @@ class UDownApp(App):
     def on_delete_confirmed(self, message):
         item = message.item
 
+        if not item:
+            return
+
         filter_condition = (
             f"url = {item.url} AND downloader_type = {item.downloader_type} AND output_path = {item.output_path}"
             if self.table_type == "download"
@@ -148,6 +151,8 @@ class UDownApp(App):
 
     def on_download_confirmed(self, message):
         item = message.item
+        if not item:
+            return
         from src.download import Download
 
         download = Download(
