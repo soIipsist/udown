@@ -445,6 +445,7 @@ class SeleniumDownloader:
         output_directory: str = None,
         proxy: str = None,
         user_agent: str = None,
+        **args
     ):
         self.browser_type = browser_type
         self.browser_options = browser_options
@@ -817,7 +818,7 @@ class SeleniumDownloader:
 
     def parse_arguments(self, arguments: list):
         for idx, argument in enumerate(arguments):
-            if argument in self.event_outputs:
+            if isinstance(argument, str) and argument in self.event_outputs:
                 argument = self.event_outputs.get(argument, argument)
 
             try:
@@ -974,7 +975,7 @@ class SeleniumDownloader:
 
 
 def get_default_options(
-    options_path: str, browser_options_path: str = None, events: list = None
+    options_path: str = None, browser_options_path: str = None, events: list = None
 ):
     if events is None:
         events = []
@@ -1008,7 +1009,7 @@ def get_default_options(
 
 
 def download(
-    url_or_path: str,
+    url_or_path: str = None,
     browser_options_path: str | None = None,
     output_directory: str | None = None,
     proxy: str | None = get_setting("PROXY"),
@@ -1040,7 +1041,7 @@ def download(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generic Selenium downloader")
-    parser.add_argument("url", type=str, help="URL to scrape")
+    parser.add_argument("url", type=str, help="URL to scrape", default=None, nargs="?")
     parser.add_argument(
         "-o",
         "--browser_options_path",
