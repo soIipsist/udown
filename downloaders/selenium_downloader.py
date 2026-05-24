@@ -993,13 +993,10 @@ def get_default_options(
     logger.info(f"Using default browser options from path: {browser_options_path}")
 
     if is_valid_url(options_path):
-        if not events:
-            events = [f"get({options_path})", "save()", "quit()"]
-        else:
-            events.insert(0, f"get({options_path})")
+        events.insert(0, f"get('{options_path}')")
 
         existing_events = default_options.get("events", [])
-        default_options["events"] = existing_events + list(events)
+        default_options["events"] = list(events) + existing_events 
     else:
         # combine
         options = read_json_file(options_path)
