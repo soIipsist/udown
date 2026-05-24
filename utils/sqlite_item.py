@@ -173,11 +173,10 @@ class SQLiteItem:
 
     def upsert(self, filter_condition=None):
         if self.item_exists(filter_condition):
-            id = self.update(filter_condition)
+            i = self.update(filter_condition)
         else:
-            id = self.insert()
-
-        return id
+            i = self.insert()
+        return i
 
     def update(self, filter_condition=None):
         condition = (

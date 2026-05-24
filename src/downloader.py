@@ -537,11 +537,14 @@ def downloader_action(
             d.module = "downloaders.ytdlp"
         if not d.downloader_func:
             d.downloader_func = "download"
+
         d.upsert()
+        logger.info(f"Downloader {d.downloader_type} was successfully inserted.")
+
     elif action == "delete":
         result = d.delete()
         if result:
-            print(f"Downloader {d.downloader_type} was successfully deleted.")
+            logger.info(f"Downloader {d.downloader_type} was successfully deleted.")
     elif action == "reset":
         Downloader.reset_all(default_downloaders)
     else:
