@@ -997,20 +997,26 @@ def get_default_options(
                 DOWNLOADER_METADATA_DIR,
                 browser_options_path
             )
+        
+        if not os.path.exists(browser_options_path):
+            raise FileNotFoundError("Browser options path not found!")
 
     default_options = read_json_file(browser_options_path)
     logger.info(f"Using default browser options from path: {browser_options_path}")
-
-    if is_valid_url(url_or_path):
-        events.insert(0, f"get('{url_or_path}')")
-        existing_events = default_options.get("events", [])
-        default_options["events"] = list(events) + existing_events 
 
     # combine browser_options with selenium_options
     if selenium_options_path:
         selenium_options = read_json_file(selenium_options_path)
         default_options.update(selenium_options)
+
+    existing_events = default_options.get("events", [])
+
+    if is_valid_url(url_or_path):
+        events.insert(0, f"get('{url_or_path}')")
     
+    new_events = list(events) + existing_events
+    default_options["events"] = new_events
+
     return default_options
 
 
