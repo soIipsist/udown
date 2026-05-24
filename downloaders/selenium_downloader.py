@@ -975,7 +975,7 @@ class SeleniumDownloader:
 
 
 def get_default_options(
-    options_path: str = None, browser_options_path: str = None, events: list = None
+    url_or_path:str = None, selenium_options_path: str = None, browser_options_path: str = None, events: list = None
 ):
     if events is None:
         events = []
@@ -992,22 +992,23 @@ def get_default_options(
     default_options = read_json_file(browser_options_path)
     logger.info(f"Using default browser options from path: {browser_options_path}")
 
-    if is_valid_url(options_path):
-        events.insert(0, f"get('{options_path}')")
-
+    if is_valid_url(url_or_path):
+        events.insert(0, f"get('{url_or_path}')")
         existing_events = default_options.get("events", [])
         default_options["events"] = list(events) + existing_events 
-    else:
-        # combine
-        options = read_json_file(options_path)
-        default_options.update(options)
 
+    # combine browser_options with selenium_options
+    if selenium_options_path:
+        selenium_options = read_json_file(selenium_options_path)
+        default_options.update(selenium_options)
+    
     return default_options
 
 
 def download(
     url_or_path: str = None,
     browser_options_path: str | None = None,
+    selenium_options_path:str | None = None,
     output_directory: str | None = None,
     proxy: str | None = get_setting("PROXY"),
     user_agent: str | None = get_setting("USER_AGENT"),
@@ -1022,7 +1023,7 @@ def download(
     if not output_directory:
         output_directory = os.getcwd()
 
-    options = get_default_options(url_or_path, browser_options_path, events)
+    options = get_default_options(url_or_path, selenium_options_path,browser_options_path, events)
 
     selenium_downloader = SeleniumDownloader(
         **options,
@@ -1043,10 +1044,11 @@ if __name__ == "__main__":
         "-o",
         "--browser_options_path",
         default=get_setting(
-            "SELENIUM_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
+            "BROWSER_OPTIONS_PATH", os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json")
         ),
         type=str,
     )
+    parser.add_argument("-do", "--default_options_path", default=get_setting("SELENIUM_PATH", None), type=str)
     parser.add_argument(
         "-d",
         "--output_directory",
@@ -1074,6 +1076,7 @@ if __name__ == "__main__":
     results = download(
         url_or_path=args.url,
         browser_options_path=args.browser_options_path,
+        selenium_options_path=args.selenium_options_path,
         output_directory=args.output_directory,
         proxy=args.proxy,
         user_agent=args.user_agent,

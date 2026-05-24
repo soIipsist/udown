@@ -27,11 +27,18 @@ class TestSelenium(TestBase):
         # options = get_default_options(options_path)
         # print(options)
 
-        # path = os.path.join(os.getcwd(), "quotes.json")
+        selenium_options_path = os.path.join(os.getcwd(), "quotes.json")
         # options = get_default_options(path, options_path)
         # print(options)
 
-        options = get_default_options("https://quotes.toscrape.com", events=["save()"])
+        # options = get_default_options("https://quotes.toscrape.com", events=["save()"])
+        # events = options.get("events")
+        # print(events)
+
+        # options = get_default_options("https://quotes.toscrape.com", selenium_options_path,None,events=["save()"])
+        # print(options)
+
+        options = get_default_options("https://quotes.toscrape.com", None,None,events=["save()"])
         print(options)
 
     def test_get_browser_options(self):
@@ -213,7 +220,7 @@ class TestSelenium(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        # TestSelenium.test_get_default_options,
+        TestSelenium.test_get_default_options,
         # TestSelenium.test_get_driver_instance,
         # TestSelenium.test_get_browser_options,
         # TestSelenium.test_parse_event,
@@ -222,7 +229,7 @@ if __name__ == "__main__":
         # TestSelenium.test_execute_events,
         # TestSelenium.test_download_with_url,
         # TestSelenium.test_download_with_path,
-        TestSelenium.test_undetected,
+        # TestSelenium.test_undetected,
         # TestSelenium.test_undetected_with_options,
         # TestSelenium.test_set_output_directory,
         # TestSelenium.test_set_proxy,
