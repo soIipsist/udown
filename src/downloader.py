@@ -433,28 +433,28 @@ default_downloaders = [
         os.path.join(DOWNLOADER_METADATA_DIR, "chrome.json"),
         "downloaders.selenium_downloader",
         "download",
-        "url, downloader_path, output_directory",
+        "url, browser_options_path=downloader_path, output_directory=output_directory",
     ),
     Downloader(
         "firefox",
         os.path.join(DOWNLOADER_METADATA_DIR, "firefox.json"),
         "downloaders.selenium_downloader",
         "download",
-        "url, downloader_path, output_directory",
+        "url, browser_options_path=downloader_path, output_directory=output_directory",
     ),
     Downloader(
         "edge",
         os.path.join(DOWNLOADER_METADATA_DIR, "edge.json"),
         "downloaders.selenium_downloader",
         "download",
-        "url, downloader_path, output_directory",
+        "url, browser_options_path=downloader_path, output_directory=output_directory",
     ),
     Downloader(
         "undetected",
         os.path.join(DOWNLOADER_METADATA_DIR, "undetected.json"),
         "downloaders.selenium_downloader",
         "download",
-        "url, downloader_path, output_directory",
+        "url, browser_options_path=downloader_path, output_directory=output_directory",
     ),
     Downloader(
         "torrent",
@@ -538,6 +538,9 @@ def downloader_action(
         if not d.downloader_func:
             d.downloader_func = "download"
 
+        if not d.downloader_type:
+            raise ValueError("Downloader type not defined!")
+        
         d.upsert()
         logger.info(f"Downloader {d.downloader_type} was successfully inserted.")
 
