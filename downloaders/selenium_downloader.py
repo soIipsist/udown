@@ -807,7 +807,14 @@ class SeleniumDownloader:
             variable_part = None
 
         action, arguments = self.get_action_and_arguments(action_part)
-
+        
+        if not action:
+            return {
+                "variable": variable_part,
+                "action": "assign",
+                "arguments": [action_part],
+            }
+        
         event_dict = {
             "variable": variable_part,
             "action": action,
@@ -891,6 +898,7 @@ class SeleniumDownloader:
     def execute_events(self):
 
         ACTIONS = {
+            "assign": lambda value: value,
             "get": self.get,
             "quit": self.quit,
             "e": self.get_elements,
@@ -942,7 +950,7 @@ class SeleniumDownloader:
             action = event.get("action")
             arguments = event.get("arguments")
 
-            if action not in ACTIONS:
+            if action and action not in ACTIONS:
                 logger.error(f"[Event #{index}] Unknown action: {action}")
                 continue
 
