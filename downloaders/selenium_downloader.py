@@ -740,6 +740,149 @@ class SeleniumDownloader:
 
         return data
 
+    def wait_for_download(self, timeout: int = 30, poll: float = 0.5):
+        """
+        Waits for a network response that looks like a file download
+        and confirms it completes via loadingFinished.
+        """
+
+        if not hasattr(self.driver, "get_log"):
+            raise RuntimeError("Driver does not support performance logs")
+
+        start_time = time.time()
+
+        seen_requests = {}
+        completed_requests = set()
+
+        while time.time() - start_time < timeout:
+
+            try:
+                logs = self.driver.get_log("performance")
+            except Exception:
+                time.sleep(poll)
+                continue
+
+            for entry in logs:
+                try:
+                    message = json.loads(entry["message"])["message"]
+                    method = message.get("method")
+                    params = message.get("params", {})
+
+                    # 1. Track requests
+                    if method == "Network.requestWillBeSent":
+                        req = params.get("request", {})
+                        request_id = params.get("requestId")
+                        url = req.get("url", "")
+
+                        seen_requests[request_id] = {
+                            "url": url,
+                            "status": "started"
+                        }
+
+                    # 2. Detect response headers (download hint)
+                    elif method == "Network.responseReceived":
+                        response = params.get("response", {})
+                        request_id = params.get("requestId")
+
+                        url = response.get("url", "")
+                        mime = response.get("mimeType", "")
+                        headers = response.get("headers", {})
+
+                        is_download_like = (
+                            "application" in mime
+                            or "octet-stream" in mime
+                            or "zip" in mime
+                            or "pdf" in mime
+                            or "attachment" in str(headers.get("content-disposition", "")).lower()
+                        )
+
+                        if request_id in seen_requests and is_download_like:
+                            seen_requests[request_id].update({
+                                "status": "downloading",
+                                "mime": mime,
+                                "url": url
+                            })
+
+                    # 3. Confirm completion
+                    elif method == "Network.loadingFinished":
+                        request_id = params.get("requestId")
+
+                        if request_id in seen_requests:
+                            seen_requests[request_id]["status"] = "finished"
+                            completed_requests.add(request_id)
+
+                except Exception:
+                    continue
+
+            # stop condition: at least one download finished
+            if completed_requests:
+                return list(seen_requests.values())
+
+            time.sleep(poll)
+
+        return list(seen_requests.values())
+    
+
+    def wait_for_file(
+        download_dir: str,
+        timeout: int = 60,
+        poll: float = 0.5,
+        stable_checks: int = 3
+    ):
+        """
+        Waits for a new file in download_dir and ensures it finishes downloading
+        by checking that file size stops changing.
+        """
+
+        download_dir = Path(download_dir)
+
+        # initial snapshot
+        before = {f.name for f in download_dir.iterdir() if f.is_file()}
+
+        start = time.time()
+        candidate_file = None
+
+        # 1. Wait for a new file to appear
+        while time.time() - start < timeout:
+            current = {f.name for f in download_dir.iterdir() if f.is_file()}
+            diff = current - before
+
+            # ignore partial chrome downloads
+            diff = {f for f in diff if not f.endswith(".crdownload")}
+
+            if diff:
+                candidate_file = download_dir / list(diff)[0]
+                break
+
+            time.sleep(poll)
+
+        if not candidate_file:
+            return None
+
+        # 2. Wait for file size to stabilize
+        last_size = -1
+        stable_count = 0
+
+        while time.time() - start < timeout:
+            if not candidate_file.exists():
+                time.sleep(poll)
+                continue
+
+            size = candidate_file.stat().st_size
+
+            if size == last_size:
+                stable_count += 1
+            else:
+                stable_count = 0
+                last_size = size
+
+            if stable_count >= stable_checks:
+                return str(candidate_file)
+
+            time.sleep(poll)
+
+        return None
+    
     def parse_item(self, item):
         if isinstance(item, WebElement):
             item = item.text
@@ -936,6 +1079,8 @@ class SeleniumDownloader:
             "extract_structured": self.extract_structured,
             "save": self.save,
             "screenshot": self.take_screenshot,
+            "wait_for_download": self.wait_for_download,
+            "wait_for_file": self.wait_for_file
         }
 
         if not self.events:
