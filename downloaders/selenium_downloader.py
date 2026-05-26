@@ -933,7 +933,10 @@ class SeleniumDownloader:
         if responses:
             logger.info(f"Responses: {responses}")
 
-        return requests, responses
+        return {
+            "requests": requests,
+            "responses": responses
+        }
 
     # events stuff
     def parse_event(self, event: str):
@@ -1080,7 +1083,8 @@ class SeleniumDownloader:
             "save": self.save,
             "screenshot": self.take_screenshot,
             "wait_for_download": self.wait_for_download,
-            "wait_for_file": self.wait_for_file
+            "wait_for_file": self.wait_for_file,
+            "network": self.get_network_traffic
         }
 
         if not self.events:
