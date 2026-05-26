@@ -10,10 +10,8 @@
       "--allow-running-insecure-content"
     ],
     "capabilities": {
-      "goog:chromeOptions": {
-        "perfLoggingPrefs": {
-          "enableNetwork": true
-        }
+      "goog:loggingPrefs": {
+        "performance": "ALL"
       }
     }
   }
