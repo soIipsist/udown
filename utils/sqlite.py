@@ -492,100 +492,45 @@ def is_valid_quote_string(quoted_string: str) -> bool:
     return False
 
 
-def get_filter_condition(filter_condition: str, default_params: list = None):
-    """
-    Sanitizes filter condition of type id = '1'. Returns the filter condition with placeholders included and
-    a tuple of sanitized parameters.
-    """
-
+def get_filter_condition(filter_condition: str):
+    
     if not isinstance(filter_condition, str):
         raise ValueError("filter_condition must be of type str.")
-
-    filter_condition_keys = []
-    sanitized_params = []
-    keywords = []
 
     pattern = r"(\s+AND\s+|\s+OR\s+|\s+NOT\s+)"
     parts = re.split(pattern, filter_condition)
 
     comparison_operators = ["!=", "<>", ">=", "<=", ">", "<", "=", "LIKE"]
 
-    # Check for SQL injection patterns
-    q_pattern = r"(--|;|\/\*|\*\/|\bEXEC\b|\bUNION\b|\bSUBSTRING\b|\bBENCHMARK\b|\bCONCAT\b|\bCHAR\b|\bSLEEP\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b)"
-    q_pattern_found = False
-    sql_injection_patterns = [
-        q_pattern,
-        r"(\bOR\b\s+\d+\s*=\s*\d+)",
-        r"(\bOR\b\s*true\b)",
-        r"(\bAND\b\s*false\b)",
-        r"(\bOR\b\s*1\s*=\s*1)",
-        r"(\bOR\b\s*'[^']+'\s*=\s*'[^']+')",
-    ]
-
-    for pattern in sql_injection_patterns:
-        if re.search(pattern, filter_condition, re.IGNORECASE):
-            if pattern == q_pattern:
-                q_pattern_found = True
-                continue
-            raise ValueError("Potential SQL injection detected.", pattern)
-
-    # Process the split parts
+    keywords = []
     conditions = []
+    params = []
+
     for part in parts:
         part = part.strip()
+
         if part in ("AND", "OR", "NOT"):
             keywords.append(part)
+            continue
+
+        for op in comparison_operators:
+            if op in part:
+                key, value = re.split(r"\s*" + re.escape(op) + r"\s*", part, maxsplit=1)
+
+                key = key.strip()
+                value = value.strip().strip("'")
+
+                conditions.append(f"{key} {op} ?")
+                params.append(value)
+                break
         else:
-            for operator in comparison_operators:
-                if operator in part:
+            raise ValueError(f"Unsupported condition format: {part}")
 
-                    key, value = re.split(
-                        r"\s*" + re.escape(operator) + r"\s*", part, maxsplit=1
-                    )
-                    key = key.strip()
+    final = conditions[0]
+    for i, kw in enumerate(keywords):
+        final += f" {kw} {conditions[i + 1]}"
 
-                    if q_pattern_found:
-                        if (
-                            value.startswith("'")
-                            and value.endswith("'")
-                            and is_valid_quote_string(value)
-                        ):
-                            pass
-                        else:
-                            raise ValueError(
-                                "Potential SQL injection detected.",
-                                is_valid_quote_string(value),
-                                value.startswith("'"),
-                            )
-
-                    value = value.strip().strip(
-                        "'"
-                    )  # Assuming values are enclosed in single quotes
-
-                    filter_condition_keys.append(key)
-                    sanitized_params.append(value)
-                    conditions.append(f"{key} {operator} ?")
-                    break
-            else:
-                raise ValueError(f"Unsupported condition format: {part}")
-
-    # Construct the final filter condition with placeholders
-    final_filter_condition = conditions[0]
-
-    if default_params:
-        default_idx = 0
-        for idx, param in enumerate(sanitized_params):
-            if param == "?":
-                sanitized_params[idx] = default_params[default_idx]
-                default_idx += 1
-
-    for i in range(len(keywords)):
-        final_filter_condition += f" {keywords[i]} {conditions[i + 1]}"
-
-    return (
-        final_filter_condition,
-        tuple(sanitized_params),
-    )
+    return final, tuple(params)
 
 
 def parse_kv(arg: str) -> dict:
