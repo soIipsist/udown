@@ -30,7 +30,7 @@ def download(
     user_agent: str = get_setting("USER_AGENT"),
     proxy: str = get_setting("PROXY"),
     headers: dict = None,
-) -> list[dict]:
+):
     """
     Download files using urllib3 with progress logging via logger.
     Returns list of results.
@@ -117,11 +117,14 @@ def download(
             logger.warning("Download interrupted by user")
             result["status"] = 1
             result["error"] = "Interrupted by user"
+            yield {"url": url, "status": 1, "error": "Interrupted"}
+            break
         except Exception as e:
             logger.error(f"Failed to download {url}: {e}")
             result["status"] = 1
             result["error"] = str(e)
-
+            yield {"url": url, "status": 1, "error": "Interrupted"}
+            break
         results.append(result)
 
     return results
