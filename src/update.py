@@ -29,8 +29,9 @@ def pip_upgrade(packages: list):
 
 
 def update_action(packages=None, **args):
-    # reset downloaders
-    Downloader.reset_all(default_downloaders)
+
+    # get existing downloaders before updating
+    existing_downloaders = Downloader().select_all()
 
     # update dependencies
     if packages:
@@ -38,6 +39,8 @@ def update_action(packages=None, **args):
     else:
         pip_upgrade(default_packages)
 
+    # reset downloaders
+    Downloader.reset_all(existing_downloaders)
 
 def update_command(subparsers):
     update_cmd = subparsers.add_parser("update", help="Update udown")
