@@ -308,7 +308,7 @@ def check_ffmpeg(options: dict) -> bool:
 
 class YTDLPProgressState:
     def __init__(self):
-        self.progress = "0.0%"
+        self.progress = None
         self.speed = None
         self.eta = None
         self.status = None
@@ -435,7 +435,7 @@ def download(
 
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
-                    result["progress"] = progress_state.progress
+                    result["progress"] = "100%" if not progress_state.progress else progress_state.progress
                     logger.info(f"Filename: {entry_filename}")
                     result["status"] = 0
 
