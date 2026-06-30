@@ -305,13 +305,13 @@ def download_torrent(
 
     cmd = [
         "transmission-cli",
-        torrent,
+        "--config-dir", 
+        tempfile.mkdtemp(),
         "-w",
         directory,
         "-f",
         placeholder,
-        "-g",
-        tempfile.mkdtemp(),
+        torrent
     ]
     try:
         proc = subprocess.Popen(
