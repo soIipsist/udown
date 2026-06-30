@@ -363,7 +363,10 @@ def map_sqlite_results_to_objects(
                     and value.endswith("}")
                 )
             ):
-                value = literal_eval(value)
+                try:
+                    value = literal_eval(value)
+                except (SyntaxError, ValueError):
+                    value = f'{value}'
 
             if column_name is not None and hasattr(o, column_name):
                 setattr(o, column_name, value)
