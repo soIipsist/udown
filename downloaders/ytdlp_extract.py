@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from pathlib import Path
 from downloaders.ytdlp import get_channel_info, get_video_urls_from_channel
@@ -24,7 +25,7 @@ def extract(
         output_filename = "downloads.txt"
 
     path = os.path.join(output_directory, output_filename)
-    result = {"url": url, "status": 0, "path": path}
+    result = {"url": url, "status": 0, "path": path, "end_date": datetime.now()}
 
     channel_url, channel_info = get_channel_info(url)
     video_urls = get_video_urls_from_channel(channel_url, channel_info)

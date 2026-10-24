@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import re
 import subprocess
 import sys
@@ -96,6 +97,7 @@ def download(urls: list | str, output_directory: str = None) -> list[dict]:
                 logger.info("Download completed successfully")
                 result["path"] = str(out_dir)
                 result["status"] = 0
+                result["end_date"] = datetime.now()
 
         except KeyboardInterrupt:
             logger.warning("Download interrupted by user")

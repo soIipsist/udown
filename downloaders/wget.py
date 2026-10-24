@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import os
 import subprocess
 import re
@@ -87,7 +88,7 @@ def download(
             proc.wait()
 
             if proc.returncode == 0:
-                yield {"url": url, "status": 0, "progress": "100%"}
+                yield {"url": url, "status": 0, "progress": "100%", "end_date": datetime.now()}
             else:
                 stderr_output = None
 

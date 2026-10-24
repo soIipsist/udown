@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 import os
 import json
@@ -354,7 +355,7 @@ def download_torrent(
                 get_output_filename(display_name, directory) if display_name else None
             )
             result["status"] = 0
-
+            result["end_date"] = datetime.now()
             logger.info("Download completed successfully")
         try:
             os.unlink(placeholder)

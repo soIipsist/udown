@@ -1,5 +1,6 @@
 import argparse
 import ast
+from datetime import datetime
 import json
 import os
 from pathlib import Path
@@ -1125,6 +1126,7 @@ class SeleniumDownloader:
                     )
 
             if self.result:
+                self.result["end_date"] = datetime.now()
                 self.results.append(self.result)
             self.result = None  # reset result for each event
 

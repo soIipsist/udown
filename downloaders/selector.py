@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import os
 from pprint import PrettyPrinter
 import re
@@ -121,6 +122,7 @@ def extract_selector(
         "output_path": path,
         "output_directory": output_directory,
         "output_filename": output_filename,
+        "end_date": datetime.now(),
         "progress": "100%",
     }
 

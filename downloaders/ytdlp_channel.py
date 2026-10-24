@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from downloaders.ytdlp import get_channel_info, get_video_urls_from_channel
 from argparse import ArgumentParser
@@ -39,7 +40,7 @@ def download(
     try:
         for download in downloads:
             result = download.download()
-        results.append({"url": channel_id, "status": 0})
+        results.append({"url": channel_id, "status": 0, "end_date": datetime.now()})
     except Exception as e:
         print(e)
     

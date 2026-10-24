@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import os
 from pprint import PrettyPrinter
 import urllib3
@@ -111,6 +112,7 @@ def download(
             result["path"] = str(output_path)
             result["size"] = downloaded
             result["status"] = 0
+            result["end_date"] = datetime.now()
             response.release_conn()
 
         except KeyboardInterrupt:
@@ -127,6 +129,7 @@ def download(
             break
         results.append(result)
 
+    # print(results)
     return results
 
 

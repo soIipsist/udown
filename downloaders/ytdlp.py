@@ -1,3 +1,4 @@
+from datetime import datetime
 import yt_dlp
 import argparse
 import os
@@ -435,10 +436,10 @@ def download(
 
                     result["url"] = entry_url
                     result["output_filename"] = entry_filename
-                    result["progress"] = "100%" if not progress_state.progress else progress_state.progress
                     logger.info(f"Filename: {entry_filename}")
+                    result["progress"] = "100%" if not progress_state.progress else progress_state.progress
                     result["status"] = 0
-
+                    result["end_date"] = datetime.now()
                     results.append(result)
 
         except KeyboardInterrupt as e:

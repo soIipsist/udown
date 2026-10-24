@@ -288,6 +288,7 @@ class Downloader(SQLiteItem):
                     error_message = result.get("error")
                     source_url = result.get("source_url")
                     progress = result.get("progress")
+                    end_date = result.get("end_date")
 
                     downloader_type = download.downloader_type
                     output_directory = download.output_directory
@@ -305,6 +306,9 @@ class Downloader(SQLiteItem):
                         output_directory=output_directory,
                         output_filename=output_filename,
                         source_url=source_url,
+                        start_date=download.start_date,
+                        end_date=str(end_date) if end_date else None,
+
                     )
                     logger.info(f"OUTPUT PATH: {child_download.output_path}")
 

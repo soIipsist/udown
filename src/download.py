@@ -31,7 +31,7 @@ class Download(SQLiteItem):
     _downloader: Downloader = None
     _downloader_type: str = None
     _download_status = DownloadStatus.STARTED
-    _start_date = str(datetime.now())
+    _start_date = None
     _end_date = None
     _time_elapsed = None
     _url: str = None
@@ -254,11 +254,17 @@ class Download(SQLiteItem):
         logger.info(f"Setting download status: {str(status)}")
 
         if self.download_status == DownloadStatus.COMPLETED:
-            self.end_date = str(datetime.now())
-            fmt = "%Y-%m-%d %H:%M:%S.%f"
-            start_dt = datetime.strptime(self.start_date, fmt)
-            end_dt = datetime.strptime(self.end_date, fmt)
+            
 
+            end_dt = self.end_date or datetime.now()
+            if isinstance(end_dt, str):
+                end_dt = datetime.strptime(end_dt, "%Y-%m-%d %H:%M:%S.%f")
+
+            fmt = "%Y-%m-%d %H:%M:%S.%f"
+           
+            start_dt = datetime.strptime(self.start_date, "%Y-%m-%d %H:%M:%S.%f")
+
+            self.end_date = end_dt.strftime("%Y-%m-%d %H:%M:%S.%f")
             self.time_elapsed = str(end_dt - start_dt)
             log_message = f"Time elapsed: {self.time_elapsed}"
             logger.info(log_message)

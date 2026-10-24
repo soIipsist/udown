@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import os
 from pprint import PrettyPrinter
 import re
@@ -76,6 +77,7 @@ def extract_xpath(
         "output_directory": output_directory,
         "output_filename": output_filename,
         "progress": "100%",
+        "end_date": datetime.now()
     }
 
 
