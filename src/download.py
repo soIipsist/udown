@@ -361,6 +361,7 @@ class Download(SQLiteItem):
                 downloader_type,
                 output_filename=output_filename,
                 output_directory=base_output_directory,
+                extra_args=args.get("extra_args")
             )
 
         # parse only if .txt
