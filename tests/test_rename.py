@@ -60,7 +60,7 @@ destination_directory = out_directory
 source_directory = get_directory_as_path_test(source_directory)
 destination_directory = get_directory_as_path_test(destination_directory)
 backup_directory = os.path.join(photos_directory, "backup")
-move = True
+move = False
 dry_run = False
 use_chunks = True
 progress = True
@@ -136,9 +136,9 @@ class TestRename(TestBase):
 
     def test_rename_files(self):
         # action = "prefix"
-        action = "suffix"
+        # action = "suffix"
         # action = "pattern"
-        # action = "year"
+        action = "year"
         # action = "episodes"
         prefix = None
         pattern = None

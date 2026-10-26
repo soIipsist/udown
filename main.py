@@ -5,6 +5,7 @@ import sys
 
 from src.download import download_command, download_action, complete_downloader_type
 from src.downloader import downloader_command, downloader_action, pp
+from src.metadata import metadata_action, metadata_command
 from src.rename import rename_command, rename_action
 from src.update import update_command, update_action
 from src.settings import settings_action, get_setting, settings_command
@@ -106,6 +107,9 @@ def main():
 
     rename_parser = rename_command(subparsers)
     rename_parser.set_defaults(func=rename_action)
+
+    metadata_parser = metadata_command(subparsers)
+    metadata_parser.set_defaults(func=metadata_action)
     
     import argcomplete
 
