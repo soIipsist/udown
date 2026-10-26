@@ -1,5 +1,6 @@
 
 from datetime import datetime
+import tempfile
 import time
 import mimetypes
 import os
@@ -13,81 +14,57 @@ from utils.logger import setup_logger
 
 logger = setup_logger(name="rename", log_dir="/udown/rename")
 
-
-def rename_command(subparsers):
-    parser = subparsers.add_parser(
-        "rename",
-        help="Bulk rename and organize files",
-    )
-
-    parser.add_argument(
-        "source_directory",
-        nargs="?",
-        default=os.getcwd(),
-        type=str,
-    )
-    parser.add_argument(
-        "destination_directory",
-        nargs="?",
-        default=None,
-        type=str,
-    )
-    parser.add_argument(
-        "-a",
-        "--action",
-        choices=["pattern", "episodes", "prefix", "suffix", "year"],
-        default=os.environ.get("RENAME_ACTION"),
-    )
-    parser.add_argument("-p", "--pattern", default=None)
-    parser.add_argument("-r", "--repl", default=None)
-
-    parser.add_argument(
-        "-m", "--move",
-        nargs="?",
-        const=True,
-        type=str_to_bool,
-        default=os.environ.get("MOVE_FILES", False),
-    )
-    parser.add_argument(
-        "-n", "--dry_run", "--dry-run",
-        nargs="?",
-        const=True,
-        type=str_to_bool,
-        default=os.environ.get("DRY_RUN", False),
-    )
-    parser.add_argument(
-        "-b", "--backup",
-        nargs="?",
-        const=True,
-        type=str_to_bool,
-        default=os.environ.get("BACKUP", False),
-    )
-    parser.add_argument(
-        "-c", "--use_chunks",
-        nargs="?",
-        const=True,
-        type=str_to_bool,
-        default=os.environ.get("USE_CHUNKS", False),
-    )
-    parser.add_argument(
-        "--progress",
-        nargs="?",
-        const=True,
-        type=str_to_bool,
-        default=False,
-    )
-    parser.add_argument(
-        "-d", "--backup_directory",
-        default=os.environ.get("BACKUP_DIRECTORY"),
-    )
-
-    return parser
-
-
-
 CHUNK_SIZE = 4 * 1024 * 1024
 
+def stage_sources(sources, move: bool = False, dry_run: bool = False):
+    """Return (source_directory, temp_dir_or_None)."""
+    paths = [Path(s) for s in sources]
 
+    for p in paths:
+        if not p.exists():
+            logger.error(f"Error: '{p}' does not exist.")
+            sys.exit(1)
+
+    dirs = [p for p in paths if p.is_dir()]
+    files = [p for p in paths if p.is_file()]
+
+    if len(dirs) > 1 or (dirs and files):
+        logger.error("Error: pass either a single directory or one or more files.")
+        sys.exit(1)
+
+    if dirs:
+        return dirs[0], None
+
+    names = [f.name for f in files]
+    if len(set(names)) != len(names):
+        logger.error("Error: multiple files share the same name.")
+        sys.exit(1)
+
+    tmp = Path(tempfile.mkdtemp(prefix="rename_"))
+    for f in files:
+        dst = tmp / f.name
+        if dry_run:
+            dst.symlink_to(f.resolve())  # nothing is copied or moved
+        elif move:
+            shutil.move(f, dst)
+        else:
+            shutil.copy2(f, dst)
+
+    return tmp, tmp
+
+
+def cleanup_staging(tmp: Path | None, move: bool, dry_run: bool):
+    if tmp is None:
+        return
+
+    # In move mode, anything left in tmp failed to move and is the only copy
+    leftovers = [f for f in tmp.rglob("*") if f.is_file()]
+    if move and leftovers and not dry_run:
+        logger.warning(f"{len(leftovers)} file(s) were not moved, keeping {tmp}")
+        return
+
+    shutil.rmtree(tmp, ignore_errors=True)
+    
 def format_bytes(n):
     for unit in ["B", "KB", "MB", "GB", "TB"]:
         if n < 1024:
@@ -219,7 +196,7 @@ def create_backup(
         return
 
     if not backup_directory:
-        return
+        backup_directory = "/tmp/backup"
 
     try:
         logger.info(f"Creating backup at {backup_directory}")
@@ -376,7 +353,7 @@ def rename_by_pattern(
 
 
 def rename_files(
-    source_directory: str,
+    sources,
     destination_directory: str = None,
     action: str = None,
     pattern: str = None,
@@ -389,66 +366,78 @@ def rename_files(
     dry_run: bool = False,
 ):
 
-    if not destination_directory:
-        destination_directory = source_directory
+    sources = [Path(s) for s in sources] or [Path.cwd()]
 
-    source_directory = get_directory_as_path(source_directory)
+    if not destination_directory:
+        if sources[0].is_dir():
+            destination_directory = sources[0]  # rename in place
+        else:
+            parents = {s.resolve().parent for s in sources}
+            if len(parents) > 1:
+                logger.error("Error: files are in different folders, pass -o.")
+                sys.exit(1)
+            destination_directory = parents.pop()  # next to the originals
+
+    source_directory, tmp = stage_sources(sources, move, dry_run)
     destination_directory = get_directory_as_path(destination_directory)
 
-    create_backup(source_directory, backup_directory, dry_run, backup)
 
-    new_files = []
-    old_files = []
+    try:
+        create_backup(source_directory, backup_directory, dry_run, backup)
 
-    logger.info(f"Action: {action}")
+        new_files = []
+        old_files = []
 
-    if action == "year":
-        old_files, new_files = rename_by_year(
-            source_directory, destination_directory, dry_run
-        )
-    elif action == "episodes":
-        pattern = r".*?(S\d{2}E\d{2}|\d{1,5}).*"  # pattern for episodes
-        repl = r"\1"
-        old_files, new_files = rename_by_pattern(
-            source_directory, destination_directory, pattern, repl
-        )
-    elif action == "prefix":
-        pattern = r"^(.*)$"
+        logger.info(f"Action: {action}")
 
-        if not repl:
-            prefix = input("Prefix: ")
-            if prefix:
-                repl = f"{prefix}\\1"
-            else:
-                repl = r"\1"
+        if action == "year":
+            old_files, new_files = rename_by_year(
+                source_directory, destination_directory, dry_run
+            )
+        elif action == "episodes":
+            pattern = r".*?(S\d{2}E\d{2}|\d{1,5}).*"  # pattern for episodes
+            repl = r"\1"
+            old_files, new_files = rename_by_pattern(
+                source_directory, destination_directory, pattern, repl
+            )
+        elif action == "prefix":
+            pattern = r"^(.*)$"
 
-        old_files, new_files = rename_by_pattern(
-            source_directory, destination_directory, pattern, repl
-        )
-    elif action == "suffix":
-        pattern = r"^(.*?)(\.[^.]+)?$"
+            if not repl:
+                prefix = input("Prefix: ")
+                if prefix:
+                    repl = f"{prefix}\\1"
+                else:
+                    repl = r"\1"
 
-        if not repl:
-            suffix = input("Suffix: ")
-            if suffix:
-                repl = r"\1" + suffix + r"\2"
-            else:
-                repl = r"\1\2"
+            old_files, new_files = rename_by_pattern(
+                source_directory, destination_directory, pattern, repl
+            )
+        elif action == "suffix":
+            pattern = r"^(.*?)(\.[^.]+)?$"
 
-        old_files, new_files = rename_by_pattern(
-            source_directory, destination_directory, pattern, repl
-        )
-    else:
-        old_files, new_files = rename_by_pattern(
-            source_directory, destination_directory, pattern, repl
-        )
+            if not repl:
+                suffix = input("Suffix: ")
+                if suffix:
+                    repl = r"\1" + suffix + r"\2"
+                else:
+                    repl = r"\1\2"
 
-    move_files(old_files, new_files, move, dry_run, progress, use_chunks)
-    return old_files, new_files
+            old_files, new_files = rename_by_pattern(
+                source_directory, destination_directory, pattern, repl
+            )
+        else:
+            old_files, new_files = rename_by_pattern(
+                source_directory, destination_directory, pattern, repl
+            )
 
+        move_files(old_files, new_files, move, dry_run, progress, use_chunks)
+        return old_files, new_files
+    finally:
+        cleanup_staging(tmp, move, dry_run)
 
 def rename_action(
-    source_directory=None,
+    sources = None,
     destination_directory=None,
     action=None,
     pattern=None,
@@ -462,7 +451,7 @@ def rename_action(
     **kwargs,
 ):
     return rename_files(
-        source_directory=source_directory or os.getcwd(),
+        sources=sources or [os.getcwd()],
         destination_directory=destination_directory,
         action=action,
         pattern=pattern,
@@ -474,3 +463,68 @@ def rename_action(
         progress=progress,
         dry_run=dry_run,
     )
+
+
+def rename_command(subparsers):
+    rename_cmd = subparsers.add_parser(
+        "rename",
+        help="Bulk rename and organize files",
+    )
+
+    rename_cmd.add_argument("sources", nargs="*", default=os.getcwd())
+    rename_cmd.add_argument(
+        "-d", "--destination_directory",
+        nargs="?",
+        default=None,
+        type=str,
+    )
+    rename_cmd.add_argument(
+        "-a",
+        "--action",
+        choices=["pattern", "episodes", "prefix", "suffix", "year"],
+        default=os.environ.get("RENAME_ACTION"),
+    )
+    rename_cmd.add_argument("-p", "--pattern", default=None)
+    rename_cmd.add_argument("-r", "--repl", default=None)
+
+    rename_cmd.add_argument(
+        "-m", "--move",
+        nargs="?",
+        const=True,
+        type=str_to_bool,
+        default=os.environ.get("MOVE_FILES", False),
+    )
+    rename_cmd.add_argument(
+        "-n", "--dry_run", "--dry-run",
+        nargs="?",
+        const=True,
+        type=str_to_bool,
+        default=os.environ.get("DRY_RUN", False),
+    )
+    rename_cmd.add_argument(
+        "-b", "--backup",
+        nargs="?",
+        const=True,
+        type=str_to_bool,
+        default=os.environ.get("BACKUP", False),
+    )
+    rename_cmd.add_argument(
+            "-bd", "--backup_directory",
+            default=os.environ.get("BACKUP_DIRECTORY"),
+    )
+    rename_cmd.add_argument(
+        "-c", "--use_chunks",
+        nargs="?",
+        const=True,
+        type=str_to_bool,
+        default=os.environ.get("USE_CHUNKS", False),
+    )
+    rename_cmd.add_argument(
+        "--progress",
+        nargs="?",
+        const=True,
+        type=str_to_bool,
+        default=False,
+    )
+
+    return rename_cmd
