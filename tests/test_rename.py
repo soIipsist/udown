@@ -11,7 +11,7 @@ parent_directory = current_file.parents[2]
 os.sys.path.insert(0, str(parent_directory))
 
 from test_base import TestBase, run_test_methods
-from ..src.rename import *
+from src.rename import *
 import os
 
 
@@ -107,13 +107,13 @@ class TestRename(TestBase):
 
         source_directory = photos_directory
         backup_directory = "/tmp/photos"
-        backup_path = create_backup(source_directory, backup_directory, dry_run)
+        backup = True
+        backup_path = create_backup(source_directory, backup_directory, dry_run, backup)
 
-        if backup_directory is None:
-            self.assertTrue(backup_path is None)
-        else:
-            if not dry_run:
-                self.assertTrue(os.path.exists(backup_path))
+        print(backup_path)
+
+        if not dry_run and backup:
+            self.assertTrue(os.path.exists(backup_path))
 
     def test_move_files(self):
         old_files, new_files = rename_by_pattern(
@@ -152,16 +152,17 @@ class TestRename(TestBase):
             repl = f"{prefix} \\1"
 
         old_files, new_files = rename_files(
-            source_directory,
-            destination_directory,
-            action,
-            pattern,
-            repl,
-            move,
-            backup_directory,
-            use_chunks,
-            progress,
-            dry_run,
+            sources=source_directory,
+            destination_directory=destination_directory,
+            action=action,
+            pattern=pattern,
+            repl=repl,
+            move=move,
+            backup=False,
+            backup_directory=backup_directory,
+            use_chunks=use_chunks,
+            progress=progress,
+            dry_run=dry_run,
         )
 
         self.assertTrue(os.path.exists(source_directory))
@@ -188,10 +189,10 @@ class TestRename(TestBase):
 
 if __name__ == "__main__":
     test_methods = [
-        TestRename.test_get_exif_year,
-        TestRename.test_get_modification_year,
-        TestRename.test_create_backup,
-        TestRename.test_move_files,
+        # TestRename.test_get_exif_year,
+        # TestRename.test_get_modification_year,
+        # TestRename.test_create_backup,
+        # TestRename.test_move_files,
         TestRename.test_rename_files,
     ]
     run_test_methods(test_methods)

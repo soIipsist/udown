@@ -169,7 +169,8 @@ def get_exif_year(file_path: Path) -> str | None:
             year = result.stdout.strip()
             if year and year.isdigit() and len(year) == 4:
                 return year
-        except Exception:
+        except Exception as e:
+            logger.error(f"{e}")
             continue
 
     return None
@@ -366,6 +367,11 @@ def rename_files(
     dry_run: bool = False,
 ):
 
+    if sources is None:
+        sources = []
+    elif isinstance(sources, (str, Path)):
+        sources = [sources]
+        
     sources = [Path(s) for s in sources] or [Path.cwd()]
 
     if not destination_directory:
