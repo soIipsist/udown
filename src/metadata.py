@@ -1,6 +1,7 @@
 from pathlib import Path
 import subprocess
 
+from src.rename import copy_files
 from utils.logger import setup_logger
 
 logger = setup_logger(name="metadata", log_dir="/udown/metadata")
@@ -206,6 +207,7 @@ def get_metadata(files, tag, value):
 
     logger.info(f"{len(matches)} of {len(files)} file(s) matched.")
 
+    return files 
 
 def set_metadata(files, tag, value, append, overwrite, dry_run):
     for f in files:
@@ -218,7 +220,7 @@ def set_metadata(files, tag, value, append, overwrite, dry_run):
             logger.info(f"Set {tag}={value} on '{f}'")
         except (ValueError, RuntimeError, OSError) as e:
             logger.error(f"Failed to set {tag} on '{f}': {e}")
-      
+    return files
 
 def metadata_action(
     action=None,
@@ -228,6 +230,7 @@ def metadata_action(
     append=False,
     overwrite=True,
     dry_run=False,
+    destination_path:str = None,
     **kwargs,
 ):
     try:
@@ -241,15 +244,16 @@ def metadata_action(
         if not tag and value is None:
             logger.error("Error: 'get' needs --tag, --value, or both.")
             return None
-        get_metadata(expand_paths(files or []), tag, value)
+        files = get_metadata(expand_paths(files or []), tag, value)
 
     elif action == "set":
         if not tag or value is None:
             logger.error("Error: 'set' needs both --tag and --value.")
             return None
-        set_metadata(expand_paths(files or []), tag, value, append, overwrite, dry_run)
+        files = set_metadata(expand_paths(files or []), tag, value, append, overwrite, dry_run)
 
-    return None
+    if destination_path and files:
+        copy_files(files, destination_path, dry_run)
 
 
 def metadata_command(subparsers):
@@ -264,5 +268,5 @@ def metadata_command(subparsers):
     metadata_cmd.add_argument("--keep-original", dest="overwrite", action="store_false",
                      help="Keep exiftool's *_original backup")
     metadata_cmd.add_argument("-n", "--dry_run", "--dry-run", action="store_true")
-
+    metadata_cmd.add_argument("-d", "--destination_path", type=str, default=None)
     return metadata_cmd

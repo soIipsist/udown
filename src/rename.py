@@ -124,6 +124,12 @@ def print_byte_progress(
     )
     sys.stdout.flush()
 
+def copy_files(files, destination_path, dry_run=False, progress=False, use_chunks=False):
+    destination = Path(destination_path)
+    new_files = [destination / f.name for f in files]
+    move_files(files, new_files, move=False, dry_run=dry_run,
+               progress=progress, use_chunks=use_chunks)
+    
 
 def copy2_with_progress(src, dst, dry_run: bool = False, progress: bool = True):
     total_size = os.path.getsize(src)
