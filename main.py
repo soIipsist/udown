@@ -5,6 +5,7 @@ import sys
 
 from src.download import download_command, download_action, complete_downloader_type
 from src.downloader import downloader_command, downloader_action, pp
+from src.rename import rename_command, rename_action
 from src.update import update_command, update_action
 from src.settings import settings_action, get_setting, settings_command
 from utils import parse_date, str_to_bool
@@ -103,6 +104,9 @@ def main():
     update_parser = update_command(subparsers)
     update_parser.set_defaults(func=update_action)
 
+    rename_parser = rename_command(subparsers)
+    rename_parser.set_defaults(func=rename_action)
+    
     import argcomplete
 
     argcomplete.autocomplete(parser)
