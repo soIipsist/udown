@@ -462,7 +462,7 @@ def rename_action(
     dry_run=False,
     **kwargs,
 ):
-    return rename_files(
+    old_files, new_files =  rename_files(
         sources=sources or [os.getcwd()],
         destination_directory=destination_directory,
         action=action,
